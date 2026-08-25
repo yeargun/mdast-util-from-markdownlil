@@ -1,0 +1,132 @@
+import { kids, add, count, at, safeUrl } from "./util.lil";
+
+export JsValue nodeRoot(JsValue children) {
+  return JS.object("type", "root", "children", children);
+}
+
+export JsValue nodeParagraph(JsValue children) {
+  return JS.object("type", "paragraph", "children", children);
+}
+
+export JsValue nodeHeading(int depth, JsValue children) {
+  return JS.object("type", "heading", "depth", depth, "children", children);
+}
+
+export JsValue nodeThematic() {
+  return JS.object("type", "thematicBreak");
+}
+
+export JsValue nodeQuote(JsValue children) {
+  return JS.object("type", "blockquote", "children", children);
+}
+
+export JsValue nodeList(bool ordered, int start, bool spread, JsValue children) {
+  if (ordered) {
+    return JS.object("type", "list", "ordered", true, "start", start, "spread", spread, "children", children);
+  }
+  return JS.object("type", "list", "ordered", false, "spread", spread, "children", children);
+}
+
+export JsValue nodeItem(bool spread, bool task, bool checked, JsValue children) {
+  if (task) {
+    return JS.object("type", "listItem", "spread", spread, "checked", checked, "children", children);
+  }
+  return JS.object("type", "listItem", "spread", spread, "children", children);
+}
+
+export JsValue nodeCode(string? lang, string? meta, string value) {
+  return JS.object("type", "code", "lang", lang, "meta", meta, "value", value);
+}
+
+export JsValue nodeInlineCode(string value) {
+  return JS.object("type", "inlineCode", "value", value);
+}
+
+export JsValue nodeHtml(string value) {
+  return JS.object("type", "html", "value", value);
+}
+
+export JsValue nodeDefinition(string identifier, string label, string url, string? title) {
+  return JS.object("type", "definition", "identifier", identifier, "label", label, "url", safeUrl(url), "title", title);
+}
+
+export JsValue nodeText(string value) {
+  return JS.object("type", "text", "value", value);
+}
+
+export JsValue nodeEmphasis(JsValue children) {
+  return JS.object("type", "emphasis", "children", children);
+}
+
+export JsValue nodeStrong(JsValue children) {
+  return JS.object("type", "strong", "children", children);
+}
+
+export JsValue nodeDelete(JsValue children) {
+  return JS.object("type", "delete", "children", children);
+}
+
+export JsValue nodeBreak() {
+  return JS.object("type", "break");
+}
+
+export JsValue nodeLink(string url, string? title, JsValue children) {
+  return JS.object("type", "link", "url", safeUrl(url), "title", title, "children", children);
+}
+
+export JsValue nodeImage(string url, string? title, string alt) {
+  return JS.object("type", "image", "url", safeUrl(url), "title", title, "alt", alt);
+}
+
+export JsValue nodeLinkRef(string identifier, string label, string referenceType, JsValue children) {
+  return JS.object("type", "linkReference", "identifier", identifier, "label", label, "referenceType", referenceType, "children", children);
+}
+
+export JsValue nodeImageRef(string identifier, string label, string referenceType, string alt) {
+  return JS.object("type", "imageReference", "identifier", identifier, "label", label, "referenceType", referenceType, "alt", alt);
+}
+
+export JsValue nodeTable(JsValue align, JsValue children) {
+  return JS.object("type", "table", "align", align, "children", children);
+}
+
+export JsValue nodeTableRow(JsValue children) {
+  return JS.object("type", "tableRow", "children", children);
+}
+
+export JsValue nodeTableCell(JsValue children) {
+  return JS.object("type", "tableCell", "children", children);
+}
+
+export JsValue nodeInlineMath(string value) {
+  return JS.object("type", "inlineMath", "value", value);
+}
+
+export JsValue nodeMath(string value) {
+  return JS.object("type", "math", "value", value);
+}
+
+export JsValue mergeText(JsValue children) {
+  JsValue out = kids();
+  string buf = "";
+  int n = count(children);
+  int i = 0;
+  while (i < n) {
+    JsValue node = at(children, i);
+    string typ = JS.string(node["type"]);
+    if (typ == "text") {
+      buf = buf + JS.string(node["value"]);
+    } else {
+      if (buf.length > 0) {
+        add(out, nodeText(buf));
+        buf = "";
+      }
+      add(out, node);
+    }
+    i = i + 1;
+  }
+  if (buf.length > 0) {
+    add(out, nodeText(buf));
+  }
+  return out;
+}

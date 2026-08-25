@@ -1,0 +1,61 @@
+import { Lexer, Token } from "./types.lil";
+import { lex } from "./lexer.lil";
+import { optionFlag } from "./parse.lil";
+import { tokensToMdast } from "./to-mdast.lil";
+
+export extern class ParseOptions {
+  JsValue gfm;
+  JsValue breaks;
+  JsValue math;
+  JsValue allowDangerousHtml;
+  JsValue singleTilde;
+  JsValue pedantic;
+  JsValue silent;
+}
+
+JsValue asOptions(JsValue encodingOrOptions, JsValue options) {
+  if (!JS.isUndefined(options) && !JS.isNullish(options) && JS.typeOf(options) == "object") {
+    return options;
+  }
+  if (!JS.isUndefined(encodingOrOptions) && !JS.isNullish(encodingOrOptions) && JS.typeOf(encodingOrOptions) == "object") {
+    return encodingOrOptions;
+  }
+  return JS.object();
+}
+
+string readText(JsValue value) {
+  if (value is string) {
+    return value;
+  }
+  if (JS.isUndefined(value) || JS.isNullish(value)) {
+    return "";
+  }
+  return JS.string(value);
+}
+
+export JsValue parse(string src, JsValue opt) {
+  ParseOptions parsed = JS.assume(opt);
+  Lexer lx = new Lexer(optionFlag(parsed.gfm, false), optionFlag(parsed.breaks, false), optionFlag(parsed.pedantic, false), optionFlag(parsed.silent, false));
+  Token[] tokens = lex(lx, src);
+  return tokensToMdast(tokens, optionFlag(parsed.allowDangerousHtml, false));
+}
+
+JsValue fromMarkdownCall(JsValue self, JsValue args) {
+  int n = JS.number(args["length"]).toInt();
+  string value = "";
+  if (n > 0) {
+    value = readText(args[0]);
+  }
+  JsValue opt = JS.object();
+  if (n > 1) {
+    JsValue second = JS.undefined();
+    if (n > 2) {
+      second = args[2];
+    }
+    opt = asOptions(args[1], second);
+  }
+  return parse(value, opt);
+}
+
+export JsValue fromMarkdown = JS.methodRest(fromMarkdownCall);
+export JsValue default = fromMarkdown;

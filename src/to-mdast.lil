@@ -1,0 +1,180 @@
+import { Kind, Align, Token } from "./types.lil";
+
+JsValue jsNull() {
+  return JSON.parse("null");
+}
+
+JsValue kids() {
+  return JS.array();
+}
+
+void push(JsValue arr, JsValue item) {
+  JS.push(arr, item);
+}
+
+string alignName(Align align) {
+  if (align == Align.Left) {
+    return "left";
+  }
+  if (align == Align.Center) {
+    return "center";
+  }
+  if (align == Align.Right) {
+    return "right";
+  }
+  return "";
+}
+
+export JsValue inlineMdast(Token[] tokens, bool allowHtml) {
+  JsValue out = kids();
+  int i = 0;
+  while (i < tokens.length) {
+    Token token = tokens[i];
+    if (token.kind == Kind.Checkbox) {
+    } else if (token.kind == Kind.Escape) {
+      push(out, JS.object("type", "text", "value", token.text));
+    } else if (token.kind == Kind.Text) {
+      if (token.tokens.length > 0) {
+        JsValue inner = inlineMdast(token.tokens, allowHtml);
+        int n = JS.number(inner["length"]).toInt();
+        int j = 0;
+        while (j < n) {
+          push(out, inner[j]);
+          j = j + 1;
+        }
+      } else {
+        push(out, JS.object("type", "text", "value", token.text));
+      }
+    } else if (token.kind == Kind.Strong) {
+      push(out, JS.object("type", "strong", "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Em) {
+      push(out, JS.object("type", "emphasis", "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Del) {
+      push(out, JS.object("type", "delete", "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Codespan) {
+      push(out, JS.object("type", "inlineCode", "value", token.text));
+    } else if (token.kind == Kind.Br) {
+      push(out, JS.object("type", "break"));
+    } else if (token.kind == Kind.Link) {
+      JsValue title = jsNull();
+      if (token.hasTitle) {
+        title = token.title;
+      }
+      push(out, JS.object("type", "link", "url", token.href, "title", title, "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Image) {
+      JsValue title = jsNull();
+      if (token.hasTitle) {
+        title = token.title;
+      }
+      push(out, JS.object("type", "image", "url", token.href, "title", title, "alt", token.text));
+    } else if (token.kind == Kind.Html) {
+      if (allowHtml) {
+        push(out, JS.object("type", "html", "value", token.text));
+      } else {
+        push(out, JS.object("type", "text", "value", token.text));
+      }
+    }
+    i = i + 1;
+  }
+  return out;
+}
+
+JsValue tableAligns(Token token) {
+  JsValue aligns = kids();
+  int i = 0;
+  while (i < token.aligns.length) {
+    string name = alignName(token.aligns[i]);
+    if (name.length == 0) {
+      push(aligns, jsNull());
+    } else {
+      push(aligns, name);
+    }
+    i = i + 1;
+  }
+  return aligns;
+}
+
+JsValue tableRow(Token[] cells, bool allowHtml) {
+  JsValue children = kids();
+  int i = 0;
+  while (i < cells.length) {
+    push(children, JS.object("type", "tableCell", "children", inlineMdast(cells[i].tokens, allowHtml)));
+    i = i + 1;
+  }
+  return JS.object("type", "tableRow", "children", children);
+}
+
+export JsValue blockMdast(Token[] tokens, bool allowHtml) {
+  JsValue out = kids();
+  int i = 0;
+  while (i < tokens.length) {
+    Token token = tokens[i];
+    if (token.kind == Kind.Space || token.kind == Kind.Checkbox) {
+    } else if (token.kind == Kind.Hr) {
+      push(out, JS.object("type", "thematicBreak"));
+    } else if (token.kind == Kind.Heading) {
+      push(out, JS.object("type", "heading", "depth", token.depth, "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Code) {
+      JsValue lang = jsNull();
+      if (token.hasLang) {
+        lang = token.lang;
+      }
+      push(out, JS.object("type", "code", "lang", lang, "meta", jsNull(), "value", token.text));
+    } else if (token.kind == Kind.Table) {
+      JsValue rows = kids();
+      push(rows, tableRow(token.headerCells, allowHtml));
+      int r = 0;
+      while (r < token.rows.length) {
+        push(rows, tableRow(token.rows[r], allowHtml));
+        r = r + 1;
+      }
+      push(out, JS.object("type", "table", "align", tableAligns(token), "children", rows));
+    } else if (token.kind == Kind.Blockquote) {
+      push(out, JS.object("type", "blockquote", "children", blockMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.List) {
+      JsValue items = kids();
+      int j = 0;
+      while (j < token.items.length) {
+        Token item = token.items[j];
+        JsValue kidsOut = blockMdast(item.tokens, allowHtml);
+        if (item.task) {
+          push(items, JS.object("type", "listItem", "spread", token.loose, "checked", item.checked, "children", kidsOut));
+        } else {
+          push(items, JS.object("type", "listItem", "spread", token.loose, "children", kidsOut));
+        }
+        j = j + 1;
+      }
+      if (token.ordered) {
+        push(out, JS.object("type", "list", "ordered", true, "start", token.start, "spread", token.loose, "children", items));
+      } else {
+        push(out, JS.object("type", "list", "ordered", false, "spread", token.loose, "children", items));
+      }
+    } else if (token.kind == Kind.Html) {
+      if (allowHtml) {
+        push(out, JS.object("type", "html", "value", token.text));
+      }
+    } else if (token.kind == Kind.Def) {
+      JsValue title = jsNull();
+      if (token.hasTitle) {
+        title = token.title;
+      }
+      push(out, JS.object("type", "definition", "identifier", token.tag, "label", token.tag, "url", token.href, "title", title));
+    } else if (token.kind == Kind.Paragraph) {
+      push(out, JS.object("type", "paragraph", "children", inlineMdast(token.tokens, allowHtml)));
+    } else if (token.kind == Kind.Text) {
+      if (token.tokens.length > 0) {
+        push(out, JS.object("type", "paragraph", "children", inlineMdast(token.tokens, allowHtml)));
+      } else if (token.text.length > 0) {
+        JsValue children = kids();
+        push(children, JS.object("type", "text", "value", token.text));
+        push(out, JS.object("type", "paragraph", "children", children));
+      }
+    }
+    i = i + 1;
+  }
+  return out;
+}
+
+export JsValue tokensToMdast(Token[] tokens, bool allowHtml) {
+  return JS.object("type", "root", "children", blockMdast(tokens, allowHtml));
+}

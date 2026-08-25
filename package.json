@@ -1,0 +1,67 @@
+{
+  "name": "@itslil/mdast-util-from-markdown",
+  "version": "2.0.2",
+  "description": "mdast-util-from-markdown reimplemented in LilScript",
+  "keywords": [
+    "mdast",
+    "markdown",
+    "unist",
+    "parse",
+    "lilscript",
+    "itslil"
+  ],
+  "homepage": "https://yeargun.github.io/mdast-util-from-markdownlil/",
+  "bugs": "https://github.com/yeargun/mdast-util-from-markdownlil/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeargun/mdast-util-from-markdownlil.git"
+  },
+  "license": "MIT",
+  "author": "yeargun",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/from-markdown.cjs",
+  "module": "./dist/from-markdown.esm.js",
+  "types": "./dist/from-markdown.d.ts",
+  "unpkg": "./dist/from-markdown.umd.js",
+  "jsdelivr": "./dist/from-markdown.umd.js",
+  "exports": {
+    ".": {
+      "types": "./dist/from-markdown.d.ts",
+      "import": "./dist/from-markdown.esm.js",
+      "require": "./dist/from-markdown.cjs",
+      "default": "./dist/from-markdown.esm.js"
+    },
+    "./closed": "./dist/from-markdown.closed.js",
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "dist/from-markdown.esm.js",
+    "dist/from-markdown.cjs",
+    "dist/from-markdown.umd.js",
+    "dist/from-markdown.closed.js",
+    "dist/from-markdown.d.ts",
+    "LICENSE",
+    "NOTICE.md",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs --compile",
+    "build:site": "node scripts/build-site.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check:site": "npm run build:site && node --test test/site.test.mjs",
+    "check:pack": "node scripts/check-pack.mjs",
+    "prepublishOnly": "npm test && npm run check:pack && npm run check:site"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

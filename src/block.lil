@@ -1,0 +1,1114 @@
+import { Opts, DefRec } from "./options.lil";
+import {
+  kids, add, isSpaceTab, isDigit, isAlpha, isBlank, indentCols, indentChars, stripCols,
+  normalizeNewlines, splitLines, joinLines, unescape, skipSpaceTab, rtrimWs, ltrimWs,
+  findClosing, splitPipes, normId
+} from "./util.lil";
+import {
+  nodeRoot, nodeParagraph, nodeHeading, nodeThematic, nodeQuote, nodeList, nodeItem,
+  nodeCode, nodeHtml, nodeDefinition, nodeTable, nodeTableRow, nodeTableCell, nodeMath
+} from "./nodes.lil";
+import { parseInlines } from "./inline.lil";
+
+class Src {
+  string[] lines;
+  int i;
+  Opts opt;
+  Map<string, DefRec> defs;
+
+  init(string[] lines, Opts opt, Map<string, DefRec> defs) {
+    this.lines = lines;
+    this.i = 0;
+    this.opt = opt;
+    this.defs = defs;
+  }
+}
+
+class Marker {
+  bool ok;
+  bool ordered;
+  int start;
+  int indent;
+  int after;
+  string kind;
+  string rest;
+
+  init() {
+    this.ok = false;
+    this.ordered = false;
+    this.start = 1;
+    this.indent = 0;
+    this.after = 0;
+    this.kind = "";
+    this.rest = "";
+  }
+}
+
+class Fence {
+  bool ok;
+  string mark;
+  int len;
+  int indent;
+  string info;
+
+  init() {
+    this.ok = false;
+    this.mark = "`";
+    this.len = 0;
+    this.indent = 0;
+    this.info = "";
+  }
+}
+
+class Atx {
+  bool ok;
+  int depth;
+  string text;
+
+  init() {
+    this.ok = false;
+    this.depth = 1;
+    this.text = "";
+  }
+}
+
+class DefScan {
+  bool ok;
+  int used;
+  string label;
+  string url;
+  string title;
+
+  init() {
+    this.ok = false;
+    this.used = 0;
+    this.label = "";
+    this.url = "";
+    this.title = "";
+  }
+}
+
+bool done(Src s) {
+  return s.i >= s.lines.length;
+}
+
+string cur(Src s) {
+  if (done(s)) {
+    return "";
+  }
+  return s.lines[s.i];
+}
+
+JsValue inlines(Src s, string text) {
+  return parseInlines(text, s.opt, s.defs, false);
+}
+
+JsValue parseChunk(string[] lines, Opts opt, Map<string, DefRec> defs) {
+  Src inner = new Src(lines, opt, defs);
+  return parseBlocks(inner);
+}
+
+bool isThematic(string line) {
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return false;
+  }
+  int i = indentChars(line);
+  if (i >= line.length) {
+    return false;
+  }
+  string mark = line.charAt(i);
+  if (mark != "*" && mark != "-" && mark != "_") {
+    return false;
+  }
+  int n = 0;
+  while (i < line.length) {
+    string ch = line.charAt(i);
+    if (ch == mark) {
+      n = n + 1;
+    } else if (!isSpaceTab(ch.charCodeAt(0))) {
+      return false;
+    }
+    i = i + 1;
+  }
+  return n >= 3;
+}
+
+Atx parseAtx(string line) {
+  Atx a = new Atx();
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return a;
+  }
+  int i = indentChars(line);
+  int depth = 0;
+  while (i < line.length && line.charAt(i) == "#" && depth < 6) {
+    depth = depth + 1;
+    i = i + 1;
+  }
+  if (depth == 0) {
+    return a;
+  }
+  if (i < line.length && !isSpaceTab(line.charCodeAt(i))) {
+    return a;
+  }
+  i = skipSpaceTab(line, i);
+  string text = rtrimWs(line.slice(i));
+  int end = text.length;
+  while (end > 0 && text.charAt(end - 1) == "#") {
+    end = end - 1;
+  }
+  if (end < text.length) {
+    if (end == 0) {
+      text = "";
+    } else if (isSpaceTab(text.charCodeAt(end - 1))) {
+      text = rtrimWs(text.slice(0, end));
+    }
+  }
+  a.ok = true;
+  a.depth = depth;
+  a.text = text;
+  return a;
+}
+
+int setextDepth(string line) {
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return 0;
+  }
+  int i = indentChars(line);
+  if (i >= line.length) {
+    return 0;
+  }
+  string mark = line.charAt(i);
+  if (mark != "=" && mark != "-") {
+    return 0;
+  }
+  int n = 0;
+  while (i < line.length && line.charAt(i) == mark) {
+    n = n + 1;
+    i = i + 1;
+  }
+  i = skipSpaceTab(line, i);
+  if (i != line.length || n == 0) {
+    return 0;
+  }
+  if (mark == "=") {
+    return 1;
+  }
+  return 2;
+}
+
+Fence parseFence(string line) {
+  Fence f = new Fence();
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return f;
+  }
+  int i = indentChars(line);
+  if (i >= line.length) {
+    return f;
+  }
+  string mark = line.charAt(i);
+  if (mark != "`" && mark != "~") {
+    return f;
+  }
+  int len = 0;
+  while (i < line.length && line.charAt(i) == mark) {
+    len = len + 1;
+    i = i + 1;
+  }
+  if (len < 3) {
+    return f;
+  }
+  string info = line.slice(i);
+  if (mark == "`" && info.indexOf("`") >= 0) {
+    return f;
+  }
+  f.ok = true;
+  f.mark = mark;
+  f.len = len;
+  f.indent = cols;
+  f.info = info.trim();
+  return f;
+}
+
+bool isCloseFence(string line, Fence open) {
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return false;
+  }
+  int i = indentChars(line);
+  int len = 0;
+  while (i < line.length && line.charAt(i) == open.mark) {
+    len = len + 1;
+    i = i + 1;
+  }
+  if (len < open.len) {
+    return false;
+  }
+  i = skipSpaceTab(line, i);
+  return i == line.length;
+}
+
+bool isQuoteLine(string line) {
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return false;
+  }
+  int i = indentChars(line);
+  return i < line.length && line.charAt(i) == ">";
+}
+
+string stripQuote(string line) {
+  int i = indentChars(line);
+  if (i < line.length && line.charAt(i) == ">") {
+    i = i + 1;
+    if (i < line.length && isSpaceTab(line.charCodeAt(i))) {
+      i = i + 1;
+    }
+    return line.slice(i);
+  }
+  return line;
+}
+
+Marker parseMarker(string line) {
+  Marker m = new Marker();
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return m;
+  }
+  int i = indentChars(line);
+  if (i >= line.length) {
+    return m;
+  }
+  string ch = line.charAt(i);
+  if (ch == "*" || ch == "-" || ch == "+") {
+    int after = i + 1;
+    if (after < line.length && !isSpaceTab(line.charCodeAt(after))) {
+      return m;
+    }
+    m.ok = true;
+    m.kind = ch;
+    m.indent = cols;
+    if (after < line.length) {
+      m.rest = line.slice(after + 1);
+      m.after = cols + 2;
+    } else {
+      m.rest = "";
+      m.after = cols + 2;
+    }
+    return m;
+  }
+  int n = 0;
+  int digits = 0;
+  while (i < line.length && digits < 9 && isDigit(line.charCodeAt(i))) {
+    n = n * 10 + (line.charCodeAt(i) - 48);
+    digits = digits + 1;
+    i = i + 1;
+  }
+  if (digits == 0 || i >= line.length) {
+    return m;
+  }
+  string d = line.charAt(i);
+  if (d != "." && d != ")") {
+    return m;
+  }
+  i = i + 1;
+  if (i < line.length && !isSpaceTab(line.charCodeAt(i))) {
+    return m;
+  }
+  m.ok = true;
+  m.ordered = true;
+  m.start = n;
+  m.kind = d;
+  m.indent = cols;
+  if (i < line.length) {
+    m.rest = line.slice(i + 1);
+    m.after = cols + digits + 2;
+  } else {
+    m.rest = "";
+    m.after = cols + digits + 2;
+  }
+  return m;
+}
+
+bool isListLine(string line) {
+  if (isThematic(line)) {
+    return false;
+  }
+  return parseMarker(line).ok;
+}
+
+bool listInterrupts(string line) {
+  Marker m = parseMarker(line);
+  if (!m.ok) {
+    return false;
+  }
+  if (!m.ordered) {
+    return true;
+  }
+  return m.start == 1;
+}
+
+string[] htmlOpeners() {
+  return [
+    "pre", "script", "style", "textarea", "address", "article", "aside", "base",
+    "basefont", "blockquote", "body", "caption", "center", "col", "colgroup", "dd",
+    "details", "dialog", "dir", "div", "dl", "dt", "fieldset", "figcaption", "figure",
+    "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6",
+    "head", "header", "hr", "html", "iframe", "legend", "li", "link", "main",
+    "menu", "menuitem", "nav", "noframes", "ol", "optgroup", "option", "p",
+    "param", "search", "section", "source", "summary", "table", "tbody", "td",
+    "tfoot", "th", "thead", "title", "tr", "track", "ul"
+  ];
+}
+
+string htmlTagName(string line) {
+  string t = ltrimWs(line);
+  if (!t.startsWith("<")) {
+    return "";
+  }
+  int i = 1;
+  if (i < t.length && t.charAt(i) == "/") {
+    i = i + 1;
+  }
+  int start = i;
+  while (i < t.length && (isAlpha(t.charCodeAt(i)) || isDigit(t.charCodeAt(i)))) {
+    i = i + 1;
+  }
+  if (i == start) {
+    return "";
+  }
+  return t.slice(start, i).toLowerCase();
+}
+
+bool isHtmlBlock(string line) {
+  string t = ltrimWs(line);
+  if (!t.startsWith("<")) {
+    return false;
+  }
+  string low = t.toLowerCase();
+  if (low.startsWith("<script") || low.startsWith("<pre") || low.startsWith("<style") || low.startsWith("<textarea")) {
+    return true;
+  }
+  if (low.startsWith("<!--") || low.startsWith("<?") || low.startsWith("<![cdata[") || low.startsWith("<!")) {
+    return true;
+  }
+  string name = htmlTagName(line);
+  if (name.length == 0) {
+    return false;
+  }
+  string[] tags = htmlOpeners();
+  int i = 0;
+  while (i < tags.length) {
+    if (tags[i] == name) {
+      return true;
+    }
+    i = i + 1;
+  }
+  return false;
+}
+
+bool htmlClosesOnLine(string line, string kind) {
+  string low = line.toLowerCase();
+  if (kind == "script") {
+    return low.indexOf("</script>") >= 0;
+  }
+  if (kind == "pre") {
+    return low.indexOf("</pre>") >= 0;
+  }
+  if (kind == "style") {
+    return low.indexOf("</style>") >= 0;
+  }
+  if (kind == "textarea") {
+    return low.indexOf("</textarea>") >= 0;
+  }
+  if (kind == "comment") {
+    return line.indexOf("-->") >= 0;
+  }
+  if (kind == "php") {
+    return line.indexOf("?>") >= 0;
+  }
+  if (kind == "decl") {
+    return line.indexOf(">") >= 0;
+  }
+  if (kind == "cdata") {
+    return line.indexOf("]]>") >= 0;
+  }
+  return false;
+}
+
+string htmlKind(string line) {
+  string low = ltrimWs(line).toLowerCase();
+  if (low.startsWith("<script")) {
+    return "script";
+  }
+  if (low.startsWith("<pre")) {
+    return "pre";
+  }
+  if (low.startsWith("<style")) {
+    return "style";
+  }
+  if (low.startsWith("<textarea")) {
+    return "textarea";
+  }
+  if (low.startsWith("<!--")) {
+    return "comment";
+  }
+  if (low.startsWith("<?")) {
+    return "php";
+  }
+  if (low.startsWith("<![cdata[")) {
+    return "cdata";
+  }
+  if (low.startsWith("<!")) {
+    return "decl";
+  }
+  return "block";
+}
+
+bool isMathOpen(string line, Opts opt) {
+  if (!opt.math) {
+    return false;
+  }
+  string t = line.trim();
+  return t == "$$" || (t.startsWith("$$") && t.endsWith("$$") && t.length >= 4);
+}
+
+bool isFenceStart(string line) {
+  return parseFence(line).ok;
+}
+
+bool interruptsPara(string line, Opts opt) {
+  if (isBlank(line)) {
+    return true;
+  }
+  if (parseAtx(line).ok) {
+    return true;
+  }
+  if (isThematic(line)) {
+    return true;
+  }
+  if (isFenceStart(line)) {
+    return true;
+  }
+  if (isQuoteLine(line)) {
+    return true;
+  }
+  if (listInterrupts(line)) {
+    return true;
+  }
+  if (isHtmlBlock(line)) {
+    return true;
+  }
+  if (isMathOpen(line, opt)) {
+    return true;
+  }
+  return false;
+}
+
+DefScan parseDefAt(string[] lines, int index) {
+  DefScan d = new DefScan();
+  if (index >= lines.length) {
+    return d;
+  }
+  string line = lines[index];
+  int cols = indentCols(line);
+  if (cols >= 4) {
+    return d;
+  }
+  int i = indentChars(line);
+  if (i >= line.length || line.charAt(i) != "[") {
+    return d;
+  }
+  int close = findClosing(line, i + 1, "[", "]");
+  if (close < 0 || close + 1 >= line.length || line.charAt(close + 1) != ":") {
+    return d;
+  }
+  string label = line.slice(i + 1, close);
+  if (label.trim().length == 0) {
+    return d;
+  }
+  i = skipSpaceTab(line, close + 2);
+  string url = "";
+  if (i < line.length && line.charAt(i) == "<") {
+    int end = findClosing(line, i + 1, "<", ">");
+    if (end < 0) {
+      return d;
+    }
+    url = unescape(line.slice(i + 1, end));
+    i = end + 1;
+  } else {
+    int start = i;
+    while (i < line.length && !isSpaceTab(line.charCodeAt(i))) {
+      i = i + 1;
+    }
+    if (i == start) {
+      return d;
+    }
+    url = unescape(line.slice(start, i));
+  }
+  i = skipSpaceTab(line, i);
+  string title = "";
+  int used = 1;
+  if (i < line.length) {
+    string q = line.charAt(i);
+    string end = "";
+    if (q == "\"") {
+      end = "\"";
+    } else if (q == "'") {
+      end = "'";
+    } else if (q == "(") {
+      end = ")";
+    }
+    if (end.length == 0) {
+      return d;
+    }
+    int closeTitle = findClosing(line, i + 1, q, end);
+    if (closeTitle < 0) {
+      return d;
+    }
+    title = unescape(line.slice(i + 1, closeTitle));
+    i = skipSpaceTab(line, closeTitle + 1);
+    if (i != line.length) {
+      return d;
+    }
+  } else if (index + 1 < lines.length) {
+    string next = lines[index + 1];
+    int j = skipSpaceTab(next, 0);
+    if (j < next.length) {
+      string q = next.charAt(j);
+      string end = "";
+      if (q == "\"") {
+        end = "\"";
+      } else if (q == "'") {
+        end = "'";
+      } else if (q == "(") {
+        end = ")";
+      }
+      if (end.length > 0) {
+        int closeTitle = findClosing(next, j + 1, q, end);
+        if (closeTitle >= 0 && skipSpaceTab(next, closeTitle + 1) == next.length) {
+          title = unescape(next.slice(j + 1, closeTitle));
+          used = 2;
+        }
+      }
+    }
+  }
+  d.ok = true;
+  d.used = used;
+  d.label = label;
+  d.url = url;
+  d.title = title;
+  return d;
+}
+
+void collectDefs(string[] lines, Map<string, DefRec> defs) {
+  bool fence = false;
+  Fence open = new Fence();
+  int i = 0;
+  while (i < lines.length) {
+    string line = lines[i];
+    if (fence) {
+      if (isCloseFence(line, open)) {
+        fence = false;
+      }
+      i = i + 1;
+      continue;
+    }
+    Fence f = parseFence(line);
+    if (f.ok) {
+      fence = true;
+      open = f;
+      i = i + 1;
+      continue;
+    }
+    if (indentCols(line) >= 4 && !isBlank(line)) {
+      i = i + 1;
+      continue;
+    }
+    DefScan d = parseDefAt(lines, i);
+    if (d.ok) {
+      string id = normId(d.label);
+      if (!defs.has(id)) {
+        DefRec rec = new DefRec();
+        rec.identifier = id;
+        rec.label = d.label;
+        rec.url = d.url;
+        rec.title = d.title;
+        defs.set(id, rec);
+      }
+      i = i + d.used;
+      continue;
+    }
+    i = i + 1;
+  }
+}
+
+void splitInfo(string info, string[] out) {
+  out.push("");
+  out.push("");
+  string t = unescape(info.trim());
+  if (t.length == 0) {
+    return;
+  }
+  int sp = t.indexOf(" ");
+  int tab = t.indexOf("\t");
+  int cut = sp;
+  if (cut < 0 || (tab >= 0 && tab < cut)) {
+    cut = tab;
+  }
+  if (cut < 0) {
+    out[0] = t;
+    return;
+  }
+  out[0] = t.slice(0, cut);
+  out[1] = t.slice(cut + 1).trim();
+}
+
+JsValue parseFenced(Src s) {
+  Fence open = parseFence(cur(s));
+  s.i = s.i + 1;
+  string[] body = [];
+  while (!done(s) && !isCloseFence(cur(s), open)) {
+    body.push(stripCols(cur(s), open.indent));
+    s.i = s.i + 1;
+  }
+  if (!done(s) && isCloseFence(cur(s), open)) {
+    s.i = s.i + 1;
+  }
+  string[] parts = [];
+  splitInfo(open.info, parts);
+  string? lang = null;
+  string? meta = null;
+  if (parts[0].length > 0) {
+    lang = parts[0];
+  }
+  if (parts[1].length > 0) {
+    meta = parts[1];
+  }
+  return nodeCode(lang, meta, joinLines(body));
+}
+
+JsValue parseIndented(Src s) {
+  string[] body = [];
+  while (!done(s)) {
+    string line = cur(s);
+    if (isBlank(line)) {
+      body.push("");
+      s.i = s.i + 1;
+      continue;
+    }
+    if (indentCols(line) < 4) {
+      break;
+    }
+    body.push(stripCols(line, 4));
+    s.i = s.i + 1;
+  }
+  int end = body.length - 1;
+  while (end >= 0 && isBlank(body[end])) {
+    end = end - 1;
+  }
+  string[] kept = [];
+  int i = 0;
+  while (i <= end) {
+    kept.push(body[i]);
+    i = i + 1;
+  }
+  return nodeCode(null, null, joinLines(kept));
+}
+
+JsValue parseHeading(Src s) {
+  Atx a = parseAtx(cur(s));
+  s.i = s.i + 1;
+  return nodeHeading(a.depth, inlines(s, a.text));
+}
+
+JsValue parseQuote(Src s) {
+  string[] inner = [];
+  while (!done(s)) {
+    string line = cur(s);
+    if (isQuoteLine(line)) {
+      inner.push(stripQuote(line));
+      s.i = s.i + 1;
+      continue;
+    }
+    if (isBlank(line)) {
+      break;
+    }
+    if (interruptsPara(line, s.opt)) {
+      break;
+    }
+    inner.push(line);
+    s.i = s.i + 1;
+  }
+  return nodeQuote(parseChunk(inner, s.opt, s.defs));
+}
+
+bool isTaskPrefix(string rest) {
+  if (rest.length < 3) {
+    return false;
+  }
+  if (rest.charAt(0) != "[") {
+    return false;
+  }
+  string mid = rest.charAt(1);
+  if (mid != " " && mid != "x" && mid != "X") {
+    return false;
+  }
+  if (rest.charAt(2) != "]") {
+    return false;
+  }
+  if (rest.length == 3) {
+    return true;
+  }
+  return isSpaceTab(rest.charCodeAt(3));
+}
+
+JsValue parseList(Src s) {
+  Marker first = parseMarker(cur(s));
+  JsValue items = kids();
+  bool spread = false;
+  bool sawItem = false;
+  while (!done(s)) {
+    Marker m = parseMarker(cur(s));
+    if (!m.ok || m.kind != first.kind || m.ordered != first.ordered) {
+      break;
+    }
+    if (m.indent > first.indent + 3) {
+      break;
+    }
+    if (sawItem) {
+      spread = true;
+    }
+    s.i = s.i + 1;
+    bool task = false;
+    bool checked = false;
+    string rest = m.rest;
+    if (s.opt.gfm && isTaskPrefix(rest)) {
+      task = true;
+      checked = rest.charAt(1) != " ";
+      if (rest.length > 3 && isSpaceTab(rest.charCodeAt(3))) {
+        rest = rest.slice(4);
+      } else {
+        rest = rest.slice(3);
+      }
+    }
+    string[] content = [];
+    if (rest.length > 0 || !isBlank(rest)) {
+      content.push(rest);
+    }
+    bool itemBlank = false;
+    bool hadInnerBlank = false;
+    while (!done(s)) {
+      string line = cur(s);
+      if (isBlank(line)) {
+        itemBlank = true;
+        s.i = s.i + 1;
+        continue;
+      }
+      int cols = indentCols(line);
+      Marker next = parseMarker(line);
+      if (next.ok && next.indent < m.after && next.indent <= first.indent + 3) {
+        break;
+      }
+      if (cols >= m.after) {
+        if (itemBlank) {
+          hadInnerBlank = true;
+          content.push("");
+        }
+        content.push(stripCols(line, m.after));
+        itemBlank = false;
+        s.i = s.i + 1;
+        continue;
+      }
+      if (!itemBlank && !interruptsPara(line, s.opt)) {
+        content.push(line);
+        s.i = s.i + 1;
+        continue;
+      }
+      break;
+    }
+    if (itemBlank) {
+      spread = true;
+    }
+    JsValue children = parseChunk(content, s.opt, s.defs);
+    add(items, nodeItem(hadInnerBlank, task, checked, children));
+    if (hadInnerBlank) {
+      spread = true;
+    }
+    sawItem = false;
+    if (!done(s) && isBlank(cur(s))) {
+      int look = s.i;
+      while (look < s.lines.length && isBlank(s.lines[look])) {
+        look = look + 1;
+      }
+      if (look < s.lines.length) {
+        Marker more = parseMarker(s.lines[look]);
+        if (more.ok && more.kind == first.kind && more.ordered == first.ordered && more.indent <= first.indent + 3) {
+          sawItem = true;
+          s.i = look;
+        }
+      }
+    }
+  }
+  return nodeList(first.ordered, first.start, spread, items);
+}
+
+string? alignOf(string cell) {
+  string t = cell.trim();
+  bool left = t.startsWith(":");
+  bool right = t.endsWith(":");
+  string mid = t;
+  if (left) {
+    mid = mid.slice(1);
+  }
+  if (right && mid.length > 0) {
+    mid = mid.slice(0, mid.length - 1);
+  }
+  int i = 0;
+  while (i < mid.length) {
+    string ch = mid.charAt(i);
+    if (ch != "-" && !isSpaceTab(ch.charCodeAt(0))) {
+      return "";
+    }
+    i = i + 1;
+  }
+  if (mid.indexOf("-") < 0) {
+    return "";
+  }
+  if (left && right) {
+    return "center";
+  }
+  if (left) {
+    return "left";
+  }
+  if (right) {
+    return "right";
+  }
+  return null;
+}
+
+bool isDelimRow(string line) {
+  if (line.indexOf("|") < 0 && line.indexOf("-") < 0) {
+    return false;
+  }
+  string[] cells = splitPipes(line);
+  if (cells.length == 0) {
+    return false;
+  }
+  int i = 0;
+  while (i < cells.length) {
+    string? a = alignOf(cells[i]);
+    if (a != null && a.length == 0) {
+      return false;
+    }
+    if (a == null) {
+      string t = cells[i].trim();
+      if (t.indexOf("-") < 0) {
+        return false;
+      }
+    }
+    i = i + 1;
+  }
+  return true;
+}
+
+JsValue makeRow(Src s, string[] cells, int width) {
+  JsValue row = kids();
+  int i = 0;
+  while (i < width) {
+    string text = "";
+    if (i < cells.length) {
+      text = cells[i];
+    }
+    add(row, nodeTableCell(inlines(s, text)));
+    i = i + 1;
+  }
+  return nodeTableRow(row);
+}
+
+JsValue parseTable(Src s) {
+  string headerLine = cur(s);
+  s.i = s.i + 1;
+  string delimLine = cur(s);
+  s.i = s.i + 1;
+  string[] headers = splitPipes(headerLine);
+  string[] delims = splitPipes(delimLine);
+  int width = headers.length;
+  if (delims.length < width) {
+    width = delims.length;
+  }
+  JsValue align = kids();
+  int i = 0;
+  while (i < width) {
+    string? a = null;
+    if (i < delims.length) {
+      a = alignOf(delims[i]);
+      if (a != null && a.length == 0) {
+        a = null;
+      }
+    }
+    add(align, a);
+    i = i + 1;
+  }
+  JsValue rows = kids();
+  add(rows, makeRow(s, headers, width));
+  while (!done(s) && !isBlank(cur(s))) {
+    string line = cur(s);
+    if (interruptsPara(line, s.opt) && line.indexOf("|") < 0) {
+      break;
+    }
+    add(rows, makeRow(s, splitPipes(line), width));
+    s.i = s.i + 1;
+  }
+  return nodeTable(align, rows);
+}
+
+JsValue parseHtml(Src s) {
+  string first = cur(s);
+  string kind = htmlKind(first);
+  string[] body = [];
+  body.push(first);
+  s.i = s.i + 1;
+  bool closed = htmlClosesOnLine(first, kind);
+  if (kind == "block") {
+    while (!done(s) && !isBlank(cur(s))) {
+      body.push(cur(s));
+      s.i = s.i + 1;
+    }
+  } else {
+    while (!done(s) && !closed) {
+      string line = cur(s);
+      body.push(line);
+      s.i = s.i + 1;
+      if (htmlClosesOnLine(line, kind)) {
+        closed = true;
+      }
+    }
+  }
+  string raw = joinLines(body);
+  if (s.opt.allowDangerousHtml) {
+    return nodeHtml(raw);
+  }
+  return nodeParagraph(inlines(s, raw));
+}
+
+JsValue parseMath(Src s) {
+  string first = cur(s).trim();
+  s.i = s.i + 1;
+  if (first.startsWith("$$") && first.endsWith("$$") && first.length >= 4) {
+    return nodeMath(first.slice(2, first.length - 2));
+  }
+  string[] body = [];
+  while (!done(s)) {
+    string line = cur(s);
+    s.i = s.i + 1;
+    if (line.trim() == "$$") {
+      break;
+    }
+    body.push(line);
+  }
+  return nodeMath(joinLines(body));
+}
+
+JsValue parseDefNode(Src s) {
+  DefScan d = parseDefAt(s.lines, s.i);
+  s.i = s.i + d.used;
+  string? title = null;
+  if (d.title.length > 0) {
+    title = d.title;
+  }
+  return nodeDefinition(normId(d.label), d.label, d.url, title);
+}
+
+JsValue parseParagraph(Src s) {
+  string[] lines = [];
+  lines.push(cur(s));
+  s.i = s.i + 1;
+  while (!done(s)) {
+    string line = cur(s);
+    int depth = setextDepth(line);
+    if (depth > 0 && !isThematic(line)) {
+      s.i = s.i + 1;
+      return nodeHeading(depth, inlines(s, joinLines(lines).trim()));
+    }
+    if (depth > 0 && isThematic(line) && lines.length > 0) {
+      if (setextDepth(line) == 2) {
+        s.i = s.i + 1;
+        return nodeHeading(2, inlines(s, joinLines(lines).trim()));
+      }
+    }
+    if (interruptsPara(line, s.opt)) {
+      break;
+    }
+    if (s.opt.gfm && s.i + 1 < s.lines.length && isDelimRow(s.lines[s.i + 1]) && line.indexOf("|") >= 0) {
+      break;
+    }
+    lines.push(line);
+    s.i = s.i + 1;
+  }
+  return nodeParagraph(inlines(s, joinLines(lines)));
+}
+
+JsValue parseOne(Src s) {
+  string line = cur(s);
+  if (isBlank(line)) {
+    s.i = s.i + 1;
+    return JS.undefined();
+  }
+  if (parseAtx(line).ok) {
+    return parseHeading(s);
+  }
+  if (isThematic(line)) {
+    s.i = s.i + 1;
+    return nodeThematic();
+  }
+  if (isFenceStart(line)) {
+    return parseFenced(s);
+  }
+  if (isMathOpen(line, s.opt)) {
+    return parseMath(s);
+  }
+  if (isQuoteLine(line)) {
+    return parseQuote(s);
+  }
+  if (isListLine(line)) {
+    return parseList(s);
+  }
+  if (s.opt.gfm && s.i + 1 < s.lines.length && line.indexOf("|") >= 0 && isDelimRow(s.lines[s.i + 1])) {
+    return parseTable(s);
+  }
+  DefScan def = parseDefAt(s.lines, s.i);
+  if (def.ok) {
+    return parseDefNode(s);
+  }
+  if (isHtmlBlock(line)) {
+    return parseHtml(s);
+  }
+  if (indentCols(line) >= 4) {
+    return parseIndented(s);
+  }
+  return parseParagraph(s);
+}
+
+JsValue parseBlocks(Src s) {
+  JsValue children = kids();
+  while (!done(s)) {
+    JsValue node = parseOne(s);
+    if (!(JS.isUndefined(node) || JS.isNullish(node))) {
+      add(children, node);
+    }
+  }
+  return children;
+}
+
+export JsValue parseMarkdown(string value, Opts opt) {
+  string src = normalizeNewlines(value);
+  string[] lines = splitLines(src);
+  Map<string, DefRec> defs = new Map<string, DefRec>();
+  collectDefs(lines, defs);
+  Src s = new Src(lines, opt, defs);
+  return nodeRoot(parseBlocks(s));
+}
