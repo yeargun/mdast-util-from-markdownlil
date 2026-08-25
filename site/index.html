@@ -3,56 +3,201 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="mdast-util-from-markdown reimplemented in LilScript. 660 official CommonMark + GFM cases parse to a <code>root</code> tree." />
-    <title>@itslil/mdast-util-from-markdown — LilScript lab</title>
+    <meta name="description" content="@itslil/mdast-util-from-markdown is mdast-util-from-markdown@2.0.3 rewritten in LilScript. Size is versus the official runtime graph minified by Terser and esbuild." />
+    <meta name="theme-color" content="#c9a227" />
+    <title>itslil/mdast-util-from-markdown — mdast-util-from-markdown@2.0.3 through LilScript</title>
     
     <link rel="stylesheet" href="./styles.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
+    <div class="progress" aria-hidden="true"></div>
     <header class="nav shell">
-      <a class="wordmark" href="#top">
+      <a class="wordmark" href="#top" aria-label="itslil/mdast-util-from-markdown home">
         <span class="mark">md</span>
-        <span>@itslil/mdast-util-from-markdown</span>
+        <span>itslil/mdast-util-from-markdown</span>
       </a>
-      <nav>
-        <a href="#lab">lab</a>
-        <a href="https://www.npmjs.com/package/@itslil/mdast-util-from-markdown">npm</a>
-        <a href="https://github.com/yeargun/mdast-util-from-markdownlil">GitHub</a>
+      <nav aria-label="Main navigation">
+        
+        <a href="#performance">performance</a>
+        <a href="#lab">playground</a>
+        <a href="#evidence">size</a>
+        <a href="https://github.com/yeargun/mdast-util-from-markdownlil">GitHub ↗</a>
       </nav>
     </header>
     <main id="top">
       <section class="hero shell">
-        <p class="eyebrow">@itslil/mdast-util-from-markdown · LilScript · zero runtime deps</p>
-        <h1>Markdown,<br />to mdast.</h1>
-        <p class="lede">mdast-util-from-markdown reimplemented in LilScript. 660 official CommonMark + GFM cases parse to a <code>root</code> tree.</p>
-        <div class="install-row">
-          <code>npm install @itslil/mdast-util-from-markdown</code>
-          <button class="copy" type="button" data-copy="npm install @itslil/mdast-util-from-markdown">copy</button>
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="live-dot"></span> mdast-util-from-markdown@2.0.3 · LilScript port · @itslil/mdast-util-from-markdown</p>
+          <h1>Markdown,<br /><em>to mdast</em></h1>
+          <p class="lede">This is not mdast-util-from-markdown. It is a LilScript md→mdast compiler. 660 official cases parse to a <code>root</code>. Official rows are the published package plus micromark, then Terser and esbuild.</p>
+          <div class="install-row">
+            <code>npm install @itslil/mdast-util-from-markdown</code>
+            <button class="copy" data-copy="npm install @itslil/mdast-util-from-markdown" type="button">copy</button>
+          </div>
+          <div class="hero-actions">
+            <a class="button primary" href="#performance">Numbers</a>
+            <a class="button secondary" href="https://www.npmjs.com/package/@itslil/mdast-util-from-markdown">npm ↗</a>
+          </div>
+        </div>
+        <div class="scoreboard" aria-label="Compression and performance results">
+          <div class="score-main">
+            <span class="score-label">Bytes over the wire, Brotli-11, against Terser of the official runtime graph</span>
+            <strong id="hero-ratio">—<span>smaller</span></strong>
+            <p id="hero-bytes"></p>
+          </div>
+          <div class="score-grid">
+            <div><strong id="hero-shipped">—</strong><span>Brotli-11 you ship, vs Terser</span></div>
+            <div><strong id="hero-gzip">—</strong><span>gzip-9 vs Terser</span></div>
+            <div><strong id="hero-raw">—</strong><span>raw vs Terser</span></div>
+            <div><strong id="hero-spec">—</strong><span>corpus roots</span></div>
+          </div>
+          <p class="score-note">
+            Official rows are one esbuild bundle of <code>mdast-util-from-markdown@2.0.3</code> plus the packages it needs at runtime, then Terser or esbuild.
+            LilScript is not post-minified. The npm file is the Brotli-scored compile. Closed LilScript is the same source with <code>extern_fields = false</code>.
+          </p>
         </div>
       </section>
-      <section class="ticker" aria-label="Features">
-        <div>mdast<span>✦</span>gfm<span>✦</span>tables<span>✦</span>task lists<span>✦</span>definitions<span>✦</span>tree-shake</div>
+      <section class="ticker" aria-label="Supported features">
+        <div>mdast <span>✦</span> gfm <span>✦</span> tables <span>✦</span> task lists <span>✦</span> definitions <span>✦</span> tree-shake</div>
+      </section>
+      <section class="performance shell" id="performance">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Measured in Node</p>
+            <h2>Same work,<br />two runtimes.</h2>
+          </div>
+          <p>
+            Not Playwright — Node v22.21.1 on this machine, quiet median after warmup.
+            Race 10× in the playground for a browser number. The 660-case corpus is checksummed before any size row is a claim.
+          </p>
+        </div>
+        <div class="perf-cards" id="perf-cards"></div>
+        <div class="table-wrap light">
+          <table>
+            <thead>
+              <tr>
+                <th>Lane</th>
+                <th>median</th>
+                <th>vs official</th>
+              </tr>
+            </thead>
+            <tbody id="perf-body"></tbody>
+          </table>
+        </div>
+        <p class="perf-note" id="perf-note"></p>
       </section>
       <section class="lab shell" id="lab">
-        <h2>Live lab</h2>
-        <p class="section-lead">This page loads the compiled ESM from this repo. Library lane keeps host-visible keys. Closed lane is <code>dist/*.closed.js</code>.</p>
-        <div class="samples" id="samples"></div>
-        <div class="toggles" id="toggles"></div>
-        
-        <div class="play-grid">
-          <textarea id="input" spellcheck="false" aria-label="Input"></textarea>
+        <div class="section-heading">
           <div>
-            <div id="preview" class="preview" hidden></div>
-            <iframe id="frame" title="Rendered output" sandbox="allow-same-origin" hidden></iframe>
-            <pre id="output"></pre>
+            <p class="eyebrow">The compiled runtime, in the browser</p>
+            <h2>Live<br />lab.</h2>
           </div>
+          <p>
+            Left is the editor. Right is @itslil/mdast-util-from-markdown output, or the official mdast-util-from-markdown@2.0.3 graph when that lane is on.
+          </p>
+        </div>
+        <div class="playground">
+          <div class="play-toolbar">
+            <label>
+              <input type="radio" name="engine" value="lil" checked />
+              @itslil/mdast-util-from-markdown
+            </label>
+            <label>
+              <input type="radio" name="engine" value="official" />
+              official mdast-util-from-markdown@2.0.3
+            </label>
+            <button type="button" id="race">race 10×</button>
+            <span id="race-out"></span>
+          </div>
+          <div class="samples" id="samples"></div>
+          <div class="play-grid">
+            <textarea id="source" spellcheck="false" aria-label="Source"></textarea>
+            <div>
+              <iframe id="preview" title="Rendered output" sandbox="allow-same-origin"></iframe>
+              <pre id="output" hidden></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="evidence" id="evidence">
+        <div class="shell">
+          <div class="section-heading inverse">
+            <div>
+              <p class="eyebrow">The receipts</p>
+              <h2>Raw, gzip,<br />and Brotli.</h2>
+            </div>
+            <p>
+              Official mdast-util-from-markdown@2.0.3 bundled with its runtime graph, then Terser (mangle on/off) and esbuild minify.
+              LilScript is not post-minified. Closed LilScript is Brotli with <code>extern_fields = false</code>.
+            </p>
+          </div>
+          <div class="codec-block">
+            <h3>Brotli-11</h3>
+            <p class="codec-lead">The wire number. LilScript row is the npm file.</p>
+            <div class="total-bar" id="bar-brotli"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Lane</th><th>Brotli-11</th><th>vs Terser</th></tr></thead>
+                <tbody id="body-brotli"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="codec-block">
+            <h3>gzip-9</h3>
+            <p class="codec-lead">Same files, gzip-9.</p>
+            <div class="total-bar" id="bar-gzip"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Lane</th><th>gzip-9</th><th>vs Terser</th></tr></thead>
+                <tbody id="body-gzip"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="codec-block">
+            <h3>Raw</h3>
+            <p class="codec-lead">Uncompressed bytes.</p>
+            <div class="total-bar" id="bar-raw"></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Lane</th><th>Raw</th><th>vs Terser</th></tr></thead>
+                <tbody id="body-raw"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="codec-block">
+            <h3>All three</h3>
+            <p class="codec-lead">Every lane, measured three ways.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Lane</th><th>Raw</th><th>gzip-9</th><th>Brotli-11</th><th>Brotli vs Terser</th></tr></thead>
+                <tbody id="body-matched"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="method-note">
+            <p>
+              <strong>Why this surface.</strong> Comparing against a single published file would hide official dependencies.
+              The fair fight is the runtime graph you actually import, then the same minifiers the JS ecosystem ships.
+              Closed LilScript is the other honest comparison: no JavaScript options object, so those property names mangle.
+            </p>
+            <a href="https://github.com/yeargun/mdast-util-from-markdownlil">README ↗</a>
+          </div>
+        </div>
+      </section>
+      <section class="closing shell">
+        <p class="eyebrow">Zero runtime dependencies</p>
+        <h2>Install the<br />current port.</h2>
+        <div class="install-row large">
+          <code>npm install @itslil/mdast-util-from-markdown</code>
+          <button class="copy" data-copy="npm install @itslil/mdast-util-from-markdown" type="button">copy</button>
         </div>
       </section>
     </main>
     <footer class="shell">
-      <span>@itslil/mdast-util-from-markdown · MIT · LilScript reimplementation</span>
-      <a href="https://yeargun.github.io/mdast-util-from-markdownlil/">yeargun.github.io/mdast-util-from-markdownlil</a>
+      <span>@itslil/mdast-util-from-markdown · MIT</span>
+      <span>mdast-util-from-markdown@2.0.3, rewritten in LilScript — not the full official package</span>
+      <a href="https://github.com/yeargun/mdast-util-from-markdownlil">source ↗</a>
     </footer>
   </body>
 </html>

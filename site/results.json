@@ -1,0 +1,92 @@
+{
+  "pin": "mdast-util-from-markdown@2.0.3",
+  "package": "@itslil/mdast-util-from-markdown",
+  "file": "from-markdown",
+  "lilExport": "fromMarkdown",
+  "officialExport": "fromMarkdown",
+  "node": "v22.21.1",
+  "codec": "lilscript-codec gzip-9 / brotli-11",
+  "runtime": "Node v22.21.1",
+  "warmupDiscard": 3,
+  "comparison": "Official rows are an esbuild bundle of mdast-util-from-markdown@2.0.3 plus its runtime graph, then Terser or esbuild. LilScript is the compiled npm file. Closed is extern_fields=false.",
+  "spec": {
+    "total": 660,
+    "pass": 660,
+    "label": "corpus roots"
+  },
+  "play": {
+    "kind": "md-json",
+    "sample": "# Lab\n\nA [link](https://example.com \"t\") with **bold**, *em*, and `code`.\n\n- [x] tasks\n- item\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n\n```js\nconsole.log(1)\n```\n\n> quote\n\nhttps://yeargun.github.io/\n",
+    "samples": [
+      {
+        "label": "heading",
+        "value": "# Hello\n\nA paragraph with **bold**."
+      }
+    ]
+  },
+  "size": [
+    {
+      "id": "official",
+      "name": "Official mdast-util-from-markdown@2.0.3 graph",
+      "raw": 182161,
+      "gzip9": 36822,
+      "brotli11": 30953,
+      "note": "esbuild bundle of the published package plus runtime deps",
+      "diagnostic": false
+    },
+    {
+      "id": "official-terser-mangle",
+      "name": "Official · Terser mangle on",
+      "raw": 84154,
+      "gzip9": 26849,
+      "brotli11": 23151,
+      "note": "Terser compress of that graph, mangle: true",
+      "baseline": true
+    },
+    {
+      "id": "official-terser-nomangle",
+      "name": "Official · Terser mangle off",
+      "raw": 118623,
+      "gzip9": 30282,
+      "brotli11": 26196,
+      "note": "Terser compress of that graph, mangle: false"
+    },
+    {
+      "id": "official-esbuild",
+      "name": "Official · esbuild minify",
+      "raw": 92538,
+      "gzip9": 28038,
+      "brotli11": 24220,
+      "note": "esbuild minify of that graph"
+    },
+    {
+      "id": "itslil",
+      "name": "@itslil/mdast-util-from-markdown · library",
+      "raw": 34824,
+      "gzip9": 10535,
+      "brotli11": 9427,
+      "note": "LilScript js-module, extern_fields true. The npm ESM.",
+      "primary": true
+    },
+    {
+      "id": "itslil-closed",
+      "name": "@itslil/mdast-util-from-markdown · closed",
+      "raw": 34714,
+      "gzip9": 10462,
+      "brotli11": 9352,
+      "note": "Same source, extern_fields false"
+    }
+  ],
+  "throughput": [
+    {
+      "id": "official",
+      "name": "mdast-util-from-markdown@2.0.3",
+      "documentMs": 9.847999999999956
+    },
+    {
+      "id": "itslil",
+      "name": "@itslil/mdast-util-from-markdown",
+      "documentMs": 2.6662089999999807
+    }
+  ]
+}
