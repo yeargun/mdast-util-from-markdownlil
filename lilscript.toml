@@ -15,4 +15,4 @@ identifiers = true
 properties = true
 exports = false
 extern_fields = true
-pool_strings = true
+pool_strings = false

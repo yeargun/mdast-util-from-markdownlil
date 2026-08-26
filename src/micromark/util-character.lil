@@ -1,5 +1,4 @@
-import { fromCharCode1, isEof } from "./host.lil";
-import { cDel, cHorizontalTab, cNul, cSpace, cVirtualSpace, codeEq } from "./symbol/codes.lil";
+import { fromCharCode1 } from "./host.lil";
 
 Regex asciiAlphaRe = new Regex("[A-Za-z]", "");
 Regex asciiAlphanumericRe = new Regex("[\\dA-Za-z]", "");
@@ -11,23 +10,7 @@ Regex unicodePunctuationRe = new Regex("\\p{P}|\\p{S}", "u");
 Regex unicodeWhitespaceRe = new Regex("\\s", "");
 
 bool regexCode(Regex pattern, JsValue code) {
-  if (isEof(code)) {
-    return false;
-  }
-  if (code is float) {
-    if (code < 0.0) {
-      return false;
-    }
-    return pattern.test(fromCharCode1(code));
-  }
-  if (JS.typeOf(code) != "number") {
-    return false;
-  }
-  float n = JS.number(code);
-  if (n < 0.0) {
-    return false;
-  }
-  return pattern.test(fromCharCode1(code));
+  return JS.strictNotEqual(code, null) && JS.number(code) > -1.0 && pattern.test(fromCharCode1(code));
 }
 
 export bool asciiAlpha(JsValue code) {
@@ -43,18 +26,7 @@ export bool asciiAtext(JsValue code) {
 }
 
 export bool asciiControl(JsValue code) {
-  if (isEof(code)) {
-    return false;
-  }
-  if (code is float) {
-    int n = code.toInt();
-    return n < cSpace || n == cDel;
-  }
-  if (JS.typeOf(code) != "number") {
-    return false;
-  }
-  int n = JS.number(code).toInt();
-  return n < cSpace || n == cDel;
+  return JS.strictNotEqual(code, null) && (JS.number(code) < 32.0 || JS.strictEqual(code, 127));
 }
 
 export bool asciiDigit(JsValue code) {
@@ -70,35 +42,15 @@ export bool asciiPunctuation(JsValue code) {
 }
 
 export bool markdownLineEnding(JsValue code) {
-  if (isEof(code)) {
-    return false;
-  }
-  if (code is float) {
-    return code.toInt() < cHorizontalTab;
-  }
-  if (JS.typeOf(code) != "number") {
-    return false;
-  }
-  return JS.number(code).toInt() < cHorizontalTab;
+  return JS.strictNotEqual(code, null) && JS.number(code) < -2.0;
 }
 
 export bool markdownLineEndingOrSpace(JsValue code) {
-  if (isEof(code)) {
-    return false;
-  }
-  if (code is float) {
-    int n = code.toInt();
-    return n < cNul || n == cSpace;
-  }
-  if (JS.typeOf(code) != "number") {
-    return false;
-  }
-  int n = JS.number(code).toInt();
-  return n < cNul || n == cSpace;
+  return JS.strictNotEqual(code, null) && (JS.number(code) < 0.0 || JS.strictEqual(code, 32));
 }
 
 export bool markdownSpace(JsValue code) {
-  return codeEq(code, cHorizontalTab) || codeEq(code, cVirtualSpace) || codeEq(code, cSpace);
+  return JS.strictEqual(code, -2) || JS.strictEqual(code, -1) || JS.strictEqual(code, 32);
 }
 
 export bool unicodePunctuation(JsValue code) {

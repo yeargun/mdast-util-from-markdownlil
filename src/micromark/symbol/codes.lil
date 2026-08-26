@@ -199,13 +199,7 @@ export int cByteOrderMarker = 65279;
 export int cReplacementCharacter = 65533;
 
 export bool codeEq(JsValue code, int n) {
-  if (code is float) {
-    return code.toInt() == n;
-  }
-  if (JS.typeOf(code) != "number") {
-    return false;
-  }
-  return JS.number(code).toInt() == n;
+  return JS.strictEqual(code, n);
 }
 
 export int codeInt(JsValue code) {

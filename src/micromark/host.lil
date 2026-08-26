@@ -258,13 +258,13 @@ export float mathTrunc(float value) {
 }
 
 export JsValue copyPoint(JsValue point) {
-  JsValue next = JS.object();
-  JS.set(next, "_bufferIndex", JS.get(point, "_bufferIndex"));
-  JS.set(next, "_index", JS.get(point, "_index"));
-  JS.set(next, "line", JS.get(point, "line"));
-  JS.set(next, "column", JS.get(point, "column"));
-  JS.set(next, "offset", JS.get(point, "offset"));
-  return next;
+  return JS.object(
+    "_bufferIndex", JS.get(point, "_bufferIndex"),
+    "_index", JS.get(point, "_index"),
+    "line", JS.get(point, "line"),
+    "column", JS.get(point, "column"),
+    "offset", JS.get(point, "offset")
+  );
 }
 
 export JsValue eventEnter(JsValue token, JsValue context) {
@@ -389,16 +389,11 @@ export JsValue replaceFn(JsValue value, Regex pattern, JsValue replacer) {
 }
 
 export JsValue makeConstruct(JsValue tokenize) {
-  JsValue c = JS.object();
-  JS.set(c, "tokenize", tokenize);
-  return c;
+  return JS.object("tokenize", tokenize);
 }
 
 export JsValue makeNamedConstruct(string name, JsValue tokenize) {
-  JsValue c = JS.object();
-  JS.set(c, "name", name);
-  JS.set(c, "tokenize", tokenize);
-  return c;
+  return JS.object("name", name, "tokenize", tokenize);
 }
 
 export void setCodeKey(JsValue map, int code, JsValue value) {
