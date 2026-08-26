@@ -1,0 +1,55 @@
+import { arrLen, hasOwn, isNullish, jsString, objGet, optionOrEmpty } from "./micromark/host.lil";
+
+JsValue walkOne = JS.undefined();
+
+string walkAll(JsValue values, JsValue includeImageAlt, JsValue includeHtml) {
+  string out = "";
+  int index = 0;
+  int n = arrLen(values);
+  while (index < n) {
+    out = out + jsString(JS.call(walkOne, JS.undefined(), values[index], includeImageAlt, includeHtml));
+    index = index + 1;
+  }
+  return out;
+}
+
+JsValue initWalk() {
+  walkOne = JS.method3((JsValue _self, JsValue value, JsValue includeImageAlt, JsValue includeHtml) => {
+    if (value.truthy() && JS.typeOf(value) == "object") {
+      if (hasOwn(value, "value")) {
+        if (jsString(objGet(value, "type")) == "html" && !includeHtml.truthy()) {
+          return "";
+        }
+        return objGet(value, "value");
+      }
+      if (includeImageAlt.truthy() && hasOwn(value, "alt") && objGet(value, "alt").truthy()) {
+        return objGet(value, "alt");
+      }
+      if (hasOwn(value, "children")) {
+        return walkAll(objGet(value, "children"), includeImageAlt, includeHtml);
+      }
+    }
+    if (!isNullish(value) && value.isArray()) {
+      return walkAll(value, includeImageAlt, includeHtml);
+    }
+    return "";
+  });
+  return walkOne;
+}
+
+JsValue walker = initWalk();
+
+export string mdastToString(JsValue value, JsValue options) {
+  JsValue settings = optionOrEmpty(options);
+  JsValue includeImageAlt = true;
+  JsValue includeHtml = true;
+  JsValue rawAlt = objGet(settings, "includeImageAlt");
+  JsValue rawHtml = objGet(settings, "includeHtml");
+  if (JS.typeOf(rawAlt) == "boolean") {
+    includeImageAlt = rawAlt;
+  }
+  if (JS.typeOf(rawHtml) == "boolean") {
+    includeHtml = rawHtml;
+  }
+  return jsString(JS.call(walker, JS.undefined(), value, includeImageAlt, includeHtml));
+}

@@ -1,0 +1,84 @@
+import { call1, call2, objGet } from "./host.lil";
+import { factorySpace } from "./factory-space.lil";
+import { markdownLineEnding } from "./util-character.lil";
+import { cApostrophe, cBackslash, cLeftParenthesis, cQuotationMark, cRightParenthesis, codeEq } from "./symbol/codes.lil";
+import { isEof } from "./host.lil";
+import { kContentTypeString } from "./symbol/constants.lil";
+import { tChunkString, tLineEnding, tLinePrefix } from "./symbol/types.lil";
+
+export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue typ, JsValue markerType, JsValue stringType) {
+  JsValue st = JS.object();
+
+  JsValue escape = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker") || codeEq(code, cBackslash)) {
+      call1(objGet(effects, "consume"), effects, code);
+      return objGet(st, "inside");
+    }
+    return call1(objGet(st, "inside"), JS.undefined(), code);
+  });
+
+  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker") || isEof(code) || markdownLineEnding(code)) {
+      call1(objGet(effects, "exit"), effects, tChunkString);
+      return call1(objGet(st, "atBreak"), JS.undefined(), code);
+    }
+    call1(objGet(effects, "consume"), effects, code);
+    if (codeEq(code, cBackslash)) {
+      return escape;
+    }
+    return inside;
+  });
+
+  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker")) {
+      call1(objGet(effects, "exit"), effects, stringType);
+      return call1(objGet(st, "begin"), JS.undefined(), objGet(st, "marker"));
+    }
+    if (isEof(code)) {
+      return call1(nok, JS.undefined(), code);
+    }
+    if (markdownLineEnding(code)) {
+      call1(objGet(effects, "enter"), effects, tLineEnding);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tLineEnding);
+      return factorySpace(effects, atBreak, tLinePrefix, JS.undefined());
+    }
+    JsValue fields = JS.object();
+    JS.set(fields, "contentType", kContentTypeString);
+    call2(objGet(effects, "enter"), effects, tChunkString, fields);
+    return call1(inside, JS.undefined(), code);
+  });
+
+  JsValue begin = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker")) {
+      call1(objGet(effects, "enter"), effects, markerType);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, markerType);
+      call1(objGet(effects, "exit"), effects, typ);
+      return ok;
+    }
+    call1(objGet(effects, "enter"), effects, stringType);
+    return call1(atBreak, JS.undefined(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLeftParenthesis)) {
+      call1(objGet(effects, "enter"), effects, typ);
+      call1(objGet(effects, "enter"), effects, markerType);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, markerType);
+      if (codeEq(code, cLeftParenthesis)) {
+        JS.set(st, "marker", cRightParenthesis);
+      } else {
+        JS.set(st, "marker", code);
+      }
+      return begin;
+    }
+    return call1(nok, JS.undefined(), code);
+  });
+
+  JS.set(st, "inside", inside);
+  JS.set(st, "atBreak", atBreak);
+  JS.set(st, "begin", begin);
+  return start;
+}

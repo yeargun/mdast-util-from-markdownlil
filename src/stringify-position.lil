@@ -1,0 +1,38 @@
+import { hasOwn, isNullish, jsString, objGet } from "./micromark/host.lil";
+
+string indexPart(JsValue value) {
+  if (value.truthy() && JS.typeOf(value) == "number") {
+    return jsString(value);
+  }
+  return "1";
+}
+
+string pointPart(JsValue pt) {
+  if (isNullish(pt)) {
+    return indexPart(JS.undefined()) + ":" + indexPart(JS.undefined());
+  }
+  return indexPart(objGet(pt, "line")) + ":" + indexPart(objGet(pt, "column"));
+}
+
+string positionPart(JsValue pos) {
+  if (isNullish(pos)) {
+    return pointPart(JS.undefined()) + "-" + pointPart(JS.undefined());
+  }
+  return pointPart(objGet(pos, "start")) + "-" + pointPart(objGet(pos, "end"));
+}
+
+export string stringifyPosition(JsValue value) {
+  if (!value.truthy() || JS.typeOf(value) != "object") {
+    return "";
+  }
+  if (hasOwn(value, "position") || hasOwn(value, "type")) {
+    return positionPart(objGet(value, "position"));
+  }
+  if (hasOwn(value, "start") || hasOwn(value, "end")) {
+    return positionPart(value);
+  }
+  if (hasOwn(value, "line") || hasOwn(value, "column")) {
+    return pointPart(value);
+  }
+  return "";
+}

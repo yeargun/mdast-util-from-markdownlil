@@ -1,0 +1,406 @@
+extern JsValue Object;
+extern JsValue String;
+extern JsValue Number;
+extern JsValue Array;
+extern JsValue Error;
+extern JsValue Math;
+extern JsValue TextDecoder;
+extern JsValue encodeURIComponent;
+
+export JsValue ObjectRef = Object;
+export JsValue NumberRef = Number;
+export JsValue MathRef = Math;
+export JsValue ErrorRef = Error;
+
+export JsValue codeEof = null;
+
+export JsValue undef() {
+  return JS.undefined();
+}
+
+export bool isUndef(JsValue value) {
+  return JS.isUndefined(value);
+}
+
+export bool isNull(JsValue value) {
+  return JS.isNullish(value) && !JS.isUndefined(value);
+}
+
+export bool isNullish(JsValue value) {
+  return JS.isUndefined(value) || JS.isNullish(value);
+}
+
+export bool isEof(JsValue code) {
+  return isNull(code);
+}
+
+export bool isFn(JsValue value) {
+  return JS.typeOf(value) == "function";
+}
+
+export bool isStr(JsValue value) {
+  return value is string;
+}
+
+export bool isNum(JsValue value) {
+  return JS.typeOf(value) == "number";
+}
+
+export bool isObj(JsValue value) {
+  return !isNullish(value) && JS.typeOf(value) == "object";
+}
+
+export string jsString(JsValue value) {
+  if (value is string) {
+    return value;
+  }
+  if (JS.isUndefined(value)) {
+    return "undefined";
+  }
+  if (JS.isNullish(value)) {
+    return "null";
+  }
+  return JS.string(JS.call(String, undef(), value));
+}
+
+export float jsNum(JsValue value) {
+  return JS.number(value);
+}
+
+export int jsInt(JsValue value) {
+  return JS.number(value).toInt();
+}
+
+export int arrLen(JsValue list) {
+  if (isNullish(list)) {
+    return 0;
+  }
+  return JS.number(JS.get(list, "length")).toInt();
+}
+
+export JsValue arrGet(JsValue list, int index) {
+  return list[index];
+}
+
+export void arrSet(JsValue list, int index, JsValue value) {
+  list[index] = value;
+}
+
+export JsValue objGet(JsValue obj, string key) {
+  return JS.get(obj, key);
+}
+
+export void objSet(JsValue obj, string key, JsValue value) {
+  JS.set(obj, key, value);
+}
+
+export JsValue objGetVal(JsValue obj, JsValue key) {
+  if (key is string) {
+    return JS.get(obj, key);
+  }
+  if (isNull(key)) {
+    return JS.get(obj, "null");
+  }
+  return JS.get(obj, JS.string(key));
+}
+
+export void objSetVal(JsValue obj, JsValue key, JsValue value) {
+  if (key is string) {
+    JS.set(obj, key, value);
+    return;
+  }
+  if (isNull(key)) {
+    JS.set(obj, "null", value);
+    return;
+  }
+  JS.set(obj, JS.string(key), value);
+}
+
+export bool hasOwn(JsValue obj, JsValue key) {
+  if (isNullish(obj)) {
+    return false;
+  }
+  return JS.call(JS.get(JS.get(Object, "prototype"), "hasOwnProperty"), obj, key).truthy();
+}
+
+export bool hasOwnStr(JsValue obj, string key) {
+  return hasOwn(obj, key);
+}
+
+export bool hasKey(JsValue obj, JsValue key) {
+  if (isNullish(obj)) {
+    return false;
+  }
+  return hasOwn(obj, key);
+}
+
+export JsValue call0(JsValue fn, JsValue self) {
+  return JS.call(fn, self);
+}
+
+export JsValue call1(JsValue fn, JsValue self, JsValue a) {
+  return JS.call(fn, self, a);
+}
+
+export JsValue call2(JsValue fn, JsValue self, JsValue a, JsValue b) {
+  return JS.call(fn, self, a, b);
+}
+
+export JsValue call3(JsValue fn, JsValue self, JsValue a, JsValue b, JsValue c) {
+  return JS.call(fn, self, a, b, c);
+}
+
+export JsValue invoke0(JsValue obj, string name) {
+  return JS.call(JS.get(obj, name), obj);
+}
+
+export JsValue invoke1(JsValue obj, string name, JsValue a) {
+  return JS.call(JS.get(obj, name), obj, a);
+}
+
+export JsValue invoke2(JsValue obj, string name, JsValue a, JsValue b) {
+  return JS.call(JS.get(obj, name), obj, a, b);
+}
+
+export JsValue invoke3(JsValue obj, string name, JsValue a, JsValue b, JsValue c) {
+  return JS.call(JS.get(obj, name), obj, a, b, c);
+}
+
+export JsValue apply(JsValue fn, JsValue self, JsValue args) {
+  return JS.call(JS.get(fn, "apply"), fn, self, args);
+}
+
+export void push(JsValue list, JsValue item) {
+  JS.call(JS.get(list, "push"), list, item);
+}
+
+export JsValue pop(JsValue list) {
+  return JS.call(JS.get(list, "pop"), list);
+}
+
+export JsValue shift(JsValue list) {
+  return JS.call(JS.get(list, "shift"), list);
+}
+
+export void unshift(JsValue list, JsValue item) {
+  JS.call(JS.get(list, "unshift"), list, item);
+}
+
+export JsValue slice1(JsValue list, JsValue start) {
+  return JS.call(JS.get(list, "slice"), list, start);
+}
+
+export JsValue slice2(JsValue list, JsValue start, JsValue end) {
+  return JS.call(JS.get(list, "slice"), list, start, end);
+}
+
+export JsValue splice2(JsValue list, JsValue start, JsValue remove) {
+  return JS.call(JS.get(list, "splice"), list, start, remove);
+}
+
+export JsValue arrayFrom(JsValue items) {
+  return JS.call(JS.get(Array, "from"), Array, items);
+}
+
+export JsValue objectAssign(JsValue target, JsValue source) {
+  return JS.call(JS.get(Object, "assign"), Object, target, source);
+}
+
+export JsValue objectCreate(JsValue proto) {
+  return JS.call(JS.get(Object, "create"), Object, proto);
+}
+
+export JsValue objectKeys(JsValue obj) {
+  return JS.call(JS.get(Object, "keys"), Object, obj);
+}
+
+export bool includesVal(JsValue list, JsValue value) {
+  if (isNullish(list)) {
+    return false;
+  }
+  return JS.call(JS.get(list, "includes"), list, value).truthy();
+}
+
+export bool includesStr(JsValue list, string value) {
+  return includesVal(list, value);
+}
+
+export string fromCharCode1(JsValue code) {
+  return jsString(JS.call(JS.get(String, "fromCharCode"), String, code));
+}
+
+export string fromCharCode2(JsValue a, JsValue b) {
+  return jsString(JS.call(JS.get(String, "fromCharCode"), String, a, b));
+}
+
+export string fromCodePoint(JsValue code) {
+  return jsString(JS.call(JS.get(String, "fromCodePoint"), String, code));
+}
+
+export float parseIntBase(string value, int base) {
+  return JS.number(JS.call(JS.get(Number, "parseInt"), Number, value, base));
+}
+
+export float mathMin(float a, float b) {
+  return JS.number(JS.call(JS.get(Math, "min"), Math, a, b));
+}
+
+export float mathMax(float a, float b) {
+  return JS.number(JS.call(JS.get(Math, "max"), Math, a, b));
+}
+
+export float mathCeil(float value) {
+  return JS.number(JS.call(JS.get(Math, "ceil"), Math, value));
+}
+
+export float mathTrunc(float value) {
+  return JS.number(JS.call(JS.get(Math, "trunc"), Math, value));
+}
+
+export JsValue copyPoint(JsValue point) {
+  JsValue next = JS.object();
+  JS.set(next, "_bufferIndex", JS.get(point, "_bufferIndex"));
+  JS.set(next, "_index", JS.get(point, "_index"));
+  JS.set(next, "line", JS.get(point, "line"));
+  JS.set(next, "column", JS.get(point, "column"));
+  JS.set(next, "offset", JS.get(point, "offset"));
+  return next;
+}
+
+export JsValue eventEnter(JsValue token, JsValue context) {
+  JsValue ev = JS.array();
+  push(ev, "enter");
+  push(ev, token);
+  push(ev, context);
+  return ev;
+}
+
+export JsValue eventExit(JsValue token, JsValue context) {
+  JsValue ev = JS.array();
+  push(ev, "exit");
+  push(ev, token);
+  push(ev, context);
+  return ev;
+}
+
+export string eventKind(JsValue ev) {
+  return jsString(ev[0]);
+}
+
+export JsValue eventToken(JsValue ev) {
+  return ev[1];
+}
+
+export JsValue eventContext(JsValue ev) {
+  return ev[2];
+}
+
+export string tokenType(JsValue token) {
+  return jsString(JS.get(token, "type"));
+}
+
+export void setTokenType(JsValue token, string typ) {
+  JS.set(token, "type", typ);
+}
+
+export JsValue optionOrEmpty(JsValue options) {
+  if (isNullish(options)) {
+    return JS.object();
+  }
+  return options;
+}
+
+export bool optionFlag(JsValue opt, string key) {
+  if (isNullish(opt)) {
+    return false;
+  }
+  return JS.get(opt, key).truthy();
+}
+
+export JsValue optionVal(JsValue opt, string key) {
+  if (isNullish(opt)) {
+    return undef();
+  }
+  return JS.get(opt, key);
+}
+
+export string decodeBytes(JsValue value, JsValue encoding) {
+  if (value is string) {
+    return value;
+  }
+  JsValue enc = encoding;
+  if (isNullish(enc)) {
+    enc = undef();
+  }
+  JsValue decoder = JS.construct(TextDecoder, enc);
+  return jsString(JS.call(JS.get(decoder, "decode"), decoder, value));
+}
+
+export void fail(string message) {
+  throw JS.construct(Error, message);
+}
+
+export JsValue toJs(string value) {
+  return value;
+}
+
+export JsValue toJsNum(int value) {
+  return value;
+}
+
+export JsValue toJsFloat(float value) {
+  return value;
+}
+
+export JsValue toJsBool(bool value) {
+  return value;
+}
+
+export bool jsTruthy(JsValue value) {
+  return value.truthy();
+}
+
+export string encodeUriComp(string value) {
+  return jsString(JS.call(encodeURIComponent, undef(), value));
+}
+
+export JsValue regexExec(Regex pattern, string value) {
+  return pattern.exec(value);
+}
+
+export void setLastIndex(Regex pattern, float index) {
+  pattern.lastIndex = index;
+}
+
+export float getLastIndex(Regex pattern) {
+  return pattern.lastIndex;
+}
+
+export bool regexTest(Regex pattern, string value) {
+  return pattern.test(value);
+}
+
+export string replaceStr(string value, Regex pattern, string replacement) {
+  return value.replace(pattern, replacement);
+}
+
+export JsValue replaceFn(JsValue value, Regex pattern, JsValue replacer) {
+  return JS.call(JS.get(value, "replace"), value, pattern, replacer);
+}
+
+export JsValue makeConstruct(JsValue tokenize) {
+  JsValue c = JS.object();
+  JS.set(c, "tokenize", tokenize);
+  return c;
+}
+
+export JsValue makeNamedConstruct(string name, JsValue tokenize) {
+  JsValue c = JS.object();
+  JS.set(c, "name", name);
+  JS.set(c, "tokenize", tokenize);
+  return c;
+}
+
+export void setCodeKey(JsValue map, int code, JsValue value) {
+  JS.set(map, JS.string(code), value);
+}

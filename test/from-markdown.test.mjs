@@ -42,36 +42,35 @@ describe("fromMarkdown", () => {
     assert.equal(para.children[0].children[0].value, "hi")
   })
 
-  it("resolves reference links and images", () => {
+  it("keeps reference links and resource images", () => {
     const tree = fromMarkdown("[x][id]\n\n![y](https://img.test/a.png \"cap\")\n\n[id]: https://ok.com \"T\"")
-    assert.equal(tree.children[0].children[0].type, "link")
-    assert.equal(tree.children[0].children[0].url, "https://ok.com")
-    assert.equal(tree.children[0].children[0].title, "T")
+    assert.equal(tree.children[0].children[0].type, "linkReference")
+    assert.equal(tree.children[0].children[0].identifier, "id")
+    assert.equal(tree.children[0].children[0].referenceType, "full")
     assert.equal(tree.children[1].children[0].type, "image")
     assert.equal(tree.children[1].children[0].url, "https://img.test/a.png")
     assert.equal(tree.children[1].children[0].alt, "y")
     assert.equal(tree.children[2].type, "definition")
+    assert.equal(tree.children[2].url, "https://ok.com")
   })
 
-  it("parses gfm tables", () => {
-    const tree = fromMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |", { gfm: true })
-    assert.equal(tree.children[0].type, "table")
-    assert.equal(tree.children[0].children[0].type, "tableRow")
-    assert.equal(tree.children[0].children[0].children[0].type, "tableCell")
+  it("leaves GFM tables as text without extensions", () => {
+    const tree = fromMarkdown("| a | b |\n| --- | --- |\n| 1 | 2 |")
+    assert.equal(tree.children[0].type, "paragraph")
   })
 
-  it("parses task list items", () => {
-    const tree = fromMarkdown("- [ ] open\n- [x] done", { gfm: true })
+  it("leaves task markers as text without extensions", () => {
+    const tree = fromMarkdown("- [ ] open\n- [x] done")
     const list = tree.children[0]
     assert.equal(list.type, "list")
-    assert.equal(list.children[0].checked, false)
-    assert.equal(list.children[1].checked, true)
+    assert.equal(list.children[0].checked, null)
+    assert.equal(list.children[0].children[0].children[0].value.includes("[ ]"), true)
   })
 
-  it("parses strikethrough", () => {
-    const tree = fromMarkdown("~~gone~~", { gfm: true })
-    assert.equal(tree.children[0].children[0].type, "delete")
-    assert.equal(tree.children[0].children[0].children[0].value, "gone")
+  it("leaves strikethrough markers as text without extensions", () => {
+    const tree = fromMarkdown("~~gone~~")
+    assert.equal(tree.children[0].children[0].type, "text")
+    assert.equal(tree.children[0].children[0].value, "~~gone~~")
   })
 
   it("leaves dollar math as text for remark-math to split", () => {
@@ -96,11 +95,10 @@ describe("closed", () => {
 })
 
 describe("pins", () => {
-  it("keeps option keys in the library artifact", () => {
+  it("keeps host-visible keys in the library artifact", () => {
     const src = readFileSync(resolve(root, "dist/from-markdown.esm.js"), "utf8")
-    assert.match(src, /gfm/)
-    assert.match(src, /breaks/)
-    assert.match(src, /allowDangerousHtml/)
+    assert.match(src, /mdastExtensions/)
+    assert.match(src, /extensions/)
     assert.match(src, / as fromMarkdown/)
   })
 })

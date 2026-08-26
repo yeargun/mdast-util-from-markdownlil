@@ -1,0 +1,39 @@
+import { call1, isNullish, jsInt, objGet } from "./host.lil";
+import { markdownSpace } from "./util-character.lil";
+
+export JsValue factorySpace(JsValue effects, JsValue ok, JsValue typ, JsValue max) {
+  JsValue st = JS.object();
+  float limit = 1.0 / 0.0;
+  if (max.truthy()) {
+    limit = JS.number(max) - 1.0;
+  }
+  JS.set(st, "effects", effects);
+  JS.set(st, "ok", ok);
+  JS.set(st, "typ", typ);
+  JS.set(st, "limit", limit);
+  JS.set(st, "size", 0);
+
+  JsValue prefix = JS.method1((JsValue _self, JsValue code) => {
+    float size = JS.number(objGet(st, "size"));
+    float lim = JS.number(objGet(st, "limit"));
+    if (markdownSpace(code) && size < lim) {
+      JS.set(st, "size", size + 1.0);
+      call1(objGet(effects, "consume"), effects, code);
+      return objGet(st, "prefix");
+    }
+    call1(objGet(effects, "exit"), effects, typ);
+    return call1(ok, JS.undefined(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _self, JsValue code) => {
+    if (markdownSpace(code)) {
+      call1(objGet(effects, "enter"), effects, typ);
+      return call1(prefix, JS.undefined(), code);
+    }
+    return call1(ok, JS.undefined(), code);
+  });
+
+  JS.set(st, "prefix", prefix);
+  JS.set(st, "start", start);
+  return start;
+}

@@ -1,0 +1,439 @@
+import {
+  arrLen,
+  arrayFrom,
+  call0,
+  call1,
+  call2,
+  call3,
+  copyPoint,
+  eventEnter,
+  eventExit,
+  fromCharCode1,
+  hasKey,
+  includesVal,
+  isEof,
+  isFn,
+  isStr,
+  isUndef,
+  jsInt,
+  jsNum,
+  jsString,
+  objGet,
+  objGetVal,
+  objSetVal,
+  objectAssign,
+  objectCreate,
+  pop,
+  push,
+  slice1,
+  slice2,
+  undef
+} from "./host.lil";
+import { markdownLineEnding } from "./util-character.lil";
+import { pushAll, splice } from "./util-chunked.lil";
+import { resolveAll } from "./util-resolve-all.lil";
+import {
+  cCarriageReturn,
+  cCarriageReturnLineFeed,
+  cHorizontalTab,
+  cLineFeed,
+  cVirtualSpace,
+  codeEq,
+  codes
+} from "./symbol/codes.lil";
+import { vCr, vHt, vLf, vSpace } from "./symbol/values.lil";
+
+JsValue sliceChunks(JsValue chunks, JsValue token) {
+  JsValue start = objGet(token, "start");
+  JsValue end = objGet(token, "end");
+  int startIndex = jsInt(objGet(start, "_index"));
+  int startBufferIndex = jsInt(objGet(start, "_bufferIndex"));
+  int endIndex = jsInt(objGet(end, "_index"));
+  int endBufferIndex = jsInt(objGet(end, "_bufferIndex"));
+  JsValue view = JS.array();
+  if (startIndex == endIndex) {
+    push(view, JS.call(JS.get(chunks[startIndex], "slice"), chunks[startIndex], startBufferIndex, endBufferIndex));
+  } else {
+    view = slice2(chunks, startIndex, endIndex);
+    if (startBufferIndex > -1) {
+      JsValue head = view[0];
+      if (isStr(head)) {
+        view[0] = JS.call(JS.get(head, "slice"), head, startBufferIndex);
+      } else {
+        JS.call(JS.get(view, "shift"), view);
+      }
+    }
+    if (endBufferIndex > 0) {
+      push(view, JS.call(JS.get(chunks[endIndex], "slice"), chunks[endIndex], 0, endBufferIndex));
+    }
+  }
+  return view;
+}
+
+string serializeChunks(JsValue chunks, JsValue expandTabs) {
+  int index = -1;
+  string result = "";
+  bool atTab = false;
+  int n = arrLen(chunks);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    JsValue chunk = chunks[index];
+    string value = "";
+    if (isStr(chunk)) {
+      value = jsString(chunk);
+    } else if (codeEq(chunk, cCarriageReturn)) {
+      value = vCr;
+    } else if (codeEq(chunk, cLineFeed)) {
+      value = vLf;
+    } else if (codeEq(chunk, cCarriageReturnLineFeed)) {
+      value = vCr + vLf;
+    } else if (codeEq(chunk, cHorizontalTab)) {
+      if (expandTabs.truthy()) {
+        value = vSpace;
+      } else {
+        value = vHt;
+      }
+    } else if (codeEq(chunk, cVirtualSpace)) {
+      if (!expandTabs.truthy() && atTab) {
+        continue;
+      }
+      value = vSpace;
+    } else {
+      value = fromCharCode1(chunk);
+    }
+    atTab = codeEq(chunk, cHorizontalTab);
+    result = result + value;
+  }
+  return result;
+}
+
+void accountForPotentialSkip(JsValue tok) {
+  JsValue p = objGet(tok, "point");
+  JsValue columnStart = objGet(tok, "columnStart");
+  JsValue lineKey = objGet(p, "line");
+  if (hasKey(columnStart, lineKey) && jsNum(objGet(p, "column")) < 2.0) {
+    JS.set(p, "column", objGetVal(columnStart, lineKey));
+    JS.set(p, "offset", jsNum(objGet(p, "offset")) + jsNum(objGetVal(columnStart, lineKey)) - 1.0);
+  }
+}
+
+void restorePoint(JsValue target, JsValue source) {
+  JS.set(target, "_bufferIndex", objGet(source, "_bufferIndex"));
+  JS.set(target, "_index", objGet(source, "_index"));
+  JS.set(target, "line", objGet(source, "line"));
+  JS.set(target, "column", objGet(source, "column"));
+  JS.set(target, "offset", objGet(source, "offset"));
+}
+
+void restoreInfo(JsValue tok, JsValue info) {
+  call0(objGet(info, "restore"), info);
+}
+
+JsValue storeState(JsValue tok) {
+  JsValue context = objGet(tok, "context");
+  JsValue info = JS.object();
+  JsValue startPoint = copyPoint(objGet(tok, "point"));
+  JsValue startPrevious = objGet(context, "previous");
+  JsValue startCurrentConstruct = objGet(context, "currentConstruct");
+  int startEventsIndex = arrLen(objGet(context, "events"));
+  JsValue startStack = arrayFrom(objGet(tok, "stack"));
+  JS.set(info, "from", startEventsIndex);
+  JS.set(info, "restore", JS.method0((JsValue _s) => {
+    restorePoint(objGet(tok, "point"), startPoint);
+    JS.set(context, "previous", startPrevious);
+    JS.set(context, "currentConstruct", startCurrentConstruct);
+    JS.set(objGet(context, "events"), "length", startEventsIndex);
+    JS.set(tok, "stack", startStack);
+    accountForPotentialSkip(tok);
+    return undef();
+  }));
+  return info;
+}
+
+void addResult(JsValue tok, JsValue construct, int from) {
+  JsValue context = objGet(tok, "context");
+  JsValue resolveAllConstructs = objGet(tok, "resolveAllConstructs");
+  if (isFn(objGet(construct, "resolveAll")) && !includesVal(resolveAllConstructs, construct)) {
+    push(resolveAllConstructs, construct);
+  }
+  if (isFn(objGet(construct, "resolve"))) {
+    JsValue evs = objGet(context, "events");
+    JsValue resolved = call2(objGet(construct, "resolve"), construct, slice1(evs, from), context);
+    splice(evs, from, arrLen(evs) - from, resolved);
+  }
+  if (isFn(objGet(construct, "resolveTo"))) {
+    JS.set(context, "events", call2(objGet(construct, "resolveTo"), construct, objGet(context, "events"), context));
+  }
+}
+
+JsValue handleConstruct(JsValue tok, JsValue run, JsValue construct) {
+  JsValue context = objGet(tok, "context");
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.set(run, "info", storeState(tok));
+    JS.set(run, "currentConstruct", construct);
+    if (!objGet(construct, "partial").truthy()) {
+      JS.set(context, "currentConstruct", construct);
+    }
+    JsValue disable = objGet(objGet(objGet(context, "parser"), "constructs"), "disable");
+    JsValue disabled = objGet(disable, "null");
+    if (objGet(construct, "name").truthy() && includesVal(disabled, objGet(construct, "name"))) {
+      return call1(objGet(run, "nok"), JS.undefined(), code);
+    }
+    JsValue selfCtx = context;
+    if (objGet(run, "fields").truthy()) {
+      selfCtx = objectAssign(objectCreate(context), objGet(run, "fields"));
+    }
+    JsValue state = call3(objGet(construct, "tokenize"), selfCtx, objGet(tok, "effects"), objGet(run, "ok"), objGet(run, "nok"));
+    return call1(state, JS.undefined(), code);
+  });
+}
+
+JsValue handleListOfConstructs(JsValue tok, JsValue run, JsValue list) {
+  JS.set(run, "listOfConstructs", list);
+  JS.set(run, "constructIndex", 0);
+  if (arrLen(list) == 0) {
+    return objGet(run, "bogusState");
+  }
+  return handleConstruct(tok, run, list[0]);
+}
+
+JsValue handleMapOfConstructs(JsValue tok, JsValue run, JsValue map) {
+  return JS.method1((JsValue _s, JsValue code) => {
+    JsValue left = undef();
+    JsValue all = undef();
+    if (!isEof(code)) {
+      left = objGetVal(map, code);
+      all = objGet(map, "null");
+    }
+    JsValue list = JS.array();
+    if (left.isArray()) {
+      int i = 0;
+      int n = arrLen(left);
+      while (i < n) {
+        push(list, left[i]);
+        i = i + 1;
+      }
+    } else if (left.truthy()) {
+      push(list, left);
+    }
+    if (all.isArray()) {
+      int i = 0;
+      int n = arrLen(all);
+      while (i < n) {
+        push(list, all[i]);
+        i = i + 1;
+      }
+    } else if (all.truthy()) {
+      push(list, all);
+    }
+    return call1(handleListOfConstructs(tok, run, list), JS.undefined(), code);
+  });
+}
+
+JsValue constructFactory(JsValue tok, JsValue onreturn, JsValue fields) {
+  return JS.method3((JsValue _self, JsValue constructs, JsValue returnState, JsValue bogusState) => {
+    JsValue run = JS.object();
+    JS.set(run, "returnState", returnState);
+    JS.set(run, "bogusState", bogusState);
+    JS.set(run, "onreturn", onreturn);
+    JS.set(run, "fields", fields);
+    JS.set(run, "ok", JS.method1((JsValue _s, JsValue code) => {
+      JS.set(tok, "consumed", true);
+      call2(onreturn, JS.undefined(), objGet(run, "currentConstruct"), objGet(run, "info"));
+      return returnState;
+    }));
+    JS.set(run, "nok", JS.method1((JsValue _s, JsValue code) => {
+      JS.set(tok, "consumed", true);
+      restoreInfo(tok, objGet(run, "info"));
+      JS.set(run, "constructIndex", jsInt(objGet(run, "constructIndex")) + 1);
+      if (jsInt(objGet(run, "constructIndex")) < arrLen(objGet(run, "listOfConstructs"))) {
+        return handleConstruct(tok, run, objGet(run, "listOfConstructs")[jsInt(objGet(run, "constructIndex"))]);
+      }
+      return bogusState;
+    }));
+    if (constructs.isArray()) {
+      return handleListOfConstructs(tok, run, constructs);
+    }
+    if (hasKey(constructs, "tokenize")) {
+      JsValue list = JS.array();
+      push(list, constructs);
+      return handleListOfConstructs(tok, run, list);
+    }
+    return handleMapOfConstructs(tok, run, constructs);
+  });
+}
+
+void go(JsValue tok, JsValue code) {
+  JS.set(tok, "consumed", undef());
+  JS.set(tok, "expectedCode", code);
+  JS.set(tok, "state", call1(objGet(tok, "state"), JS.undefined(), code));
+}
+
+void mainLoop(JsValue tok) {
+  JsValue chunks = objGet(tok, "chunks");
+  while (jsInt(objGet(objGet(tok, "point"), "_index")) < arrLen(chunks)) {
+    JsValue p = objGet(tok, "point");
+    JsValue chunk = chunks[jsInt(objGet(p, "_index"))];
+    if (isStr(chunk)) {
+      int chunkIndex = jsInt(objGet(p, "_index"));
+      if (jsInt(objGet(p, "_bufferIndex")) < 0) {
+        JS.set(p, "_bufferIndex", 0);
+      }
+      string text = jsString(chunk);
+      while (jsInt(objGet(objGet(tok, "point"), "_index")) == chunkIndex && jsInt(objGet(objGet(tok, "point"), "_bufferIndex")) < text.length) {
+        go(tok, text.charCodeAt(jsInt(objGet(objGet(tok, "point"), "_bufferIndex"))));
+      }
+    } else {
+      go(tok, chunk);
+    }
+  }
+}
+
+export JsValue createTokenizer(JsValue parser, JsValue initialize, JsValue from) {
+  JsValue tok = JS.object();
+  JsValue point = JS.object();
+  JS.set(point, "_bufferIndex", -1);
+  JS.set(point, "_index", 0);
+  float line = 1.0;
+  float column = 1.0;
+  float offset = 0.0;
+  if (from.truthy()) {
+    if (objGet(from, "line").truthy()) {
+      line = jsNum(objGet(from, "line"));
+    }
+    if (objGet(from, "column").truthy()) {
+      column = jsNum(objGet(from, "column"));
+    }
+    JsValue off = objGet(from, "offset");
+    if (!isUndef(off) && !isEof(off)) {
+      offset = jsNum(off);
+    }
+  }
+  JS.set(point, "line", line);
+  JS.set(point, "column", column);
+  JS.set(point, "offset", offset);
+  JS.set(tok, "point", point);
+  JS.set(tok, "columnStart", JS.object());
+  JS.set(tok, "resolveAllConstructs", JS.array());
+  JS.set(tok, "chunks", JS.array());
+  JS.set(tok, "stack", JS.array());
+  JS.set(tok, "consumed", true);
+  JS.set(tok, "parser", parser);
+
+  JsValue context = JS.object();
+  JS.set(context, "code", objGet(codes, "eof"));
+  JS.set(context, "containerState", JS.object());
+  JS.set(context, "events", JS.array());
+  JS.set(context, "parser", parser);
+  JS.set(context, "previous", objGet(codes, "eof"));
+  JS.set(tok, "context", context);
+
+  JsValue nowFn = JS.method0((JsValue _self) => {
+    return copyPoint(objGet(tok, "point"));
+  });
+  JsValue defineSkipFn = JS.method1((JsValue _self, JsValue value) => {
+    objSetVal(objGet(tok, "columnStart"), objGet(value, "line"), objGet(value, "column"));
+    accountForPotentialSkip(tok);
+    return undef();
+  });
+  JsValue sliceStreamFn = JS.method1((JsValue _self, JsValue token) => {
+    return sliceChunks(objGet(tok, "chunks"), token);
+  });
+  JsValue sliceSerializeFn = JS.method2((JsValue _self, JsValue token, JsValue expandTabs) => {
+    return serializeChunks(sliceChunks(objGet(tok, "chunks"), token), expandTabs);
+  });
+  JsValue consumeFn = JS.method1((JsValue _self, JsValue code) => {
+    JsValue p = objGet(tok, "point");
+    if (markdownLineEnding(code)) {
+      JS.set(p, "line", jsNum(objGet(p, "line")) + 1.0);
+      JS.set(p, "column", 1);
+      float add = 1.0;
+      if (codeEq(code, cCarriageReturnLineFeed)) {
+        add = 2.0;
+      }
+      JS.set(p, "offset", jsNum(objGet(p, "offset")) + add);
+      accountForPotentialSkip(tok);
+    } else if (!codeEq(code, cVirtualSpace)) {
+      JS.set(p, "column", jsNum(objGet(p, "column")) + 1.0);
+      JS.set(p, "offset", jsNum(objGet(p, "offset")) + 1.0);
+    }
+    if (jsInt(objGet(p, "_bufferIndex")) < 0) {
+      JS.set(p, "_index", jsInt(objGet(p, "_index")) + 1);
+    } else {
+      JS.set(p, "_bufferIndex", jsInt(objGet(p, "_bufferIndex")) + 1);
+      JsValue chunk = objGet(tok, "chunks")[jsInt(objGet(p, "_index"))];
+      int chunkLength = 0;
+      if (isStr(chunk)) {
+        chunkLength = jsString(chunk).length;
+      } else {
+        chunkLength = jsInt(objGet(chunk, "length"));
+      }
+      if (jsInt(objGet(p, "_bufferIndex")) == chunkLength) {
+        JS.set(p, "_bufferIndex", -1);
+        JS.set(p, "_index", jsInt(objGet(p, "_index")) + 1);
+      }
+    }
+    JS.set(context, "previous", code);
+    JS.set(tok, "consumed", true);
+    return undef();
+  });
+  JsValue enterFn = JS.method2((JsValue _self, JsValue typ, JsValue fields) => {
+    JsValue token = fields;
+    if (!fields.truthy()) {
+      token = JS.object();
+    }
+    JS.set(token, "type", typ);
+    JS.set(token, "start", copyPoint(objGet(tok, "point")));
+    push(objGet(context, "events"), eventEnter(token, context));
+    push(objGet(tok, "stack"), token);
+    return token;
+  });
+  JsValue exitFn = JS.method1((JsValue _self, JsValue typ) => {
+    JsValue token = pop(objGet(tok, "stack"));
+    JS.set(token, "end", copyPoint(objGet(tok, "point")));
+    push(objGet(context, "events"), eventExit(token, context));
+    return token;
+  });
+  JsValue writeFn = JS.method1((JsValue _self, JsValue slice) => {
+    JS.set(tok, "chunks", pushAll(objGet(tok, "chunks"), slice));
+    mainLoop(tok);
+    JsValue chunks = objGet(tok, "chunks");
+    if (arrLen(chunks) == 0 || !isEof(chunks[arrLen(chunks) - 1])) {
+      return JS.array();
+    }
+    addResult(tok, initialize, 0);
+    JS.set(context, "events", resolveAll(objGet(tok, "resolveAllConstructs"), objGet(context, "events"), context));
+    return objGet(context, "events");
+  });
+  JsValue onsuccessfulconstruct = JS.method2((JsValue _s, JsValue construct, JsValue info) => {
+    addResult(tok, construct, jsInt(objGet(info, "from")));
+    return undef();
+  });
+  JsValue onsuccessfulcheck = JS.method2((JsValue _s, JsValue _construct, JsValue info) => {
+    restoreInfo(tok, info);
+    return undef();
+  });
+  JsValue interruptFields = JS.object();
+  JS.set(interruptFields, "interrupt", true);
+  JsValue effects = JS.object();
+  JS.set(effects, "attempt", constructFactory(tok, onsuccessfulconstruct, undef()));
+  JS.set(effects, "check", constructFactory(tok, onsuccessfulcheck, undef()));
+  JS.set(effects, "consume", consumeFn);
+  JS.set(effects, "enter", enterFn);
+  JS.set(effects, "exit", exitFn);
+  JS.set(effects, "interrupt", constructFactory(tok, onsuccessfulcheck, interruptFields));
+  JS.set(tok, "effects", effects);
+  JS.set(context, "defineSkip", defineSkipFn);
+  JS.set(context, "now", nowFn);
+  JS.set(context, "sliceSerialize", sliceSerializeFn);
+  JS.set(context, "sliceStream", sliceStreamFn);
+  JS.set(context, "write", writeFn);
+  JS.set(tok, "state", call1(objGet(initialize, "tokenize"), context, effects));
+  if (isFn(objGet(initialize, "resolveAll"))) {
+    push(objGet(tok, "resolveAllConstructs"), initialize);
+  }
+  return context;
+}

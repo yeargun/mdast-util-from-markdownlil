@@ -1,0 +1,88 @@
+import { arrLen, call0, call1, call2, call3, isEof, jsString, makeConstruct, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownLineEnding, markdownSpace } from "../util-character.lil";
+import { kTabSize } from "../symbol/constants.lil";
+import { tCodeFlowValue, tCodeIndented, tLineEnding, tLinePrefix } from "../symbol/types.lil";
+
+JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue st = JS.object();
+
+  JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
+    JsValue events = objGet(self, "events");
+    JsValue tail = events[arrLen(events) - 1];
+    if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length >= kTabSize) {
+      return call1(ok, undef(), code);
+    }
+    if (markdownLineEnding(code)) {
+      return call1(objGet(st, "furtherStart"), undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue furtherStart = JS.method1((JsValue _s, JsValue code) => {
+    if (objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")].truthy()) {
+      return call1(nok, undef(), code);
+    }
+    if (markdownLineEnding(code)) {
+      call1(objGet(effects, "enter"), effects, tLineEnding);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tLineEnding);
+      return furtherStart;
+    }
+    return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
+  });
+
+  JS.set(st, "furtherStart", furtherStart);
+  return furtherStart;
+});
+
+JsValue furtherStartConstruct = makeConstruct(tokenizeFurtherStart);
+JS.set(furtherStartConstruct, "partial", true);
+
+JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue st = JS.object();
+
+  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || markdownLineEnding(code)) {
+      call1(objGet(effects, "exit"), effects, tCodeFlowValue);
+      return call1(objGet(st, "atBreak"), undef(), code);
+    }
+    call1(objGet(effects, "consume"), effects, code);
+    return inside;
+  });
+
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "exit"), effects, tCodeIndented);
+    return call1(ok, undef(), code);
+  });
+
+  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      return call1(after, undef(), code);
+    }
+    if (markdownLineEnding(code)) {
+      return call1(call3(objGet(effects, "attempt"), effects, furtherStartConstruct, atBreak, after), undef(), code);
+    }
+    call1(objGet(effects, "enter"), effects, tCodeFlowValue);
+    return call1(inside, undef(), code);
+  });
+
+  JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
+    JsValue events = objGet(self, "events");
+    JsValue tail = events[arrLen(events) - 1];
+    if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length >= kTabSize) {
+      return call1(atBreak, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tCodeIndented);
+    return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
+  });
+
+  JS.set(st, "atBreak", atBreak);
+  return start;
+});
+
+export JsValue codeIndented = makeNamedConstruct("codeIndented", tokenizeCodeIndented);

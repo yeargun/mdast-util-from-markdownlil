@@ -1,0 +1,98 @@
+import { call1, call2, hasOwn, objGet } from "./host.lil";
+import { markdownLineEnding, markdownSpace } from "./util-character.lil";
+import { cBackslash, cCaret, cLeftSquareBracket, cRightSquareBracket, codeEq } from "./symbol/codes.lil";
+import { isEof } from "./host.lil";
+import { kContentTypeString, kLinkReferenceSizeMax } from "./symbol/constants.lil";
+import { tChunkString, tLineEnding } from "./symbol/types.lil";
+
+export JsValue factoryLabel = JS.methodRest((JsValue self, JsValue args) => {
+  JsValue effects = args[0];
+  JsValue ok = args[1];
+  JsValue nok = args[2];
+  JsValue typ = args[3];
+  JsValue markerType = args[4];
+  JsValue stringType = args[5];
+  JsValue st = JS.object();
+  JS.set(st, "size", 0);
+  JS.set(st, "seen", false);
+
+  JsValue labelEscape = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cLeftSquareBracket) || codeEq(code, cBackslash) || codeEq(code, cRightSquareBracket)) {
+      call1(objGet(effects, "consume"), effects, code);
+      JS.set(st, "size", JS.number(objGet(st, "size")) + 1.0);
+      return objGet(st, "labelInside");
+    }
+    return call1(objGet(st, "labelInside"), JS.undefined(), code);
+  });
+
+  JsValue labelInside = JS.method1((JsValue _s, JsValue code) => {
+    if (
+      isEof(code) ||
+      codeEq(code, cLeftSquareBracket) ||
+      codeEq(code, cRightSquareBracket) ||
+      markdownLineEnding(code)
+    ) {
+      call1(objGet(effects, "exit"), effects, tChunkString);
+      return call1(objGet(st, "atBreak"), JS.undefined(), code);
+    }
+    int size = JS.number(objGet(st, "size")).toInt();
+    JS.set(st, "size", size + 1);
+    if (size > kLinkReferenceSizeMax) {
+      call1(objGet(effects, "exit"), effects, tChunkString);
+      return call1(objGet(st, "atBreak"), JS.undefined(), code);
+    }
+    call1(objGet(effects, "consume"), effects, code);
+    if (!objGet(st, "seen").truthy()) {
+      JS.set(st, "seen", !markdownSpace(code));
+    }
+    if (codeEq(code, cBackslash)) {
+      return labelEscape;
+    }
+    return labelInside;
+  });
+
+  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+    int size = JS.number(objGet(st, "size")).toInt();
+    bool hiddenFootnote = codeEq(code, cCaret) && size == 0 && hasOwn(objGet(objGet(self, "parser"), "constructs"), "_hiddenFootnoteSupport");
+    if (
+      size > kLinkReferenceSizeMax ||
+      isEof(code) ||
+      codeEq(code, cLeftSquareBracket) ||
+      (codeEq(code, cRightSquareBracket) && !objGet(st, "seen").truthy()) ||
+      hiddenFootnote
+    ) {
+      return call1(nok, JS.undefined(), code);
+    }
+    if (codeEq(code, cRightSquareBracket)) {
+      call1(objGet(effects, "exit"), effects, stringType);
+      call1(objGet(effects, "enter"), effects, markerType);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, markerType);
+      call1(objGet(effects, "exit"), effects, typ);
+      return ok;
+    }
+    if (markdownLineEnding(code)) {
+      call1(objGet(effects, "enter"), effects, tLineEnding);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tLineEnding);
+      return atBreak;
+    }
+    JsValue fields = JS.object();
+    JS.set(fields, "contentType", kContentTypeString);
+    call2(objGet(effects, "enter"), effects, tChunkString, fields);
+    return call1(labelInside, JS.undefined(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, typ);
+    call1(objGet(effects, "enter"), effects, markerType);
+    call1(objGet(effects, "consume"), effects, code);
+    call1(objGet(effects, "exit"), effects, markerType);
+    call1(objGet(effects, "enter"), effects, stringType);
+    return atBreak;
+  });
+
+  JS.set(st, "labelInside", labelInside);
+  JS.set(st, "atBreak", atBreak);
+  return start;
+});

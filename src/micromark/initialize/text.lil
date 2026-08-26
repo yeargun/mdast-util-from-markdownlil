@@ -1,0 +1,202 @@
+import { arrLen, call1, call2, call3, copyPoint, isEof, isFn, isStr, isUndef, jsInt, objGet, objGetVal, objectAssign, undef } from "../host.lil";
+import { cSpace, codeEq } from "../symbol/codes.lil";
+import { kHardBreakPrefixSizeMin } from "../symbol/constants.lil";
+import { tData, tHardBreakTrailing, tLineEnding, tLineSuffix } from "../symbol/types.lil";
+import { cHorizontalTab, cVirtualSpace } from "../symbol/codes.lil";
+
+JsValue resolveAllLineSuffixes(JsValue events, JsValue context) {
+  int eventIndex = 0;
+  int n = arrLen(events);
+  while (true) {
+    eventIndex = eventIndex + 1;
+    if (eventIndex > n) {
+      break;
+    }
+    bool atEnd = eventIndex == n;
+    bool lineEnd = false;
+    if (!atEnd && objGet(events[eventIndex][1], "type") == tLineEnding) {
+      lineEnd = true;
+    }
+    if ((atEnd || lineEnd) && objGet(events[eventIndex - 1][1], "type") == tData) {
+      JsValue data = events[eventIndex - 1][1];
+      JsValue chunks = call1(objGet(context, "sliceStream"), context, data);
+      int index = arrLen(chunks);
+      int bufferIndex = -1;
+      int size = 0;
+      bool tabs = false;
+      while (true) {
+        index = index - 1;
+        if (index < 0) {
+          break;
+        }
+        JsValue chunk = chunks[index];
+        if (isStr(chunk)) {
+          string text = JS.string(chunk);
+          bufferIndex = text.length;
+          while (bufferIndex > 0 && text.charCodeAt(bufferIndex - 1) == cSpace) {
+            size = size + 1;
+            bufferIndex = bufferIndex - 1;
+          }
+          if (bufferIndex > 0) {
+            break;
+          }
+          bufferIndex = -1;
+        } else if (codeEq(chunk, cHorizontalTab)) {
+          tabs = true;
+          size = size + 1;
+        } else if (codeEq(chunk, cVirtualSpace)) {
+        } else {
+          index = index + 1;
+          break;
+        }
+      }
+      if (objGet(context, "_contentTypeTextTrailing").truthy() && eventIndex == n) {
+        size = 0;
+      }
+      if (size > 0) {
+        string typ = tLineSuffix;
+        if (!(eventIndex == n || tabs || size < kHardBreakPrefixSizeMin)) {
+          typ = tHardBreakTrailing;
+        }
+        JsValue start = JS.object();
+        if (index != 0) {
+          JS.set(start, "_bufferIndex", bufferIndex);
+        } else {
+          JS.set(start, "_bufferIndex", jsInt(objGet(objGet(data, "start"), "_bufferIndex")) + bufferIndex);
+        }
+        JS.set(start, "_index", jsInt(objGet(objGet(data, "start"), "_index")) + index);
+        JS.set(start, "line", objGet(objGet(data, "end"), "line"));
+        JS.set(start, "column", jsInt(objGet(objGet(data, "end"), "column")) - size);
+        JS.set(start, "offset", jsInt(objGet(objGet(data, "end"), "offset")) - size);
+        JsValue token = JS.object();
+        JS.set(token, "type", typ);
+        JS.set(token, "start", start);
+        JS.set(token, "end", copyPoint(objGet(data, "end")));
+        JS.set(data, "end", copyPoint(objGet(token, "start")));
+        if (objGet(objGet(data, "start"), "offset") == objGet(objGet(data, "end"), "offset")) {
+          objectAssign(data, token);
+        } else {
+          JsValue enter = JS.array();
+          enter[0] = "enter";
+          enter[1] = token;
+          enter[2] = context;
+          JsValue exit = JS.array();
+          exit[0] = "exit";
+          exit[1] = token;
+          exit[2] = context;
+          JS.call(JS.get(events, "splice"), events, eventIndex, 0, enter, exit);
+          eventIndex = eventIndex + 2;
+          n = arrLen(events);
+        }
+      }
+      eventIndex = eventIndex + 1;
+    }
+  }
+  return events;
+}
+
+JsValue createResolver(JsValue extraResolver) {
+  return JS.method2((JsValue _self, JsValue events, JsValue context) => {
+    int index = -1;
+    JsValue enter = undef();
+    int n = arrLen(events);
+    while (true) {
+      index = index + 1;
+      if (index > n) {
+        break;
+      }
+      if (isUndef(enter)) {
+        if (index < n && events[index].truthy() && objGet(events[index][1], "type") == tData) {
+          enter = index;
+          index = index + 1;
+        }
+      } else if (index >= n || !events[index].truthy() || objGet(events[index][1], "type") != tData) {
+        int enterI = jsInt(enter);
+        if (index != enterI + 2) {
+          JS.set(events[enterI][1], "end", objGet(events[index - 1][1], "end"));
+          JS.call(JS.get(events, "splice"), events, enterI + 2, index - enterI - 2);
+          index = enterI + 2;
+          n = arrLen(events);
+        }
+        enter = undef();
+      }
+    }
+    if (isFn(extraResolver)) {
+      return call2(extraResolver, JS.undefined(), events, context);
+    }
+    return events;
+  });
+}
+
+JsValue initializeFactory(string field, JsValue extraResolver) {
+  JsValue construct = JS.object();
+  JS.set(construct, "resolveAll", createResolver(extraResolver));
+  JS.set(construct, "tokenize", JS.method1((JsValue self, JsValue effects) => {
+    JsValue constructs = objGet(objGet(self, "parser"), "constructs")[field];
+    JsValue text = JS.undefined();
+    JsValue st = JS.object();
+
+    JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+      if (isEof(code)) {
+        return true;
+      }
+      JsValue list = objGetVal(constructs, code);
+      if (!list.truthy()) {
+        return false;
+      }
+      int index = -1;
+      int n = arrLen(list);
+      while (true) {
+        index = index + 1;
+        if (index >= n) {
+          break;
+        }
+        JsValue item = list[index];
+        JsValue prev = objGet(item, "previous");
+        if (!isFn(prev) || call1(prev, self, objGet(self, "previous")).truthy()) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    JsValue data = JS.method1((JsValue _s, JsValue code) => {
+      if (call1(atBreak, undef(), code).truthy()) {
+        call1(JS.get(effects, "exit"), effects, tData);
+        return call1(text, JS.undefined(), code);
+      }
+      call1(JS.get(effects, "consume"), effects, code);
+      return data;
+    });
+
+    JsValue notText = JS.method1((JsValue _s, JsValue code) => {
+      if (isEof(code)) {
+        call1(JS.get(effects, "consume"), effects, code);
+        return undef();
+      }
+      call1(JS.get(effects, "enter"), effects, tData);
+      call1(JS.get(effects, "consume"), effects, code);
+      return data;
+    });
+
+    JsValue start = JS.method1((JsValue _s, JsValue code) => {
+      if (call1(atBreak, undef(), code).truthy()) {
+        return call1(text, JS.undefined(), code);
+      }
+      return call1(notText, JS.undefined(), code);
+    });
+
+    text = call3(JS.get(effects, "attempt"), effects, constructs, start, notText);
+    JS.set(st, "start", start);
+    return start;
+  }));
+  return construct;
+}
+
+export JsValue resolver = JS.object();
+JS.set(resolver, "resolveAll", createResolver(undef()));
+
+export JsValue stringConstruct = initializeFactory("string", undef());
+export JsValue textConstruct = initializeFactory("text", JS.method2((JsValue _s, JsValue events, JsValue context) => {
+  return resolveAllLineSuffixes(events, context);
+}));

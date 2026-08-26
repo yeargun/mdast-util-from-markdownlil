@@ -1,0 +1,16 @@
+import { call1, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { tLineEnding, tLinePrefix } from "../symbol/types.lil";
+
+JsValue tokenizeLineEnding = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue _nok) => {
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tLineEnding);
+    call1(objGet(effects, "consume"), effects, code);
+    call1(objGet(effects, "exit"), effects, tLineEnding);
+    return factorySpace(effects, ok, tLinePrefix, undef());
+  });
+
+  return start;
+});
+
+export JsValue lineEnding = makeNamedConstruct("lineEnding", tokenizeLineEnding);

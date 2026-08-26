@@ -1,0 +1,20 @@
+import { arrLen, includesVal, isFn, objGet, push } from "./host.lil";
+
+export JsValue resolveAll(JsValue constructs, JsValue events, JsValue context) {
+  JsValue called = JS.array();
+  int index = -1;
+  int n = arrLen(constructs);
+  JsValue next = events;
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    JsValue resolve = objGet(constructs[index], "resolveAll");
+    if (isFn(resolve) && !includesVal(called, resolve)) {
+      next = JS.call(resolve, JS.undefined(), next, context);
+      push(called, resolve);
+    }
+  }
+  return next;
+}

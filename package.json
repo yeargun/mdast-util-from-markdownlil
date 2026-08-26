@@ -1,6 +1,6 @@
 {
   "name": "@itslil/mdast-util-from-markdown",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "mdast-util-from-markdown reimplemented in LilScript",
   "keywords": [
     "mdast",
@@ -56,12 +56,17 @@
   "scripts": {
     "build": "node scripts/build.mjs --compile",
     "build:site": "node scripts/build-site.mjs",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs test/official/index.js",
     "check:site": "npm run build:site && node --test test/site.test.mjs",
     "check:pack": "node scripts/check-pack.mjs",
     "prepublishOnly": "npm test && npm run check:pack && npm run check:site"
   },
   "devDependencies": {
-    "esbuild": "0.28.1"
+    "commonmark.json": "^0.31.0",
+    "esbuild": "0.28.1",
+    "hast-util-from-html": "^2.0.0",
+    "hast-util-to-html": "^9.0.0",
+    "mdast-util-to-hast": "^13.0.0",
+    "mdast-util-to-string": "^4.0.0"
   }
 }

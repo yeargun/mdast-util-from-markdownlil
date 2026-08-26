@@ -1,0 +1,33 @@
+import { fromCodePoint } from "./host.lil";
+import { parseIntBase } from "./host.lil";
+import { cCr, cHt, cSpace, cTilde, cVt } from "./symbol/codes.lil";
+import { vReplacementCharacter } from "./symbol/values.lil";
+
+export string decodeNumericCharacterReference(string value, int base) {
+  float codeF = parseIntBase(value, base);
+  int code = codeF.toInt();
+  bool unsafe = false;
+  if (code < cHt) {
+    unsafe = true;
+  } else if (code == cVt) {
+    unsafe = true;
+  } else if (code > cCr && code < cSpace) {
+    unsafe = true;
+  } else if (code > cTilde && code < 160) {
+    unsafe = true;
+  } else if (code > 55295 && code < 57344) {
+    unsafe = true;
+  } else if (code > 64975 && code < 65008) {
+    unsafe = true;
+  } else if ((code & 65535) == 65535) {
+    unsafe = true;
+  } else if ((code & 65535) == 65534) {
+    unsafe = true;
+  } else if (code > 1114111) {
+    unsafe = true;
+  }
+  if (unsafe) {
+    return vReplacementCharacter;
+  }
+  return fromCodePoint(code);
+}

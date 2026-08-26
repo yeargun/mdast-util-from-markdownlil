@@ -1,0 +1,129 @@
+import { arrLen, call1, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from "../util-character.lil";
+import { splice } from "../util-chunked.lil";
+import { cNumberSign, codeEq } from "../symbol/codes.lil";
+import { kAtxHeadingOpeningFenceSizeMax, kContentTypeText } from "../symbol/constants.lil";
+import { tAtxHeading, tAtxHeadingSequence, tAtxHeadingText, tChunkText, tWhitespace } from "../symbol/types.lil";
+import { isEof } from "../host.lil";
+
+JsValue resolveHeadingAtx = JS.method2((JsValue _self, JsValue events, JsValue context) => {
+  int contentEnd = arrLen(events) - 2;
+  int contentStart = 3;
+  if (objGet(events[contentStart][1], "type") == tWhitespace) {
+    contentStart = contentStart + 2;
+  }
+  if (contentEnd - 2 > contentStart && objGet(events[contentEnd][1], "type") == tWhitespace) {
+    contentEnd = contentEnd - 2;
+  }
+  if (objGet(events[contentEnd][1], "type") == tAtxHeadingSequence && (contentStart == contentEnd - 1 || (contentEnd - 4 > contentStart && objGet(events[contentEnd - 2][1], "type") == tWhitespace))) {
+    if (contentStart + 1 == contentEnd) {
+      contentEnd = contentEnd - 2;
+    } else {
+      contentEnd = contentEnd - 4;
+    }
+  }
+  if (contentEnd > contentStart) {
+    JsValue content = JS.object();
+    JS.set(content, "type", tAtxHeadingText);
+    JS.set(content, "start", objGet(events[contentStart][1], "start"));
+    JS.set(content, "end", objGet(events[contentEnd][1], "end"));
+    JsValue text = JS.object();
+    JS.set(text, "type", tChunkText);
+    JS.set(text, "start", objGet(events[contentStart][1], "start"));
+    JS.set(text, "end", objGet(events[contentEnd][1], "end"));
+    JS.set(text, "contentType", kContentTypeText);
+    JsValue replacement = JS.array();
+    JsValue e1 = JS.array();
+    e1[0] = "enter";
+    e1[1] = content;
+    e1[2] = context;
+    JsValue e2 = JS.array();
+    e2[0] = "enter";
+    e2[1] = text;
+    e2[2] = context;
+    JsValue e3 = JS.array();
+    e3[0] = "exit";
+    e3[1] = text;
+    e3[2] = context;
+    JsValue e4 = JS.array();
+    e4[0] = "exit";
+    e4[1] = content;
+    e4[2] = context;
+    replacement[0] = e1;
+    replacement[1] = e2;
+    replacement[2] = e3;
+    replacement[3] = e4;
+    splice(events, contentStart, contentEnd - contentStart + 1, replacement);
+  }
+  return events;
+});
+
+JsValue tokenizeHeadingAtx = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue st = JS.object();
+  JS.set(st, "size", 0);
+
+  JsValue data = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || codeEq(code, cNumberSign) || markdownLineEndingOrSpace(code)) {
+      call1(objGet(effects, "exit"), effects, tAtxHeadingText);
+      return call1(objGet(st, "atBreak"), undef(), code);
+    }
+    call1(objGet(effects, "consume"), effects, code);
+    return data;
+  });
+
+  JsValue sequenceFurther = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cNumberSign)) {
+      call1(objGet(effects, "consume"), effects, code);
+      return sequenceFurther;
+    }
+    call1(objGet(effects, "exit"), effects, tAtxHeadingSequence);
+    return call1(objGet(st, "atBreak"), undef(), code);
+  });
+
+  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cNumberSign)) {
+      call1(objGet(effects, "enter"), effects, tAtxHeadingSequence);
+      return call1(sequenceFurther, undef(), code);
+    }
+    if (isEof(code) || markdownLineEnding(code)) {
+      call1(objGet(effects, "exit"), effects, tAtxHeading);
+      return call1(ok, undef(), code);
+    }
+    if (markdownSpace(code)) {
+      return call1(factorySpace(effects, atBreak, tWhitespace, undef()), undef(), code);
+    }
+    call1(objGet(effects, "enter"), effects, tAtxHeadingText);
+    return call1(data, undef(), code);
+  });
+
+  JsValue sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
+    int size = JS.number(objGet(st, "size")).toInt();
+    if (codeEq(code, cNumberSign) && size < kAtxHeadingOpeningFenceSizeMax) {
+      JS.set(st, "size", size + 1);
+      call1(objGet(effects, "consume"), effects, code);
+      return sequenceOpen;
+    }
+    if (isEof(code) || markdownLineEndingOrSpace(code)) {
+      call1(objGet(effects, "exit"), effects, tAtxHeadingSequence);
+      return call1(atBreak, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue before = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tAtxHeadingSequence);
+    return call1(sequenceOpen, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tAtxHeading);
+    return call1(before, undef(), code);
+  });
+
+  JS.set(st, "atBreak", atBreak);
+  return start;
+});
+
+export JsValue headingAtx = makeNamedConstruct("headingAtx", tokenizeHeadingAtx);
+JS.set(headingAtx, "resolve", resolveHeadingAtx);

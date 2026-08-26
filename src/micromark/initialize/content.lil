@@ -1,0 +1,62 @@
+import { call1, call2, call3, objGet } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownLineEnding } from "../util-character.lil";
+import { isEof } from "../host.lil";
+import { kContentTypeText } from "../symbol/constants.lil";
+import { tChunkText, tLineEnding, tLinePrefix, tParagraph } from "../symbol/types.lil";
+
+JsValue initializeContent = JS.method1((JsValue self, JsValue effects) => {
+  JsValue st = JS.object();
+  JS.set(st, "previous", JS.undefined());
+
+  JsValue data = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      call1(objGet(effects, "exit"), effects, tChunkText);
+      call1(objGet(effects, "exit"), effects, tParagraph);
+      call1(objGet(effects, "consume"), effects, code);
+      return JS.undefined();
+    }
+    if (markdownLineEnding(code)) {
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tChunkText);
+      return objGet(st, "lineStart");
+    }
+    call1(objGet(effects, "consume"), effects, code);
+    return data;
+  });
+
+  JsValue lineStart = JS.method1((JsValue _s, JsValue code) => {
+    JsValue fields = JS.object();
+    JS.set(fields, "contentType", kContentTypeText);
+    JS.set(fields, "previous", objGet(st, "previous"));
+    JsValue token = call2(objGet(effects, "enter"), effects, tChunkText, fields);
+    if (objGet(st, "previous").truthy()) {
+      JS.set(objGet(st, "previous"), "next", token);
+    }
+    JS.set(st, "previous", token);
+    return call1(data, JS.undefined(), code);
+  });
+
+  JsValue paragraphInitial = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tParagraph);
+    return call1(lineStart, JS.undefined(), code);
+  });
+
+  JsValue afterContentStartConstruct = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      call1(objGet(effects, "consume"), effects, code);
+      return JS.undefined();
+    }
+    call1(objGet(effects, "enter"), effects, tLineEnding);
+    call1(objGet(effects, "consume"), effects, code);
+    call1(objGet(effects, "exit"), effects, tLineEnding);
+    return factorySpace(effects, objGet(st, "contentStart"), tLinePrefix, JS.undefined());
+  });
+
+  JS.set(st, "lineStart", lineStart);
+  JS.set(st, "contentStart", call3(objGet(effects, "attempt"), effects, objGet(objGet(self, "parser"), "constructs")["contentInitial"], afterContentStartConstruct, paragraphInitial));
+  return objGet(st, "contentStart");
+});
+
+export JsValue contentConstruct = JS.object();
+JS.set(contentConstruct, "tokenize", initializeContent);

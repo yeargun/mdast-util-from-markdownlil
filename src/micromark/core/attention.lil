@@ -1,0 +1,171 @@
+import { arrLen, call1, copyPoint, includesVal, jsInt, jsString, makeNamedConstruct, objGet, slice2, undef } from "../host.lil";
+import { pushAll, splice } from "../util-chunked.lil";
+import { classifyCharacter } from "../util-classify-character.lil";
+import { resolveAll } from "../util-resolve-all.lil";
+import { cAsterisk, codeEq } from "../symbol/codes.lil";
+import { kCharacterGroupPunctuation } from "../symbol/constants.lil";
+import { tAttentionSequence, tEmphasis, tEmphasisSequence, tEmphasisText, tStrong, tStrongSequence, tStrongText } from "../symbol/types.lil";
+
+void movePoint(JsValue point, int offset) {
+  JS.set(point, "column", jsInt(objGet(point, "column")) + offset);
+  JS.set(point, "offset", jsInt(objGet(point, "offset")) + offset);
+  JS.set(point, "_bufferIndex", jsInt(objGet(point, "_bufferIndex")) + offset);
+}
+
+JsValue ev(string kind, JsValue token, JsValue context) {
+  JsValue row = JS.array();
+  row[0] = kind;
+  row[1] = token;
+  row[2] = context;
+  return row;
+}
+
+JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue context) => {
+  int index = -1;
+  int n = arrLen(events);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    if (events[index][0] == "enter" && objGet(events[index][1], "type") == tAttentionSequence && objGet(events[index][1], "_close").truthy()) {
+      int open = index;
+      while (true) {
+        open = open - 1;
+        if (open < 0) {
+          break;
+        }
+        if (events[open][0] == "exit" && objGet(events[open][1], "type") == tAttentionSequence && objGet(events[open][1], "_open").truthy()) {
+          string openSer = jsString(call1(objGet(context, "sliceSerialize"), context, events[open][1]));
+          string closeSer = jsString(call1(objGet(context, "sliceSerialize"), context, events[index][1]));
+          if (openSer.charCodeAt(0) == closeSer.charCodeAt(0)) {
+            int openSize = jsInt(objGet(objGet(events[open][1], "end"), "offset")) - jsInt(objGet(objGet(events[open][1], "start"), "offset"));
+            int closeSize = jsInt(objGet(objGet(events[index][1], "end"), "offset")) - jsInt(objGet(objGet(events[index][1], "start"), "offset"));
+            bool skip = false;
+            if ((objGet(events[open][1], "_close").truthy() || objGet(events[index][1], "_open").truthy()) && (closeSize % 3 != 0) && ((openSize + closeSize) % 3 == 0)) {
+              skip = true;
+            }
+            if (!skip) {
+              int use = 1;
+              if (openSize > 1 && closeSize > 1) {
+                use = 2;
+              }
+              JsValue start = copyPoint(objGet(events[open][1], "end"));
+              JsValue end = copyPoint(objGet(events[index][1], "start"));
+              movePoint(start, 0 - use);
+              movePoint(end, use);
+              string seqType = tEmphasisSequence;
+              string textType = tEmphasisText;
+              string groupType = tEmphasis;
+              if (use > 1) {
+                seqType = tStrongSequence;
+                textType = tStrongText;
+                groupType = tStrong;
+              }
+              JsValue openingSequence = JS.object();
+              JS.set(openingSequence, "type", seqType);
+              JS.set(openingSequence, "start", start);
+              JS.set(openingSequence, "end", copyPoint(objGet(events[open][1], "end")));
+              JsValue closingSequence = JS.object();
+              JS.set(closingSequence, "type", seqType);
+              JS.set(closingSequence, "start", copyPoint(objGet(events[index][1], "start")));
+              JS.set(closingSequence, "end", end);
+              JsValue text = JS.object();
+              JS.set(text, "type", textType);
+              JS.set(text, "start", copyPoint(objGet(events[open][1], "end")));
+              JS.set(text, "end", copyPoint(objGet(events[index][1], "start")));
+              JsValue group = JS.object();
+              JS.set(group, "type", groupType);
+              JS.set(group, "start", copyPoint(objGet(openingSequence, "start")));
+              JS.set(group, "end", copyPoint(objGet(closingSequence, "end")));
+              JS.set(events[open][1], "end", copyPoint(objGet(openingSequence, "start")));
+              JS.set(events[index][1], "start", copyPoint(objGet(closingSequence, "end")));
+              JsValue nextEvents = JS.array();
+              if (jsInt(objGet(objGet(events[open][1], "end"), "offset")) - jsInt(objGet(objGet(events[open][1], "start"), "offset")) != 0) {
+                JsValue extraOpen = JS.array();
+                JS.call(JS.get(extraOpen, "push"), extraOpen, ev("enter", events[open][1], context));
+                JS.call(JS.get(extraOpen, "push"), extraOpen, ev("exit", events[open][1], context));
+                nextEvents = pushAll(nextEvents, extraOpen);
+              }
+              JsValue opening = JS.array();
+              JS.call(JS.get(opening, "push"), opening, ev("enter", group, context));
+              JS.call(JS.get(opening, "push"), opening, ev("enter", openingSequence, context));
+              JS.call(JS.get(opening, "push"), opening, ev("exit", openingSequence, context));
+              JS.call(JS.get(opening, "push"), opening, ev("enter", text, context));
+              nextEvents = pushAll(nextEvents, opening);
+              nextEvents = pushAll(nextEvents, resolveAll(objGet(objGet(objGet(context, "parser"), "constructs"), "insideSpan")["null"], slice2(events, open + 1, index), context));
+              JsValue closing = JS.array();
+              JS.call(JS.get(closing, "push"), closing, ev("exit", text, context));
+              JS.call(JS.get(closing, "push"), closing, ev("enter", closingSequence, context));
+              JS.call(JS.get(closing, "push"), closing, ev("exit", closingSequence, context));
+              JS.call(JS.get(closing, "push"), closing, ev("exit", group, context));
+              nextEvents = pushAll(nextEvents, closing);
+              int extraOffset = 0;
+              if (jsInt(objGet(objGet(events[index][1], "end"), "offset")) - jsInt(objGet(objGet(events[index][1], "start"), "offset")) != 0) {
+                extraOffset = 2;
+                JsValue extraClose = JS.array();
+                JS.call(JS.get(extraClose, "push"), extraClose, ev("enter", events[index][1], context));
+                JS.call(JS.get(extraClose, "push"), extraClose, ev("exit", events[index][1], context));
+                nextEvents = pushAll(nextEvents, extraClose);
+              }
+              splice(events, open - 1, index - open + 3, nextEvents);
+              index = open + arrLen(nextEvents) - extraOffset - 2;
+              n = arrLen(events);
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+  index = -1;
+  n = arrLen(events);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    if (objGet(events[index][1], "type") == tAttentionSequence) {
+      JS.set(events[index][1], "type", "data");
+    }
+  }
+  return events;
+});
+
+JsValue tokenizeAttention = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue _nok) => {
+  JsValue attentionMarkers = objGet(objGet(objGet(self, "parser"), "constructs"), "attentionMarkers")["null"];
+  JsValue previous = objGet(self, "previous");
+  JsValue before = classifyCharacter(previous);
+  JsValue st = JS.object();
+
+  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker")) {
+      call1(objGet(effects, "consume"), effects, code);
+      return inside;
+    }
+    JsValue token = call1(objGet(effects, "exit"), effects, tAttentionSequence);
+    JsValue after = classifyCharacter(code);
+    bool openAfter = !after.truthy() || (after == kCharacterGroupPunctuation && before.truthy()) || includesVal(attentionMarkers, code);
+    bool closeBefore = !before.truthy() || (before == kCharacterGroupPunctuation && after.truthy()) || includesVal(attentionMarkers, previous);
+    bool isStar = objGet(st, "marker") == cAsterisk || codeEq(objGet(st, "marker"), cAsterisk);
+    if (isStar) {
+      JS.set(token, "_open", openAfter);
+      JS.set(token, "_close", closeBefore);
+    } else {
+      JS.set(token, "_open", openAfter && (before.truthy() || !closeBefore));
+      JS.set(token, "_close", closeBefore && (after.truthy() || !openAfter));
+    }
+    return call1(ok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    JS.set(st, "marker", code);
+    call1(objGet(effects, "enter"), effects, tAttentionSequence);
+    return call1(inside, undef(), code);
+  });
+
+  return start;
+});
+
+export JsValue attention = makeNamedConstruct("attention", tokenizeAttention);
+JS.set(attention, "resolveAll", resolveAllAttention);

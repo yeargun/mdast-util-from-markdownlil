@@ -1,0 +1,50 @@
+import { apply, arrayFrom, arrLen, invoke2, slice2 } from "./host.lil";
+import { kV8MaxSafeChunkSize } from "./symbol/constants.lil";
+
+export void splice(JsValue list, JsValue startVal, JsValue removeVal, JsValue items) {
+  float end = JS.number(JS.get(list, "length"));
+  float start = JS.number(startVal);
+  float remove = JS.number(removeVal);
+  if (start < 0.0) {
+    if (0.0 - start > end) {
+      start = 0.0;
+    } else {
+      start = end + start;
+    }
+  } else {
+    if (start > end) {
+      start = end;
+    }
+  }
+  if (remove < 0.0) {
+    remove = 0.0;
+  }
+  int itemCount = arrLen(items);
+  if (itemCount < kV8MaxSafeChunkSize) {
+    JsValue parameters = arrayFrom(items);
+    JS.call(JS.get(parameters, "unshift"), parameters, start, remove);
+    apply(JS.get(list, "splice"), list, parameters);
+  } else {
+    if (remove > 0.0) {
+      invoke2(list, "splice", start, remove);
+    }
+    int chunkStart = 0;
+    float cursor = start;
+    while (chunkStart < itemCount) {
+      int next = chunkStart + kV8MaxSafeChunkSize;
+      JsValue parameters = slice2(items, chunkStart, next);
+      JS.call(JS.get(parameters, "unshift"), parameters, cursor, 0);
+      apply(JS.get(list, "splice"), list, parameters);
+      chunkStart = chunkStart + kV8MaxSafeChunkSize;
+      cursor = cursor + JS.number(kV8MaxSafeChunkSize);
+    }
+  }
+}
+
+export JsValue pushAll(JsValue list, JsValue items) {
+  if (arrLen(list) > 0) {
+    splice(list, JS.get(list, "length"), 0, items);
+    return list;
+  }
+  return items;
+}

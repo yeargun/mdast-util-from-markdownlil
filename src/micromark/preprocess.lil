@@ -1,0 +1,87 @@
+import { decodeBytes, jsString, MathRef, push, undef } from "./host.lil";
+import { cByteOrderMarker, cCr, cHt, cLf, cNul, codes } from "./symbol/codes.lil";
+import { kTabSize } from "./symbol/constants.lil";
+
+export JsValue preprocess() {
+  JsValue st = JS.object();
+  JS.set(st, "column", 1);
+  JS.set(st, "buffer", "");
+  JS.set(st, "start", true);
+  JS.set(st, "atCarriageReturn", undef());
+
+  return JS.method3((JsValue _self, JsValue value, JsValue encoding, JsValue end) => {
+    JsValue chunks = JS.array();
+    string text = jsString(JS.get(st, "buffer")) + decodeBytes(value, encoding);
+    int startPosition = 0;
+    JS.set(st, "buffer", "");
+    if (JS.get(st, "start").truthy()) {
+      if (text.length > 0 && text.charCodeAt(0) == cByteOrderMarker) {
+        startPosition = 1;
+      }
+      JS.set(st, "start", undef());
+    }
+    int n = text.length;
+    while (startPosition < n) {
+      int endPosition = startPosition;
+      int found = -1;
+      while (endPosition < n) {
+        int ch = text.charCodeAt(endPosition);
+        if (ch == cNul || ch == cHt || ch == cLf || ch == cCr) {
+          found = ch;
+          break;
+        }
+        endPosition = endPosition + 1;
+      }
+      if (found < 0) {
+        JS.set(st, "buffer", text.slice(startPosition));
+        break;
+      }
+      int code = found;
+      if (code == cLf && startPosition == endPosition && JS.get(st, "atCarriageReturn").truthy()) {
+        push(chunks, JS.get(codes, "carriageReturnLineFeed"));
+        JS.set(st, "atCarriageReturn", undef());
+      } else {
+        if (JS.get(st, "atCarriageReturn").truthy()) {
+          push(chunks, JS.get(codes, "carriageReturn"));
+          JS.set(st, "atCarriageReturn", undef());
+        }
+        if (startPosition < endPosition) {
+          push(chunks, text.slice(startPosition, endPosition));
+          JS.set(st, "column", JS.number(JS.get(st, "column")) + JS.number(endPosition - startPosition));
+        }
+        if (code == cNul) {
+          push(chunks, JS.get(codes, "replacementCharacter"));
+          JS.set(st, "column", JS.number(JS.get(st, "column")) + 1.0);
+        } else if (code == cHt) {
+          float column = JS.number(JS.get(st, "column"));
+          float next = JS.number(JS.call(JS.get(MathRef, "ceil"), MathRef, column / JS.number(kTabSize))) * JS.number(kTabSize);
+          push(chunks, JS.get(codes, "horizontalTab"));
+          while (column < next) {
+            push(chunks, JS.get(codes, "virtualSpace"));
+            column = column + 1.0;
+          }
+          column = column + 1.0;
+          JS.set(st, "column", column);
+        } else if (code == cLf) {
+          push(chunks, JS.get(codes, "lineFeed"));
+          JS.set(st, "column", 1);
+        } else {
+          JS.set(st, "atCarriageReturn", true);
+          JS.set(st, "column", 1);
+        }
+      }
+      startPosition = endPosition + 1;
+    }
+    if (end.truthy()) {
+      if (JS.get(st, "atCarriageReturn").truthy()) {
+        push(chunks, JS.get(codes, "carriageReturn"));
+      }
+      string buf = jsString(JS.get(st, "buffer"));
+      if (buf.length > 0) {
+        push(chunks, buf);
+      }
+      push(chunks, JS.get(codes, "eof"));
+    }
+    return chunks;
+  });
+}

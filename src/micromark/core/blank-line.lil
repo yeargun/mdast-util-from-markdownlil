@@ -1,0 +1,25 @@
+import { call1, isEof, makeConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownLineEnding, markdownSpace } from "../util-character.lil";
+import { tLinePrefix } from "../symbol/types.lil";
+
+JsValue tokenizeBlankLine = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || markdownLineEnding(code)) {
+      return call1(ok, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      return call1(factorySpace(effects, after, tLinePrefix, undef()), undef(), code);
+    }
+    return call1(after, undef(), code);
+  });
+
+  return start;
+});
+
+export JsValue blankLine = makeConstruct(tokenizeBlankLine);
+JS.set(blankLine, "partial", true);

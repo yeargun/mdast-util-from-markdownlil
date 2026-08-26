@@ -1,0 +1,1060 @@
+import {
+  arrLen,
+  arrSet,
+  ErrorRef,
+  eventContext,
+  eventKind,
+  eventToken,
+  fail,
+  hasOwn,
+  includesStr,
+  isNullish,
+  jsInt,
+  jsString,
+  objGet,
+  objSet,
+  objectAssign,
+  parseIntBase,
+  pop,
+  push,
+  replaceStr,
+  tokenType,
+  undef
+} from "./micromark/host.lil";
+import { parse as parseMarkdown } from "./micromark/parse.lil";
+import { postprocess as postprocessEvents } from "./micromark/postprocess.lil";
+import { preprocess as preprocessMarkdown } from "./micromark/preprocess.lil";
+import { decodeNumericCharacterReference } from "./micromark/util-decode-numeric.lil";
+import { decodeString } from "./micromark/util-decode-string.lil";
+import { normalizeIdentifier } from "./micromark/util-normalize-identifier.lil";
+import { decodeNamedCharacterReference } from "./micromark/decode-named.lil";
+import { splice } from "./micromark/util-chunked.lil";
+import { cEqualsTo } from "./micromark/symbol/codes.lil";
+import { kNumericBaseDecimal, kNumericBaseHexadecimal } from "./micromark/symbol/constants.lil";
+import {
+  tBlockQuote,
+  tBlockQuoteMarker,
+  tBlockQuotePrefix,
+  tBlockQuotePrefixWhitespace,
+  tCharacterReferenceMarkerHexadecimal,
+  tCharacterReferenceMarkerNumeric,
+  tLineEnding,
+  tLineEndingBlank,
+  tLinePrefix,
+  tListItemIndent,
+  tListItemMarker,
+  tListItemPrefix,
+  tListItemPrefixWhitespace,
+  tListItemValue,
+  tListOrdered,
+  tListUnordered
+} from "./micromark/symbol/types.lil";
+import { stringifyPosition } from "./stringify-position.lil";
+import { mdastToString } from "./to-string.lil";
+
+Regex trimFenceEdges = new Regex("^(\\r?\\n|\\r)|(\\r?\\n|\\r)$", "g");
+Regex trimTrailingBreak = new Regex("(\\r?\\n|\\r)$", "g");
+
+int SMALL_LIST_LIMIT = 8;
+int SAFE_SPREAD = 10000;
+
+JsValue emptyPoint() {
+  return JS.object("line", 1, "column", 1, "offset", 0);
+}
+
+JsValue point(JsValue d) {
+  return JS.object("line", objGet(d, "line"), "column", objGet(d, "column"), "offset", objGet(d, "offset"));
+}
+
+JsValue copyPointValue(JsValue d) {
+  return objectAssign(JS.object(), d);
+}
+
+JsValue makeEvent(string kind, JsValue token, JsValue context) {
+  JsValue ev = JS.array();
+  push(ev, kind);
+  push(ev, token);
+  push(ev, context);
+  return ev;
+}
+
+JsValue positionOf(JsValue token) {
+  return JS.object("start", objGet(token, "start"), "end", objGet(token, "end"));
+}
+
+void throwCloseError(JsValue token) {
+  throw JS.construct(ErrorRef, "Cannot close `" + tokenType(token) + "` (" + stringifyPosition(positionOf(token)) + "): it’s not open");
+}
+
+JsValue defaultOnError = JS.method2((JsValue _self, JsValue left, JsValue right) => {
+  if (left.truthy()) {
+    throw JS.construct(ErrorRef, "Cannot close `" + tokenType(left) + "` (" + stringifyPosition(positionOf(left)) + "): a different token (`" + tokenType(right) + "`, " + stringifyPosition(positionOf(right)) + ") is open");
+  }
+  throw JS.construct(ErrorRef, "Cannot close document, a token (`" + tokenType(right) + "`, " + stringifyPosition(positionOf(right)) + ") is still open");
+  return undef();
+});
+
+void applyExtension(JsValue combined, JsValue ext) {
+  for (string key in ext) {
+    if (!hasOwn(ext, key)) {
+      continue;
+    }
+    if (key == "canContainEols") {
+      JsValue right = objGet(ext, key);
+      if (right.truthy()) {
+        JsValue left = objGet(combined, key);
+        int i = 0;
+        int n = arrLen(right);
+        while (i < n) {
+          push(left, right[i]);
+          i = i + 1;
+        }
+      }
+    } else if (key == "transforms") {
+      JsValue right = objGet(ext, key);
+      if (right.truthy()) {
+        JsValue left = objGet(combined, key);
+        int i = 0;
+        int n = arrLen(right);
+        while (i < n) {
+          push(left, right[i]);
+          i = i + 1;
+        }
+      }
+    } else if (key == "enter" || key == "exit") {
+      JsValue right = objGet(ext, key);
+      if (right.truthy()) {
+        objectAssign(objGet(combined, key), right);
+      }
+    }
+  }
+}
+
+JsValue configureFn = JS.undefined();
+
+JsValue initConfigure() {
+  configureFn = JS.method2((JsValue _self, JsValue combined, JsValue extensions) => {
+    int index = -1;
+    int n = arrLen(extensions);
+    while (true) {
+      index = index + 1;
+      if (index >= n) {
+        break;
+      }
+      JsValue value = extensions[index];
+      if (value.isArray()) {
+        JS.call(configureFn, undef(), combined, value);
+      } else {
+        applyExtension(combined, value);
+      }
+    }
+    return undef();
+  });
+  return configureFn;
+}
+
+JsValue configureAll = initConfigure();
+
+void configure(JsValue combined, JsValue extensions) {
+  JS.call(configureAll, undef(), combined, extensions);
+}
+
+JsValue makeFragment() {
+  return JS.object("type", "fragment", "children", JS.array());
+}
+
+JsValue nodeWithChildren(string typ) {
+  JsValue node = JS.object();
+  objSet(node, "type", typ);
+  objSet(node, "children", JS.array());
+  objSet(node, "position", undef());
+  return node;
+}
+
+JsValue createBlockQuote = JS.method1((JsValue _self, JsValue _token) => {
+  return nodeWithChildren("blockquote");
+});
+
+JsValue createCodeFlow = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "code");
+  objSet(node, "lang", null);
+  objSet(node, "meta", null);
+  objSet(node, "value", "");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createCodeText = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "inlineCode");
+  objSet(node, "value", "");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createDefinition = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "definition");
+  objSet(node, "identifier", "");
+  objSet(node, "label", null);
+  objSet(node, "title", null);
+  objSet(node, "url", "");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createEmphasis = JS.method1((JsValue _self, JsValue _token) => {
+  return nodeWithChildren("emphasis");
+});
+
+JsValue createHeading = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = nodeWithChildren("heading");
+  objSet(node, "depth", 0);
+  return node;
+});
+
+JsValue createHardBreak = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "break");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createHtml = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "html");
+  objSet(node, "value", "");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createImage = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "image");
+  objSet(node, "title", null);
+  objSet(node, "url", "");
+  objSet(node, "alt", null);
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue createLink = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = nodeWithChildren("link");
+  objSet(node, "title", null);
+  objSet(node, "url", "");
+  return node;
+});
+
+JsValue createList = JS.method1((JsValue _self, JsValue token) => {
+  JsValue node = nodeWithChildren("list");
+  objSet(node, "ordered", tokenType(token) == tListOrdered);
+  objSet(node, "start", null);
+  objSet(node, "spread", objGet(token, "_spread"));
+  return node;
+});
+
+JsValue createListItem = JS.method1((JsValue _self, JsValue token) => {
+  JsValue node = nodeWithChildren("listItem");
+  objSet(node, "spread", objGet(token, "_spread"));
+  objSet(node, "checked", null);
+  return node;
+});
+
+JsValue createParagraph = JS.method1((JsValue _self, JsValue _token) => {
+  return nodeWithChildren("paragraph");
+});
+
+JsValue createStrong = JS.method1((JsValue _self, JsValue _token) => {
+  return nodeWithChildren("strong");
+});
+
+JsValue createText() {
+  JsValue node = JS.object();
+  objSet(node, "type", "text");
+  objSet(node, "value", "");
+  objSet(node, "position", undef());
+  return node;
+}
+
+JsValue createThematicBreak = JS.method1((JsValue _self, JsValue _token) => {
+  JsValue node = JS.object();
+  objSet(node, "type", "thematicBreak");
+  objSet(node, "position", undef());
+  return node;
+});
+
+JsValue opener(JsValue enterFn, JsValue create, JsValue and) {
+  return JS.method1((JsValue self, JsValue token) => {
+    JS.call(enterFn, self, JS.call(create, undef(), token), token);
+    if (and.truthy()) {
+      JS.call(and, self, token);
+    }
+    return undef();
+  });
+}
+
+JsValue closer(JsValue exitFn, JsValue and) {
+  return JS.method1((JsValue self, JsValue token) => {
+    if (and.truthy()) {
+      JS.call(and, self, token);
+    }
+    JS.call(exitFn, self, token);
+    return undef();
+  });
+}
+
+JsValue sliceOf(JsValue self, JsValue token) {
+  return JS.call(objGet(self, "sliceSerialize"), self, token);
+}
+
+string sliceString(JsValue self, JsValue token) {
+  return jsString(sliceOf(self, token));
+}
+
+JsValue stackTop(JsValue self) {
+  JsValue stack = objGet(self, "stack");
+  return stack[arrLen(stack) - 1];
+}
+
+JsValue stackAt(JsValue self, int fromEnd) {
+  JsValue stack = objGet(self, "stack");
+  return stack[arrLen(stack) - fromEnd];
+}
+
+JsValue dataOf(JsValue self) {
+  return objGet(self, "data");
+}
+
+void finishReferenceLike(JsValue self) {
+  JsValue node = stackTop(self);
+  if (objGet(dataOf(self), "inReference").truthy()) {
+    JsValue referenceType = objGet(dataOf(self), "referenceType");
+    if (!referenceType.truthy()) {
+      referenceType = "shortcut";
+    }
+    objSet(node, "type", jsString(objGet(node, "type")) + "Reference");
+    objSet(node, "referenceType", referenceType);
+    JS.delete(node, "url");
+    JS.delete(node, "title");
+  } else {
+    JS.delete(node, "identifier");
+    JS.delete(node, "label");
+  }
+  objSet(dataOf(self), "referenceType", undef());
+}
+
+bool isListType(string typ) {
+  return typ == tListOrdered || typ == tListUnordered;
+}
+
+bool isListOrQuote(string typ) {
+  return isListType(typ) || typ == tBlockQuote;
+}
+
+bool isListPrefixNoise(string typ) {
+  if (typ == tLinePrefix || typ == tListItemValue || typ == tListItemMarker) {
+    return true;
+  }
+  return typ == tListItemPrefix || typ == tListItemPrefixWhitespace;
+}
+
+bool isListTailNoise(string typ) {
+  if (typ == tLinePrefix || typ == tBlockQuotePrefix || typ == tBlockQuotePrefixWhitespace) {
+    return true;
+  }
+  return typ == tBlockQuoteMarker || typ == tListItemIndent;
+}
+
+int prepareList(JsValue events, int start, int length) {
+  int index = start - 1;
+  int containerBalance = -1;
+  bool listSpread = false;
+  JsValue listItem = undef();
+  JsValue lineIndex = undef();
+  JsValue firstBlankLineIndex = undef();
+  JsValue atMarker = undef();
+  JsValue insertions = JS.array();
+
+  while (true) {
+    index = index + 1;
+    if (index > length) {
+      break;
+    }
+    JsValue ev = events[index];
+    string typ = tokenType(eventToken(ev));
+    string kind = eventKind(ev);
+
+    if (isListOrQuote(typ)) {
+      if (kind == "enter") {
+        containerBalance = containerBalance + 1;
+      } else {
+        containerBalance = containerBalance - 1;
+      }
+      atMarker = undef();
+    } else if (typ == tLineEndingBlank) {
+      if (kind == "enter") {
+        if (listItem.truthy() && !atMarker.truthy() && containerBalance == 0 && !firstBlankLineIndex.truthy()) {
+          firstBlankLineIndex = index;
+        }
+        atMarker = undef();
+      }
+    } else if (!isListPrefixNoise(typ)) {
+      atMarker = undef();
+    }
+
+    bool atItemPrefix = containerBalance == 0 && kind == "enter" && typ == tListItemPrefix;
+    bool atListClose = containerBalance == -1 && kind == "exit" && isListType(typ);
+    if (atItemPrefix || atListClose) {
+      if (listItem.truthy()) {
+        int tailIndex = index;
+        lineIndex = undef();
+        while (true) {
+          tailIndex = tailIndex - 1;
+          if (tailIndex < 0) {
+            break;
+          }
+          JsValue tailEvent = events[tailIndex];
+          string tailType = tokenType(eventToken(tailEvent));
+          if (tailType == tLineEnding || tailType == tLineEndingBlank) {
+            if (eventKind(tailEvent) == "exit") {
+              continue;
+            }
+            if (lineIndex.truthy()) {
+              objSet(eventToken(events[jsInt(lineIndex)]), "type", tLineEndingBlank);
+              listSpread = true;
+            }
+            objSet(eventToken(tailEvent), "type", tLineEnding);
+            lineIndex = tailIndex;
+          } else if (isListTailNoise(tailType)) {
+          } else {
+            break;
+          }
+        }
+
+        if (firstBlankLineIndex.truthy()) {
+          bool beforeSlurp = true;
+          if (lineIndex.truthy()) {
+            if (jsInt(firstBlankLineIndex) >= jsInt(lineIndex)) {
+              beforeSlurp = false;
+            }
+          }
+          if (beforeSlurp) {
+            objSet(listItem, "_spread", true);
+          }
+        }
+
+        JsValue endPoint = objGet(eventToken(ev), "end");
+        int insertAt = index;
+        if (lineIndex.truthy()) {
+          endPoint = objGet(eventToken(events[jsInt(lineIndex)]), "start");
+          insertAt = jsInt(lineIndex);
+        }
+        objSet(listItem, "end", copyPointValue(endPoint));
+        JsValue exitIns = JS.object();
+        objSet(exitIns, "at", insertAt);
+        objSet(exitIns, "event", makeEvent("exit", listItem, eventContext(ev)));
+        push(insertions, exitIns);
+      }
+
+      if (typ == tListItemPrefix) {
+        JsValue item = JS.object();
+        objSet(item, "type", "listItem");
+        objSet(item, "_spread", false);
+        objSet(item, "start", copyPointValue(objGet(eventToken(ev), "start")));
+        objSet(item, "end", undef());
+        listItem = item;
+        JsValue enterIns = JS.object();
+        objSet(enterIns, "at", index);
+        objSet(enterIns, "event", makeEvent("enter", item, eventContext(ev)));
+        push(insertions, enterIns);
+        firstBlankLineIndex = undef();
+        atMarker = true;
+      }
+    }
+  }
+
+  int insertCount = arrLen(insertions);
+  if (insertCount > 0) {
+    if (insertCount <= SMALL_LIST_LIMIT) {
+      int insertion = insertCount;
+      while (insertion > 0) {
+        insertion = insertion - 1;
+        JsValue item = insertions[insertion];
+        JsValue one = JS.array();
+        push(one, objGet(item, "event"));
+        splice(events, objGet(item, "at"), 0, one);
+      }
+    } else {
+      int rangeLength = length - start + 1;
+      JsValue replacement = JS.array();
+      int insertionIndex = 0;
+      int sourceIndex = start;
+      while (sourceIndex <= length) {
+        while (insertionIndex < insertCount && jsInt(objGet(insertions[insertionIndex], "at")) == sourceIndex) {
+          push(replacement, objGet(insertions[insertionIndex], "event"));
+          insertionIndex = insertionIndex + 1;
+        }
+        push(replacement, events[sourceIndex]);
+        sourceIndex = sourceIndex + 1;
+      }
+      int replacementLen = arrLen(replacement);
+      if (replacementLen <= SAFE_SPREAD) {
+        splice(events, start, rangeLength, replacement);
+      } else {
+        int oldEnd = start + rangeLength;
+        int newEnd = start + replacementLen;
+        int delta = newEnd - oldEnd;
+        int oldEventsLength = arrLen(events);
+        objSet(events, "length", oldEventsLength + delta);
+        int shiftIndex = arrLen(events);
+        while (shiftIndex > newEnd) {
+          shiftIndex = shiftIndex - 1;
+          arrSet(events, shiftIndex, events[shiftIndex - delta]);
+        }
+        int writeIndex = 0;
+        while (writeIndex < replacementLen) {
+          arrSet(events, start + writeIndex, replacement[writeIndex]);
+          writeIndex = writeIndex + 1;
+        }
+      }
+    }
+  }
+
+  objSet(eventToken(events[start]), "_spread", listSpread);
+  return length + insertCount;
+}
+
+JsValue compiler(JsValue options) {
+  JsValue eols = JS.array();
+  push(eols, "emphasis");
+  push(eols, "fragment");
+  push(eols, "heading");
+  push(eols, "paragraph");
+  push(eols, "strong");
+  JsValue transforms = JS.array();
+  JsValue enterMap = JS.object();
+  JsValue exitMap = JS.object();
+  JsValue config = JS.object("transforms", transforms, "canContainEols", eols, "enter", enterMap, "exit", exitMap);
+
+  JsValue enterFn = JS.undefined();
+  JsValue exitFn = JS.undefined();
+  JsValue bufferFn = JS.undefined();
+  JsValue resumeFn = JS.undefined();
+  JsValue onenterdata = JS.undefined();
+  JsValue onexitdata = JS.undefined();
+
+  bufferFn = JS.method0((JsValue self) => {
+    push(objGet(self, "stack"), makeFragment());
+    return undef();
+  });
+
+  resumeFn = JS.method0((JsValue self) => {
+    return mdastToString(pop(objGet(self, "stack")), undef());
+  });
+
+  enterFn = JS.method3((JsValue self, JsValue node, JsValue token, JsValue errorHandler) => {
+    JsValue parent = stackTop(self);
+    JsValue siblings = objGet(parent, "children");
+    push(siblings, node);
+    push(objGet(self, "stack"), node);
+    JsValue pair = JS.array();
+    push(pair, token);
+    if (errorHandler.truthy()) {
+      push(pair, errorHandler);
+    } else {
+      push(pair, undef());
+    }
+    push(objGet(self, "tokenStack"), pair);
+    objSet(node, "position", JS.object("start", point(objGet(token, "start")), "end", undef()));
+    return undef();
+  });
+
+  exitFn = JS.method2((JsValue self, JsValue token, JsValue onExitError) => {
+    JsValue node = pop(objGet(self, "stack"));
+    JsValue open = pop(objGet(self, "tokenStack"));
+    if (isNullish(open)) {
+      throwCloseError(token);
+    } else if (tokenType(open[0]) != tokenType(token)) {
+      if (onExitError.truthy()) {
+        JS.call(onExitError, self, token, open[0]);
+      } else {
+        JsValue handler = open[1];
+        if (!handler.truthy()) {
+          handler = defaultOnError;
+        }
+        JS.call(handler, self, token, open[0]);
+      }
+    }
+    objSet(objGet(node, "position"), "end", point(objGet(token, "end")));
+    return undef();
+  });
+
+  JsValue onenterlistordered = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "expectingFirstListItemValue", true);
+    return undef();
+  });
+
+  JsValue onenterlistitemvalue = JS.method1((JsValue self, JsValue token) => {
+    if (objGet(dataOf(self), "expectingFirstListItemValue").truthy()) {
+      JsValue ancestor = stackAt(self, 2);
+      objSet(ancestor, "start", parseIntBase(sliceString(self, token), kNumericBaseDecimal));
+      objSet(dataOf(self), "expectingFirstListItemValue", undef());
+    }
+    return undef();
+  });
+
+  JsValue onexitcodefencedfenceinfo = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "lang", data);
+    return undef();
+  });
+
+  JsValue onexitcodefencedfencemeta = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "meta", data);
+    return undef();
+  });
+
+  JsValue onexitcodefencedfence = JS.method1((JsValue self, JsValue _token) => {
+    if (objGet(dataOf(self), "flowCodeInside").truthy()) {
+      return undef();
+    }
+    JS.call(bufferFn, self);
+    objSet(dataOf(self), "flowCodeInside", true);
+    return undef();
+  });
+
+  JsValue onexitcodefenced = JS.method1((JsValue self, JsValue _token) => {
+    string data = jsString(JS.call(resumeFn, self));
+    objSet(stackTop(self), "value", replaceStr(data, trimFenceEdges, ""));
+    objSet(dataOf(self), "flowCodeInside", undef());
+    return undef();
+  });
+
+  JsValue onexitcodeindented = JS.method1((JsValue self, JsValue _token) => {
+    string data = jsString(JS.call(resumeFn, self));
+    objSet(stackTop(self), "value", replaceStr(data, trimTrailingBreak, ""));
+    return undef();
+  });
+
+  JsValue onexitdefinitionlabelstring = JS.method1((JsValue self, JsValue token) => {
+    JsValue label = JS.call(resumeFn, self);
+    JsValue node = stackTop(self);
+    objSet(node, "label", label);
+    objSet(node, "identifier", normalizeIdentifier(sliceString(self, token)).toLowerCase());
+    return undef();
+  });
+
+  JsValue onexitdefinitiontitlestring = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "title", data);
+    return undef();
+  });
+
+  JsValue onexitdefinitiondestinationstring = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "url", data);
+    return undef();
+  });
+
+  JsValue onexitatxheadingsequence = JS.method1((JsValue self, JsValue token) => {
+    JsValue node = stackTop(self);
+    if (!objGet(node, "depth").truthy()) {
+      objSet(node, "depth", sliceString(self, token).length);
+    }
+    return undef();
+  });
+
+  JsValue onexitsetextheadingtext = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "setextHeadingSlurpLineEnding", true);
+    return undef();
+  });
+
+  JsValue onexitsetextheadinglinesequence = JS.method1((JsValue self, JsValue token) => {
+    string seq = sliceString(self, token);
+    int depth = 2;
+    if (seq.length > 0) {
+      JsValue cp = JS.call(JS.get(seq, "codePointAt"), seq, 0);
+      if (jsInt(cp) == cEqualsTo) {
+        depth = 1;
+      }
+    }
+    objSet(stackTop(self), "depth", depth);
+    return undef();
+  });
+
+  JsValue onexitsetextheading = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "setextHeadingSlurpLineEnding", undef());
+    return undef();
+  });
+
+  onenterdata = JS.method1((JsValue self, JsValue token) => {
+    JsValue node = stackTop(self);
+    JsValue siblings = objGet(node, "children");
+    JsValue tail = undef();
+    if (arrLen(siblings) > 0) {
+      tail = siblings[arrLen(siblings) - 1];
+    }
+    if (isNullish(tail) || jsString(objGet(tail, "type")) != "text") {
+      tail = createText();
+      objSet(tail, "position", JS.object("start", point(objGet(token, "start")), "end", undef()));
+      push(siblings, tail);
+    }
+    push(objGet(self, "stack"), tail);
+    return undef();
+  });
+
+  onexitdata = JS.method1((JsValue self, JsValue token) => {
+    JsValue tail = pop(objGet(self, "stack"));
+    objSet(tail, "value", jsString(objGet(tail, "value")) + sliceString(self, token));
+    objSet(objGet(tail, "position"), "end", point(objGet(token, "end")));
+    return undef();
+  });
+
+  JsValue onexitlineending = JS.method1((JsValue self, JsValue token) => {
+    JsValue context = stackTop(self);
+    if (objGet(dataOf(self), "atHardBreak").truthy()) {
+      JsValue kids = objGet(context, "children");
+      JsValue tail = kids[arrLen(kids) - 1];
+      objSet(objGet(tail, "position"), "end", point(objGet(token, "end")));
+      objSet(dataOf(self), "atHardBreak", undef());
+      return undef();
+    }
+    if (!objGet(dataOf(self), "setextHeadingSlurpLineEnding").truthy() && includesStr(objGet(config, "canContainEols"), jsString(objGet(context, "type")))) {
+      JS.call(onenterdata, self, token);
+      JS.call(onexitdata, self, token);
+    }
+    return undef();
+  });
+
+  JsValue onexithardbreak = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "atHardBreak", true);
+    return undef();
+  });
+
+  JsValue onexithtmlflow = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "value", data);
+    return undef();
+  });
+
+  JsValue onexithtmltext = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "value", data);
+    return undef();
+  });
+
+  JsValue onexitcodetext = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "value", data);
+    return undef();
+  });
+
+  JsValue onexitlink = JS.method1((JsValue self, JsValue _token) => {
+    finishReferenceLike(self);
+    return undef();
+  });
+
+  JsValue onexitimage = JS.method1((JsValue self, JsValue _token) => {
+    finishReferenceLike(self);
+    return undef();
+  });
+
+  JsValue onexitlabeltext = JS.method1((JsValue self, JsValue token) => {
+    string serialized = sliceString(self, token);
+    JsValue ancestor = stackAt(self, 2);
+    objSet(ancestor, "label", decodeString(serialized));
+    objSet(ancestor, "identifier", normalizeIdentifier(serialized).toLowerCase());
+    return undef();
+  });
+
+  JsValue onexitlabel = JS.method1((JsValue self, JsValue _token) => {
+    JsValue fragment = stackTop(self);
+    JsValue value = JS.call(resumeFn, self);
+    JsValue node = stackTop(self);
+    objSet(dataOf(self), "inReference", true);
+    if (jsString(objGet(node, "type")) == "link") {
+      objSet(node, "children", objGet(fragment, "children"));
+    } else {
+      objSet(node, "alt", value);
+    }
+    return undef();
+  });
+
+  JsValue onexitresourcedestinationstring = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "url", data);
+    return undef();
+  });
+
+  JsValue onexitresourcetitlestring = JS.method1((JsValue self, JsValue _token) => {
+    JsValue data = JS.call(resumeFn, self);
+    objSet(stackTop(self), "title", data);
+    return undef();
+  });
+
+  JsValue onexitresource = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "inReference", undef());
+    return undef();
+  });
+
+  JsValue onenterreference = JS.method1((JsValue self, JsValue _token) => {
+    objSet(dataOf(self), "referenceType", "collapsed");
+    return undef();
+  });
+
+  JsValue onexitreferencestring = JS.method1((JsValue self, JsValue token) => {
+    JsValue label = JS.call(resumeFn, self);
+    JsValue node = stackTop(self);
+    objSet(node, "label", label);
+    objSet(node, "identifier", normalizeIdentifier(sliceString(self, token)).toLowerCase());
+    objSet(dataOf(self), "referenceType", "full");
+    return undef();
+  });
+
+  JsValue onexitcharacterreferencemarker = JS.method1((JsValue self, JsValue token) => {
+    objSet(dataOf(self), "characterReferenceType", objGet(token, "type"));
+    return undef();
+  });
+
+  JsValue onexitcharacterreferencevalue = JS.method1((JsValue self, JsValue token) => {
+    string data = sliceString(self, token);
+    JsValue typ = objGet(dataOf(self), "characterReferenceType");
+    string value = "";
+    if (typ.truthy()) {
+      int base = kNumericBaseHexadecimal;
+      if (jsString(typ) == tCharacterReferenceMarkerNumeric) {
+        base = kNumericBaseDecimal;
+      }
+      value = decodeNumericCharacterReference(data, base);
+      objSet(dataOf(self), "characterReferenceType", undef());
+    } else {
+      JsValue result = decodeNamedCharacterReference(data);
+      if (JS.strictEqual(result, false)) {
+        fail("expected reference to decode");
+      }
+      value = jsString(result);
+    }
+    JsValue tail = stackTop(self);
+    objSet(tail, "value", jsString(objGet(tail, "value")) + value);
+    return undef();
+  });
+
+  JsValue onexitcharacterreference = JS.method1((JsValue self, JsValue token) => {
+    JsValue tail = pop(objGet(self, "stack"));
+    objSet(objGet(tail, "position"), "end", point(objGet(token, "end")));
+    return undef();
+  });
+
+  JsValue onexitautolinkprotocol = JS.method1((JsValue self, JsValue token) => {
+    JS.call(onexitdata, self, token);
+    objSet(stackTop(self), "url", sliceOf(self, token));
+    return undef();
+  });
+
+  JsValue onexitautolinkemail = JS.method1((JsValue self, JsValue token) => {
+    JS.call(onexitdata, self, token);
+    objSet(stackTop(self), "url", "mailto:" + sliceString(self, token));
+    return undef();
+  });
+
+  objSet(enterMap, "autolink", opener(enterFn, createLink, undef()));
+  objSet(enterMap, "autolinkProtocol", onenterdata);
+  objSet(enterMap, "autolinkEmail", onenterdata);
+  objSet(enterMap, "atxHeading", opener(enterFn, createHeading, undef()));
+  objSet(enterMap, "blockQuote", opener(enterFn, createBlockQuote, undef()));
+  objSet(enterMap, "characterEscape", onenterdata);
+  objSet(enterMap, "characterReference", onenterdata);
+  objSet(enterMap, "codeFenced", opener(enterFn, createCodeFlow, undef()));
+  objSet(enterMap, "codeFencedFenceInfo", bufferFn);
+  objSet(enterMap, "codeFencedFenceMeta", bufferFn);
+  objSet(enterMap, "codeIndented", opener(enterFn, createCodeFlow, bufferFn));
+  objSet(enterMap, "codeText", opener(enterFn, createCodeText, bufferFn));
+  objSet(enterMap, "codeTextData", onenterdata);
+  objSet(enterMap, "data", onenterdata);
+  objSet(enterMap, "codeFlowValue", onenterdata);
+  objSet(enterMap, "definition", opener(enterFn, createDefinition, undef()));
+  objSet(enterMap, "definitionDestinationString", bufferFn);
+  objSet(enterMap, "definitionLabelString", bufferFn);
+  objSet(enterMap, "definitionTitleString", bufferFn);
+  objSet(enterMap, "emphasis", opener(enterFn, createEmphasis, undef()));
+  objSet(enterMap, "hardBreakEscape", opener(enterFn, createHardBreak, undef()));
+  objSet(enterMap, "hardBreakTrailing", opener(enterFn, createHardBreak, undef()));
+  objSet(enterMap, "htmlFlow", opener(enterFn, createHtml, bufferFn));
+  objSet(enterMap, "htmlFlowData", onenterdata);
+  objSet(enterMap, "htmlText", opener(enterFn, createHtml, bufferFn));
+  objSet(enterMap, "htmlTextData", onenterdata);
+  objSet(enterMap, "image", opener(enterFn, createImage, undef()));
+  objSet(enterMap, "label", bufferFn);
+  objSet(enterMap, "link", opener(enterFn, createLink, undef()));
+  objSet(enterMap, "listItem", opener(enterFn, createListItem, undef()));
+  objSet(enterMap, "listItemValue", onenterlistitemvalue);
+  objSet(enterMap, "listOrdered", opener(enterFn, createList, onenterlistordered));
+  objSet(enterMap, "listUnordered", opener(enterFn, createList, undef()));
+  objSet(enterMap, "paragraph", opener(enterFn, createParagraph, undef()));
+  objSet(enterMap, "reference", onenterreference);
+  objSet(enterMap, "referenceString", bufferFn);
+  objSet(enterMap, "resourceDestinationString", bufferFn);
+  objSet(enterMap, "resourceTitleString", bufferFn);
+  objSet(enterMap, "setextHeading", opener(enterFn, createHeading, undef()));
+  objSet(enterMap, "strong", opener(enterFn, createStrong, undef()));
+  objSet(enterMap, "thematicBreak", opener(enterFn, createThematicBreak, undef()));
+
+  objSet(exitMap, "atxHeading", closer(exitFn, undef()));
+  objSet(exitMap, "atxHeadingSequence", onexitatxheadingsequence);
+  objSet(exitMap, "autolink", closer(exitFn, undef()));
+  objSet(exitMap, "autolinkEmail", onexitautolinkemail);
+  objSet(exitMap, "autolinkProtocol", onexitautolinkprotocol);
+  objSet(exitMap, "blockQuote", closer(exitFn, undef()));
+  objSet(exitMap, "characterEscapeValue", onexitdata);
+  objSet(exitMap, "characterReferenceMarkerHexadecimal", onexitcharacterreferencemarker);
+  objSet(exitMap, "characterReferenceMarkerNumeric", onexitcharacterreferencemarker);
+  objSet(exitMap, "characterReferenceValue", onexitcharacterreferencevalue);
+  objSet(exitMap, "characterReference", onexitcharacterreference);
+  objSet(exitMap, "codeFenced", closer(exitFn, onexitcodefenced));
+  objSet(exitMap, "codeFencedFence", onexitcodefencedfence);
+  objSet(exitMap, "codeFencedFenceInfo", onexitcodefencedfenceinfo);
+  objSet(exitMap, "codeFencedFenceMeta", onexitcodefencedfencemeta);
+  objSet(exitMap, "codeFlowValue", onexitdata);
+  objSet(exitMap, "codeIndented", closer(exitFn, onexitcodeindented));
+  objSet(exitMap, "codeText", closer(exitFn, onexitcodetext));
+  objSet(exitMap, "codeTextData", onexitdata);
+  objSet(exitMap, "data", onexitdata);
+  objSet(exitMap, "definition", closer(exitFn, undef()));
+  objSet(exitMap, "definitionDestinationString", onexitdefinitiondestinationstring);
+  objSet(exitMap, "definitionLabelString", onexitdefinitionlabelstring);
+  objSet(exitMap, "definitionTitleString", onexitdefinitiontitlestring);
+  objSet(exitMap, "emphasis", closer(exitFn, undef()));
+  objSet(exitMap, "hardBreakEscape", closer(exitFn, onexithardbreak));
+  objSet(exitMap, "hardBreakTrailing", closer(exitFn, onexithardbreak));
+  objSet(exitMap, "htmlFlow", closer(exitFn, onexithtmlflow));
+  objSet(exitMap, "htmlFlowData", onexitdata);
+  objSet(exitMap, "htmlText", closer(exitFn, onexithtmltext));
+  objSet(exitMap, "htmlTextData", onexitdata);
+  objSet(exitMap, "image", closer(exitFn, onexitimage));
+  objSet(exitMap, "label", onexitlabel);
+  objSet(exitMap, "labelText", onexitlabeltext);
+  objSet(exitMap, "lineEnding", onexitlineending);
+  objSet(exitMap, "link", closer(exitFn, onexitlink));
+  objSet(exitMap, "listItem", closer(exitFn, undef()));
+  objSet(exitMap, "listOrdered", closer(exitFn, undef()));
+  objSet(exitMap, "listUnordered", closer(exitFn, undef()));
+  objSet(exitMap, "paragraph", closer(exitFn, undef()));
+  objSet(exitMap, "referenceString", onexitreferencestring);
+  objSet(exitMap, "resourceDestinationString", onexitresourcedestinationstring);
+  objSet(exitMap, "resourceTitleString", onexitresourcetitlestring);
+  objSet(exitMap, "resource", onexitresource);
+  objSet(exitMap, "setextHeading", closer(exitFn, onexitsetextheading));
+  objSet(exitMap, "setextHeadingLineSequence", onexitsetextheadinglinesequence);
+  objSet(exitMap, "setextHeadingText", onexitsetextheadingtext);
+  objSet(exitMap, "strong", closer(exitFn, undef()));
+  objSet(exitMap, "thematicBreak", closer(exitFn, undef()));
+
+  JsValue settings = options;
+  if (isNullish(settings)) {
+    settings = JS.object();
+  }
+  JsValue mdastExtensions = objGet(settings, "mdastExtensions");
+  if (isNullish(mdastExtensions)) {
+    mdastExtensions = JS.array();
+  }
+  configure(config, mdastExtensions);
+
+  JsValue data = JS.object();
+
+  return JS.method1((JsValue _self, JsValue events) => {
+    JsValue tree = JS.object("type", "root", "children", JS.array(), "position", undef());
+    JsValue stack = JS.array();
+    push(stack, tree);
+    JsValue tokenStack = JS.array();
+    JsValue context = JS.object();
+    objSet(context, "stack", stack);
+    objSet(context, "tokenStack", tokenStack);
+    objSet(context, "config", config);
+    objSet(context, "enter", enterFn);
+    objSet(context, "exit", exitFn);
+    objSet(context, "buffer", bufferFn);
+    objSet(context, "resume", resumeFn);
+    objSet(context, "data", data);
+
+    JsValue listStack = JS.array();
+    int index = -1;
+    while (true) {
+      index = index + 1;
+      if (index >= arrLen(events)) {
+        break;
+      }
+      string typ = tokenType(eventToken(events[index]));
+      if (isListType(typ)) {
+        if (eventKind(events[index]) == "enter") {
+          push(listStack, index);
+        } else {
+          JsValue tail = pop(listStack);
+          index = prepareList(events, jsInt(tail), index);
+        }
+      }
+    }
+
+    index = -1;
+    while (true) {
+      index = index + 1;
+      if (index >= arrLen(events)) {
+        break;
+      }
+      JsValue ev = events[index];
+      JsValue handlerMap = objGet(config, eventKind(ev));
+      string typ = tokenType(eventToken(ev));
+      if (hasOwn(handlerMap, typ)) {
+        JsValue assigned = objectAssign(JS.object("sliceSerialize", objGet(eventContext(ev), "sliceSerialize")), context);
+        JS.call(objGet(handlerMap, typ), assigned, eventToken(ev));
+      }
+    }
+
+    if (arrLen(tokenStack) > 0) {
+      JsValue tail = tokenStack[arrLen(tokenStack) - 1];
+      JsValue handler = tail[1];
+      if (!handler.truthy()) {
+        handler = defaultOnError;
+      }
+      JS.call(handler, context, undef(), tail[0]);
+    }
+
+    JsValue startPoint = emptyPoint();
+    JsValue endPoint = emptyPoint();
+    if (arrLen(events) > 0) {
+      startPoint = objGet(eventToken(events[0]), "start");
+      endPoint = objGet(eventToken(events[arrLen(events) - 2]), "end");
+    }
+    objSet(tree, "position", JS.object("start", point(startPoint), "end", point(endPoint)));
+
+    index = -1;
+    JsValue transformList = objGet(config, "transforms");
+    while (true) {
+      index = index + 1;
+      if (index >= arrLen(transformList)) {
+        break;
+      }
+      JsValue next = JS.call(transformList[index], undef(), tree);
+      if (next.truthy()) {
+        tree = next;
+      }
+    }
+    return tree;
+  });
+}
+
+export JsValue fromMarkdownImpl(JsValue value, JsValue encoding, JsValue options) {
+  JsValue enc = encoding;
+  JsValue settings = options;
+  if (enc.truthy() && JS.typeOf(enc) == "object") {
+    settings = enc;
+    enc = undef();
+  }
+  JsValue compileFn = compiler(settings);
+  JsValue parser = parseMarkdown(settings);
+  JsValue tokenizer = JS.call(objGet(parser, "document"), parser);
+  JsValue chunks = JS.call(preprocessMarkdown(), undef(), value, enc, true);
+  JsValue events = JS.call(objGet(tokenizer, "write"), tokenizer, chunks);
+  return JS.call(compileFn, undef(), postprocessEvents(events));
+}

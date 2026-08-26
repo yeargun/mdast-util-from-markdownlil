@@ -1,0 +1,116 @@
+import { arrLen, call0, call1, copyPoint, isEof, makeNamedConstruct, objGet, push, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownLineEnding, markdownSpace } from "../util-character.lil";
+import { tContent, tDefinition, tLineEnding, tLinePrefix, tLineSuffix, tParagraph, tSetextHeading, tSetextHeadingLine, tSetextHeadingLineSequence, tSetextHeadingText } from "../symbol/types.lil";
+
+JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, JsValue context) => {
+  int index = arrLen(events);
+  JsValue content = undef();
+  JsValue text = undef();
+  JsValue definition = undef();
+  while (true) {
+    index = index - 1;
+    if (index < 0) {
+      break;
+    }
+    if (events[index][0] == "enter") {
+      if (objGet(events[index][1], "type") == tContent) {
+        content = index;
+        break;
+      }
+      if (objGet(events[index][1], "type") == tParagraph) {
+        text = index;
+      }
+    } else {
+      if (objGet(events[index][1], "type") == tContent) {
+        JS.call(JS.get(events, "splice"), events, index, 1);
+      }
+      if (!definition.truthy() && objGet(events[index][1], "type") == tDefinition) {
+        definition = index;
+      }
+    }
+  }
+  JsValue heading = JS.object();
+  JS.set(heading, "type", tSetextHeading);
+  JS.set(heading, "start", copyPoint(objGet(events[content][1], "start")));
+  JS.set(heading, "end", copyPoint(objGet(events[arrLen(events) - 1][1], "end")));
+  JS.set(events[text][1], "type", tSetextHeadingText);
+  if (definition.truthy()) {
+    JsValue enterH = JS.array();
+    enterH[0] = "enter";
+    enterH[1] = heading;
+    enterH[2] = context;
+    JS.call(JS.get(events, "splice"), events, text, 0, enterH);
+    JsValue exitC = JS.array();
+    exitC[0] = "exit";
+    exitC[1] = events[content][1];
+    exitC[2] = context;
+    JS.call(JS.get(events, "splice"), events, JS.number(definition) + 1.0, 0, exitC);
+    JS.set(events[content][1], "end", copyPoint(objGet(events[definition][1], "end")));
+  } else {
+    events[content][1] = heading;
+  }
+  JsValue exitH = JS.array();
+  exitH[0] = "exit";
+  exitH[1] = heading;
+  exitH[2] = context;
+  push(events, exitH);
+  return events;
+});
+
+JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue st = JS.object();
+
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || markdownLineEnding(code)) {
+      call1(objGet(effects, "exit"), effects, tSetextHeadingLine);
+      return call1(ok, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker")) {
+      call1(objGet(effects, "consume"), effects, code);
+      return inside;
+    }
+    call1(objGet(effects, "exit"), effects, tSetextHeadingLineSequence);
+    if (markdownSpace(code)) {
+      return call1(factorySpace(effects, after, tLineSuffix, undef()), undef(), code);
+    }
+    return call1(after, undef(), code);
+  });
+
+  JsValue before = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tSetextHeadingLineSequence);
+    return call1(inside, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    int index = arrLen(objGet(self, "events"));
+    bool paragraph = false;
+    while (true) {
+      index = index - 1;
+      if (index < 0) {
+        break;
+      }
+      string typ = JS.string(objGet(objGet(self, "events")[index][1], "type"));
+      if (typ != tLineEnding && typ != tLinePrefix && typ != tContent) {
+        paragraph = typ == tParagraph;
+        break;
+      }
+    }
+    JsValue lazy = objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")];
+    if (!lazy.truthy() && (objGet(self, "interrupt").truthy() || paragraph)) {
+      call1(objGet(effects, "enter"), effects, tSetextHeadingLine);
+      JS.set(st, "marker", code);
+      return call1(before, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  return start;
+});
+
+export JsValue setextUnderline = makeNamedConstruct("setextUnderline", tokenizeSetextUnderline);
+JS.set(setextUnderline, "resolveTo", resolveToSetextUnderline);

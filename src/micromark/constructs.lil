@@ -1,0 +1,109 @@
+import { attention } from "./core/attention.lil";
+import { autolink } from "./core/autolink.lil";
+import { blockQuote } from "./core/block-quote.lil";
+import { characterEscape } from "./core/character-escape.lil";
+import { characterReference } from "./core/character-reference.lil";
+import { codeFenced } from "./core/code-fenced.lil";
+import { codeIndented } from "./core/code-indented.lil";
+import { codeText } from "./core/code-text.lil";
+import { definition } from "./core/definition.lil";
+import { hardBreakEscape } from "./core/hard-break-escape.lil";
+import { headingAtx } from "./core/heading-atx.lil";
+import { htmlFlow } from "./core/html-flow.lil";
+import { htmlText } from "./core/html-text.lil";
+import { labelEnd } from "./core/label-end.lil";
+import { labelStartImage } from "./core/label-start-image.lil";
+import { labelStartLink } from "./core/label-start-link.lil";
+import { lineEnding } from "./core/line-ending.lil";
+import { list } from "./core/list.lil";
+import { setextUnderline } from "./core/setext-underline.lil";
+import { thematicBreak } from "./core/thematic-break.lil";
+import { resolver as resolveText } from "./initialize/text.lil";
+import { cAmpersand, cAsterisk, cBackslash, cCarriageReturn, cCarriageReturnLineFeed, cDash, cDigit0, cDigit1, cDigit9, cEqualsTo, cExclamationMark, cGraveAccent, cGreaterThan, cHorizontalTab, cLeftSquareBracket, cLessThan, cLineFeed, cNumberSign, cPlusSign, cRightSquareBracket, cSpace, cTilde, cUnderscore, cVirtualSpace } from "./symbol/codes.lil";
+
+void setCode(JsValue map, int code, JsValue value) {
+  JS.set(map, JS.string(code), value);
+}
+
+JsValue arr1(JsValue a) {
+  JsValue list = JS.array();
+  list[0] = a;
+  return list;
+}
+
+JsValue arr2(JsValue a, JsValue b) {
+  JsValue list = JS.array();
+  list[0] = a;
+  list[1] = b;
+  return list;
+}
+
+export JsValue document = JS.object();
+setCode(document, cAsterisk, list);
+setCode(document, cPlusSign, list);
+setCode(document, cDash, list);
+int digit = cDigit0;
+while (digit <= cDigit9) {
+  setCode(document, digit, list);
+  digit = digit + 1;
+}
+setCode(document, cGreaterThan, blockQuote);
+
+export JsValue contentInitial = JS.object();
+setCode(contentInitial, cLeftSquareBracket, definition);
+
+export JsValue flowInitial = JS.object();
+setCode(flowInitial, cHorizontalTab, codeIndented);
+setCode(flowInitial, cVirtualSpace, codeIndented);
+setCode(flowInitial, cSpace, codeIndented);
+
+export JsValue flow = JS.object();
+setCode(flow, cNumberSign, headingAtx);
+setCode(flow, cAsterisk, thematicBreak);
+setCode(flow, cDash, arr2(setextUnderline, thematicBreak));
+setCode(flow, cLessThan, htmlFlow);
+setCode(flow, cEqualsTo, setextUnderline);
+setCode(flow, cUnderscore, thematicBreak);
+setCode(flow, cGraveAccent, codeFenced);
+setCode(flow, cTilde, codeFenced);
+
+export JsValue stringMap = JS.object();
+setCode(stringMap, cAmpersand, characterReference);
+setCode(stringMap, cBackslash, characterEscape);
+
+export JsValue text = JS.object();
+setCode(text, cCarriageReturn, lineEnding);
+setCode(text, cLineFeed, lineEnding);
+setCode(text, cCarriageReturnLineFeed, lineEnding);
+setCode(text, cExclamationMark, labelStartImage);
+setCode(text, cAmpersand, characterReference);
+setCode(text, cAsterisk, attention);
+setCode(text, cLessThan, arr2(autolink, htmlText));
+setCode(text, cLeftSquareBracket, labelStartLink);
+setCode(text, cBackslash, arr2(hardBreakEscape, characterEscape));
+setCode(text, cRightSquareBracket, labelEnd);
+setCode(text, cUnderscore, attention);
+setCode(text, cGraveAccent, codeText);
+
+export JsValue insideSpan = JS.object();
+JS.set(insideSpan, "null", arr2(attention, resolveText));
+
+export JsValue attentionMarkers = JS.object();
+JsValue markers = JS.array();
+markers[0] = cAsterisk;
+markers[1] = cUnderscore;
+JS.set(attentionMarkers, "null", markers);
+
+export JsValue disable = JS.object();
+JS.set(disable, "null", JS.array());
+
+export JsValue defaultConstructs = JS.object();
+JS.set(defaultConstructs, "document", document);
+JS.set(defaultConstructs, "contentInitial", contentInitial);
+JS.set(defaultConstructs, "flowInitial", flowInitial);
+JS.set(defaultConstructs, "flow", flow);
+JS.set(defaultConstructs, "string", stringMap);
+JS.set(defaultConstructs, "text", text);
+JS.set(defaultConstructs, "insideSpan", insideSpan);
+JS.set(defaultConstructs, "attentionMarkers", attentionMarkers);
+JS.set(defaultConstructs, "disable", disable);

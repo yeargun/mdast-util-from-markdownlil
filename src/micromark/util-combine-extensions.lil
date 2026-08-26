@@ -1,0 +1,111 @@
+import { arrLen, hasOwn, isNullish, objGet, objSet, push } from "./host.lil";
+import { splice } from "./util-chunked.lil";
+
+void mergeConstructs(JsValue existing, JsValue list) {
+  JsValue before = JS.array();
+  int index = -1;
+  int n = arrLen(list);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    JsValue item = list[index];
+    if (JS.get(item, "add") == "after") {
+      push(existing, item);
+    } else {
+      push(before, item);
+    }
+  }
+  splice(existing, 0, 0, before);
+}
+
+void syntaxExtension(JsValue all, JsValue extension) {
+  for (string hook in extension) {
+    if (!hasOwn(extension, hook)) {
+      continue;
+    }
+    JsValue maybe = JS.undefined();
+    if (hasOwn(all, hook)) {
+      maybe = objGet(all, hook);
+    }
+    JsValue left = maybe;
+    if (isNullish(left)) {
+      left = JS.object();
+      objSet(all, hook, left);
+    }
+    JsValue right = objGet(extension, hook);
+    if (right.truthy()) {
+      for (string code in right) {
+        if (!hasOwn(right, code)) {
+          continue;
+        }
+        if (!hasOwn(left, code)) {
+          objSet(left, code, JS.array());
+        }
+        JsValue value = objGet(right, code);
+        JsValue asList = JS.array();
+        if (value.isArray()) {
+          asList = value;
+        } else if (value.truthy()) {
+          push(asList, value);
+        }
+        mergeConstructs(objGet(left, code), asList);
+      }
+    }
+  }
+}
+
+void htmlExtension(JsValue all, JsValue extension) {
+  for (string hook in extension) {
+    if (!hasOwn(extension, hook)) {
+      continue;
+    }
+    JsValue maybe = JS.undefined();
+    if (hasOwn(all, hook)) {
+      maybe = objGet(all, hook);
+    }
+    JsValue left = maybe;
+    if (isNullish(left)) {
+      left = JS.object();
+      objSet(all, hook, left);
+    }
+    JsValue right = objGet(extension, hook);
+    if (right.truthy()) {
+      for (string typ in right) {
+        if (!hasOwn(right, typ)) {
+          continue;
+        }
+        objSet(left, typ, objGet(right, typ));
+      }
+    }
+  }
+}
+
+export JsValue combineExtensions(JsValue extensions) {
+  JsValue all = JS.object();
+  int index = -1;
+  int n = arrLen(extensions);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    syntaxExtension(all, extensions[index]);
+  }
+  return all;
+}
+
+export JsValue combineHtmlExtensions(JsValue htmlExtensions) {
+  JsValue handlers = JS.object();
+  int index = -1;
+  int n = arrLen(htmlExtensions);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    htmlExtension(handlers, htmlExtensions[index]);
+  }
+  return handlers;
+}

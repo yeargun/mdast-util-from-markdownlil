@@ -1,0 +1,13 @@
+import { isEof, undef } from "./host.lil";
+import { markdownLineEndingOrSpace, unicodePunctuation, unicodeWhitespace } from "./util-character.lil";
+import { kCharacterGroupPunctuation, kCharacterGroupWhitespace } from "./symbol/constants.lil";
+
+export JsValue classifyCharacter(JsValue code) {
+  if (isEof(code) || markdownLineEndingOrSpace(code) || unicodeWhitespace(code)) {
+    return kCharacterGroupWhitespace;
+  }
+  if (unicodePunctuation(code)) {
+    return kCharacterGroupPunctuation;
+  }
+  return undef();
+}

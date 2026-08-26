@@ -1,0 +1,183 @@
+import {
+  apply,
+  arrayFrom,
+  arrLen,
+  fail,
+  MathRef,
+  NumberRef,
+  ObjectRef,
+  invoke0,
+  invoke1,
+  invoke2,
+  isNullish,
+  jsInt,
+  jsNum,
+  jsString,
+  objGet,
+  pop,
+  push,
+  slice1,
+  slice2,
+  undef
+} from "./host.lil";
+import { kV8MaxSafeChunkSize } from "./symbol/constants.lil";
+
+void chunkedPush(JsValue list, JsValue right) {
+  int n = arrLen(right);
+  if (n < kV8MaxSafeChunkSize) {
+    JsValue parameters = arrayFrom(right);
+    apply(JS.get(list, "push"), list, parameters);
+  } else {
+    int chunkStart = 0;
+    while (chunkStart < n) {
+      JsValue part = slice2(right, chunkStart, chunkStart + kV8MaxSafeChunkSize);
+      apply(JS.get(list, "push"), list, part);
+      chunkStart = chunkStart + kV8MaxSafeChunkSize;
+    }
+  }
+}
+
+JsValue sbLeft(JsValue self) {
+  return objGet(self, "left");
+}
+
+JsValue sbRight(JsValue self) {
+  return objGet(self, "right");
+}
+
+int sbSize(JsValue self) {
+  return arrLen(sbLeft(self)) + arrLen(sbRight(self));
+}
+
+void setCursor(JsValue self, float n) {
+  JsValue left = sbLeft(self);
+  JsValue right = sbRight(self);
+  float leftLen = JS.number(JS.get(left, "length"));
+  float rightLen = JS.number(JS.get(right, "length"));
+  if (n == leftLen || (n > leftLen && rightLen == 0.0) || (n < 0.0 && leftLen == 0.0)) {
+    return;
+  }
+  if (n < leftLen) {
+    JsValue removed = invoke2(left, "splice", n, JS.get(NumberRef, "POSITIVE_INFINITY"));
+    JS.call(JS.get(removed, "reverse"), removed);
+    chunkedPush(right, removed);
+  } else {
+    JsValue removed = invoke2(right, "splice", leftLen + rightLen - n, JS.get(NumberRef, "POSITIVE_INFINITY"));
+    JS.call(JS.get(removed, "reverse"), removed);
+    chunkedPush(left, removed);
+  }
+}
+
+JsValue sbGet(JsValue self, JsValue indexVal) {
+  float index = jsNum(indexVal);
+  int size = sbSize(self);
+  if (index < 0.0 || index >= JS.number(size)) {
+    fail("Cannot access index `" + jsString(indexVal) + "` in a splice buffer of size `" + JS.string(size) + "`");
+  }
+  JsValue left = sbLeft(self);
+  int leftLen = arrLen(left);
+  if (index < JS.number(leftLen)) {
+    return left[jsInt(indexVal)];
+  }
+  JsValue right = sbRight(self);
+  int rightLen = arrLen(right);
+  return right[rightLen - jsInt(indexVal) + leftLen - 1];
+}
+
+JsValue sbSlice(JsValue self, JsValue startVal, JsValue endVal) {
+  float stop = JS.number(JS.get(NumberRef, "POSITIVE_INFINITY"));
+  if (!(isNullish(endVal))) {
+    stop = jsNum(endVal);
+  }
+  float start = jsNum(startVal);
+  JsValue left = sbLeft(self);
+  JsValue right = sbRight(self);
+  float leftLen = JS.number(JS.get(left, "length"));
+  if (stop < leftLen) {
+    return slice2(left, start, stop);
+  }
+  if (start > leftLen) {
+    float rightLen = JS.number(JS.get(right, "length"));
+    JsValue part = slice2(right, rightLen - stop + leftLen, rightLen - start + leftLen);
+    return JS.call(JS.get(part, "reverse"), part);
+  }
+  JsValue head = slice1(left, start);
+  float rightLen = JS.number(JS.get(right, "length"));
+  JsValue tail = slice1(right, rightLen - stop + leftLen);
+  JS.call(JS.get(tail, "reverse"), tail);
+  return JS.call(JS.get(head, "concat"), head, tail);
+}
+
+JsValue sbSplice(JsValue self, JsValue startVal, JsValue deleteCount, JsValue items) {
+  float count = 0.0;
+  if (deleteCount.truthy()) {
+    count = jsNum(deleteCount);
+  }
+  setCursor(self, JS.number(JS.call(JS.get(MathRef, "trunc"), MathRef, jsNum(startVal))));
+  JsValue right = sbRight(self);
+  JsValue removed = invoke2(right, "splice", JS.number(JS.get(right, "length")) - count, JS.get(NumberRef, "POSITIVE_INFINITY"));
+  if (items.truthy()) {
+    chunkedPush(sbLeft(self), items);
+  }
+  return JS.call(JS.get(removed, "reverse"), removed);
+}
+
+export JsValue SpliceBuffer = JS.method1((JsValue self, JsValue initial) => {
+  if (initial.truthy()) {
+    JS.set(self, "left", arrayFrom(initial));
+  } else {
+    JS.set(self, "left", JS.array());
+  }
+  JS.set(self, "right", JS.array());
+  return self;
+});
+
+JsValue proto = JS.get(SpliceBuffer, "prototype");
+proto["get"] = JS.method1(sbGet);
+proto["slice"] = JS.method2(sbSlice);
+proto["splice"] = JS.method3(sbSplice);
+proto["shift"] = JS.method0((JsValue self) => {
+  setCursor(self, 0.0);
+  return pop(sbRight(self));
+});
+proto["pop"] = JS.method0((JsValue self) => {
+  setCursor(self, JS.number(JS.get(NumberRef, "POSITIVE_INFINITY")));
+  return pop(sbLeft(self));
+});
+proto["push"] = JS.method1((JsValue self, JsValue item) => {
+  setCursor(self, JS.number(JS.get(NumberRef, "POSITIVE_INFINITY")));
+  push(sbLeft(self), item);
+  return undef();
+});
+proto["pushMany"] = JS.method1((JsValue self, JsValue items) => {
+  setCursor(self, JS.number(JS.get(NumberRef, "POSITIVE_INFINITY")));
+  chunkedPush(sbLeft(self), items);
+  return undef();
+});
+proto["unshift"] = JS.method1((JsValue self, JsValue item) => {
+  setCursor(self, 0.0);
+  push(sbRight(self), item);
+  return undef();
+});
+proto["unshiftMany"] = JS.method1((JsValue self, JsValue items) => {
+  setCursor(self, 0.0);
+  JsValue reversed = arrayFrom(items);
+  JS.call(JS.get(reversed, "reverse"), reversed);
+  chunkedPush(sbRight(self), reversed);
+  return undef();
+});
+proto["setCursor"] = JS.method1((JsValue self, JsValue n) => {
+  setCursor(self, jsNum(n));
+  return undef();
+});
+
+JS.call(JS.get(ObjectRef, "defineProperty"), ObjectRef, proto, "length", JS.object(
+  "enumerable",
+  true,
+  "configurable",
+  true,
+  "get",
+  JS.method0((JsValue self) => {
+    return arrLen(sbLeft(self)) + arrLen(sbRight(self));
+  })
+));

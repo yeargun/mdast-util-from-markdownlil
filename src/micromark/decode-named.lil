@@ -1,0 +1,9 @@
+import { characterEntities } from "./character-entities.lil";
+import { hasOwn, objGet } from "./host.lil";
+
+export JsValue decodeNamedCharacterReference(string value) {
+  if (hasOwn(characterEntities, value)) {
+    return objGet(characterEntities, value);
+  }
+  return false;
+}

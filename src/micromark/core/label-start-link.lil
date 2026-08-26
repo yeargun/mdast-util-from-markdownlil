@@ -1,0 +1,27 @@
+import { call1, hasOwn, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { cCaret, codeEq } from "../symbol/codes.lil";
+import { tLabelLink, tLabelMarker } from "../symbol/types.lil";
+import { labelEnd } from "./label-end.lil";
+
+JsValue tokenizeLabelStartLink = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cCaret) && hasOwn(objGet(objGet(self, "parser"), "constructs"), "_hiddenFootnoteSupport")) {
+      return call1(nok, undef(), code);
+    }
+    return call1(ok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tLabelLink);
+    call1(objGet(effects, "enter"), effects, tLabelMarker);
+    call1(objGet(effects, "consume"), effects, code);
+    call1(objGet(effects, "exit"), effects, tLabelMarker);
+    call1(objGet(effects, "exit"), effects, tLabelLink);
+    return after;
+  });
+
+  return start;
+});
+
+export JsValue labelStartLink = makeNamedConstruct("labelStartLink", tokenizeLabelStartLink);
+JS.set(labelStartLink, "resolveAll", objGet(labelEnd, "resolveAll"));

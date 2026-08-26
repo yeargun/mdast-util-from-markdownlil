@@ -1,0 +1,369 @@
+import { call1, includesStr, isEof, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { asciiAlpha, asciiAlphanumeric, markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from "../util-character.lil";
+import { cApostrophe, cColon, cDash, cDot, cEqualsTo, cExclamationMark, cGraveAccent, cGreaterThan, cLeftSquareBracket, cLessThan, cQuestionMark, cQuotationMark, cRightSquareBracket, cSlash, cUnderscore, codeEq, codeInt } from "../symbol/codes.lil";
+import { kCdataOpeningString, kTabSize } from "../symbol/constants.lil";
+import { tHtmlText, tHtmlTextData, tLineEnding, tLinePrefix } from "../symbol/types.lil";
+
+JsValue tokenizeHtmlText = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue st = JS.object();
+  JS.set(st, "marker", undef());
+  JS.set(st, "index", 0);
+  JS.set(st, "returnState", undef());
+
+  JsValue consume = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "consume"), effects, code);
+    return undef();
+  });
+
+  JsValue lineEndingAfterPrefix = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tHtmlTextData);
+    return call1(objGet(st, "returnState"), undef(), code);
+  });
+
+  JsValue lineEndingAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      JsValue max = kTabSize;
+      if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
+        max = undef();
+      }
+      return call1(factorySpace(effects, lineEndingAfterPrefix, tLinePrefix, max), undef(), code);
+    }
+    return call1(lineEndingAfterPrefix, undef(), code);
+  });
+
+  JsValue lineEndingBefore = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "exit"), effects, tHtmlTextData);
+    call1(objGet(effects, "enter"), effects, tLineEnding);
+    call1(consume, undef(), code);
+    call1(objGet(effects, "exit"), effects, tLineEnding);
+    return lineEndingAfter;
+  });
+
+  JsValue end = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      call1(consume, undef(), code);
+      call1(objGet(effects, "exit"), effects, tHtmlTextData);
+      call1(objGet(effects, "exit"), effects, tHtmlText);
+      return ok;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue tagOpenAttributeValueQuotedAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return call1(objGet(st, "tagOpenBetween"), undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue tagOpenAttributeValueUnquoted = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGraveAccent)) {
+      return call1(nok, undef(), code);
+    }
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return call1(objGet(st, "tagOpenBetween"), undef(), code);
+    }
+    call1(consume, undef(), code);
+    return tagOpenAttributeValueUnquoted;
+  });
+
+  JsValue tagOpenAttributeValueQuoted = JS.method1((JsValue _s, JsValue code) => {
+    if (code == objGet(st, "marker")) {
+      call1(consume, undef(), code);
+      JS.set(st, "marker", undef());
+      return tagOpenAttributeValueQuotedAfter;
+    }
+    if (isEof(code)) {
+      return call1(nok, undef(), code);
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", tagOpenAttributeValueQuoted);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    call1(consume, undef(), code);
+    return tagOpenAttributeValueQuoted;
+  });
+
+  JsValue tagOpenAttributeValueBefore = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGreaterThan) || codeEq(code, cGraveAccent)) {
+      return call1(nok, undef(), code);
+    }
+    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe)) {
+      call1(consume, undef(), code);
+      JS.set(st, "marker", code);
+      return tagOpenAttributeValueQuoted;
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", tagOpenAttributeValueBefore);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    if (markdownSpace(code)) {
+      call1(consume, undef(), code);
+      return tagOpenAttributeValueBefore;
+    }
+    call1(consume, undef(), code);
+    return tagOpenAttributeValueUnquoted;
+  });
+
+  JsValue tagOpenAttributeNameAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cEqualsTo)) {
+      call1(consume, undef(), code);
+      return tagOpenAttributeValueBefore;
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", tagOpenAttributeNameAfter);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    if (markdownSpace(code)) {
+      call1(consume, undef(), code);
+      return tagOpenAttributeNameAfter;
+    }
+    return call1(objGet(st, "tagOpenBetween"), undef(), code);
+  });
+
+  JsValue tagOpenAttributeName = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || codeEq(code, cDot) || codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlphanumeric(code)) {
+      call1(consume, undef(), code);
+      return tagOpenAttributeName;
+    }
+    return call1(tagOpenAttributeNameAfter, undef(), code);
+  });
+
+  JsValue tagOpenBetween = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cSlash)) {
+      call1(consume, undef(), code);
+      return end;
+    }
+    if (codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlpha(code)) {
+      call1(consume, undef(), code);
+      return tagOpenAttributeName;
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", tagOpenBetween);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    if (markdownSpace(code)) {
+      call1(consume, undef(), code);
+      return tagOpenBetween;
+    }
+    return call1(end, undef(), code);
+  });
+
+  JsValue tagOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
+      call1(consume, undef(), code);
+      return tagOpen;
+    }
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return call1(tagOpenBetween, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue tagCloseBetween = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", tagCloseBetween);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    if (markdownSpace(code)) {
+      call1(consume, undef(), code);
+      return tagCloseBetween;
+    }
+    return call1(end, undef(), code);
+  });
+
+  JsValue tagClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
+      call1(consume, undef(), code);
+      return tagClose;
+    }
+    return call1(tagCloseBetween, undef(), code);
+  });
+
+  JsValue tagCloseStart = JS.method1((JsValue _s, JsValue code) => {
+    if (asciiAlpha(code)) {
+      call1(consume, undef(), code);
+      return tagClose;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue instruction = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      return call1(nok, undef(), code);
+    }
+    if (codeEq(code, cQuestionMark)) {
+      call1(consume, undef(), code);
+      return objGet(st, "instructionClose");
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", instruction);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    call1(consume, undef(), code);
+    return instruction;
+  });
+
+  JsValue instructionClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      return call1(end, undef(), code);
+    }
+    return call1(instruction, undef(), code);
+  });
+
+  JsValue declaration = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code) || codeEq(code, cGreaterThan)) {
+      return call1(end, undef(), code);
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", declaration);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    call1(consume, undef(), code);
+    return declaration;
+  });
+
+  JsValue cdata = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      return call1(nok, undef(), code);
+    }
+    if (codeEq(code, cRightSquareBracket)) {
+      call1(consume, undef(), code);
+      return objGet(st, "cdataClose");
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", cdata);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    call1(consume, undef(), code);
+    return cdata;
+  });
+
+  JsValue cdataEnd = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      return call1(end, undef(), code);
+    }
+    if (codeEq(code, cRightSquareBracket)) {
+      call1(consume, undef(), code);
+      return cdataEnd;
+    }
+    return call1(cdata, undef(), code);
+  });
+
+  JsValue cdataClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cRightSquareBracket)) {
+      call1(consume, undef(), code);
+      return cdataEnd;
+    }
+    return call1(cdata, undef(), code);
+  });
+
+  JsValue cdataOpenInside = JS.method1((JsValue _s, JsValue code) => {
+    int index = JS.number(objGet(st, "index")).toInt();
+    JS.set(st, "index", index + 1);
+    if (!isEof(code) && codeInt(code) == kCdataOpeningString.charCodeAt(index)) {
+      call1(consume, undef(), code);
+      if (index + 1 == kCdataOpeningString.length) {
+        return cdata;
+      }
+      return cdataOpenInside;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue comment = JS.method1((JsValue _s, JsValue code) => {
+    if (isEof(code)) {
+      return call1(nok, undef(), code);
+    }
+    if (codeEq(code, cDash)) {
+      call1(consume, undef(), code);
+      return objGet(st, "commentClose");
+    }
+    if (markdownLineEnding(code)) {
+      JS.set(st, "returnState", comment);
+      return call1(lineEndingBefore, undef(), code);
+    }
+    call1(consume, undef(), code);
+    return comment;
+  });
+
+  JsValue commentClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash)) {
+      call1(consume, undef(), code);
+      return objGet(st, "commentEnd");
+    }
+    return call1(comment, undef(), code);
+  });
+
+  JsValue commentEnd = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      return call1(end, undef(), code);
+    }
+    if (codeEq(code, cDash)) {
+      return call1(commentClose, undef(), code);
+    }
+    return call1(comment, undef(), code);
+  });
+
+  JsValue commentOpenInside = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash)) {
+      call1(consume, undef(), code);
+      return commentEnd;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue declarationOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash)) {
+      call1(consume, undef(), code);
+      return commentOpenInside;
+    }
+    if (codeEq(code, cLeftSquareBracket)) {
+      call1(consume, undef(), code);
+      JS.set(st, "index", 0);
+      return cdataOpenInside;
+    }
+    if (asciiAlpha(code)) {
+      call1(consume, undef(), code);
+      return declaration;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue open = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cExclamationMark)) {
+      call1(consume, undef(), code);
+      return declarationOpen;
+    }
+    if (codeEq(code, cSlash)) {
+      call1(consume, undef(), code);
+      return tagCloseStart;
+    }
+    if (codeEq(code, cQuestionMark)) {
+      call1(consume, undef(), code);
+      return instruction;
+    }
+    if (asciiAlpha(code)) {
+      call1(consume, undef(), code);
+      return tagOpen;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tHtmlText);
+    call1(objGet(effects, "enter"), effects, tHtmlTextData);
+    call1(consume, undef(), code);
+    return open;
+  });
+
+  JS.set(st, "tagOpenBetween", tagOpenBetween);
+  JS.set(st, "instructionClose", instructionClose);
+  JS.set(st, "cdataClose", cdataClose);
+  JS.set(st, "commentClose", commentClose);
+  JS.set(st, "commentEnd", commentEnd);
+  return start;
+});
+
+export JsValue htmlText = makeNamedConstruct("htmlText", tokenizeHtmlText);

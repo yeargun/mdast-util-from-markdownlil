@@ -1,0 +1,39 @@
+import { decodeNamedCharacterReference } from "./decode-named.lil";
+import { decodeNumericCharacterReference } from "./util-decode-numeric.lil";
+import { cLowercaseX, cNumberSign, cUppercaseX, codeEq } from "./symbol/codes.lil";
+import { kNumericBaseDecimal, kNumericBaseHexadecimal } from "./symbol/constants.lil";
+import { jsString } from "./host.lil";
+
+Regex characterEscapeOrReference = new Regex("\\\\([!-/:-@[-`{-~])|&(#(?:\\d{1,7}|x[\\da-f]{1,6})|[\\da-z]{1,31});", "gi");
+
+JsValue decodeOne(JsValue _self, JsValue args) {
+  string whole = jsString(args[0]);
+  JsValue escapePart = args[1];
+  JsValue refPart = args[2];
+  if (escapePart.truthy()) {
+    return escapePart;
+  }
+  string ref = jsString(refPart);
+  int head = ref.charCodeAt(0);
+  if (head == cNumberSign) {
+    int second = ref.charCodeAt(1);
+    bool hex = second == cLowercaseX || second == cUppercaseX;
+    string digits = "";
+    if (hex) {
+      digits = ref.slice(2);
+      return decodeNumericCharacterReference(digits, kNumericBaseHexadecimal);
+    }
+    digits = ref.slice(1);
+    return decodeNumericCharacterReference(digits, kNumericBaseDecimal);
+  }
+  JsValue named = decodeNamedCharacterReference(ref);
+  if (named.truthy()) {
+    return named;
+  }
+  return whole;
+}
+
+export string decodeString(string value) {
+  JsValue replacer = JS.methodRest(decodeOne);
+  return jsString(JS.call(JS.get(value, "replace"), value, characterEscapeOrReference, replacer));
+}

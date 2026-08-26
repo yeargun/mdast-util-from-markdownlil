@@ -1,0 +1,7 @@
+import { subtokenize } from "./util-subtokenize.lil";
+
+export JsValue postprocess(JsValue events) {
+  while (!subtokenize(events)) {
+  }
+  return events;
+}

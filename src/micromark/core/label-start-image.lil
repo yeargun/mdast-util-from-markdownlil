@@ -1,0 +1,37 @@
+import { call1, hasOwn, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { cCaret, cLeftSquareBracket, codeEq } from "../symbol/codes.lil";
+import { tLabelImage, tLabelImageMarker, tLabelMarker } from "../symbol/types.lil";
+import { labelEnd } from "./label-end.lil";
+
+JsValue tokenizeLabelStartImage = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cCaret) && hasOwn(objGet(objGet(self, "parser"), "constructs"), "_hiddenFootnoteSupport")) {
+      return call1(nok, undef(), code);
+    }
+    return call1(ok, undef(), code);
+  });
+
+  JsValue open = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cLeftSquareBracket)) {
+      call1(objGet(effects, "enter"), effects, tLabelMarker);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tLabelMarker);
+      call1(objGet(effects, "exit"), effects, tLabelImage);
+      return after;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tLabelImage);
+    call1(objGet(effects, "enter"), effects, tLabelImageMarker);
+    call1(objGet(effects, "consume"), effects, code);
+    call1(objGet(effects, "exit"), effects, tLabelImageMarker);
+    return open;
+  });
+
+  return start;
+});
+
+export JsValue labelStartImage = makeNamedConstruct("labelStartImage", tokenizeLabelStartImage);
+JS.set(labelStartImage, "resolveAll", objGet(labelEnd, "resolveAll"));

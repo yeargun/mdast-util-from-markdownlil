@@ -1,0 +1,71 @@
+import { call1, call2, call3, includesStr, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { factorySpace } from "../factory-space.lil";
+import { markdownSpace } from "../util-character.lil";
+import { cGreaterThan, codeEq } from "../symbol/codes.lil";
+import { kTabSize } from "../symbol/constants.lil";
+import { tBlockQuote, tBlockQuoteMarker, tBlockQuotePrefix, tBlockQuotePrefixWhitespace, tLinePrefix } from "../symbol/types.lil";
+
+JsValue tokenizeBlockQuoteStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      call1(objGet(effects, "enter"), effects, tBlockQuotePrefixWhitespace);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tBlockQuotePrefixWhitespace);
+      call1(objGet(effects, "exit"), effects, tBlockQuotePrefix);
+      return ok;
+    }
+    call1(objGet(effects, "exit"), effects, tBlockQuotePrefix);
+    return call1(ok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      JsValue state = objGet(self, "containerState");
+      if (!objGet(state, "open").truthy()) {
+        JsValue fields = JS.object();
+        JS.set(fields, "_container", true);
+        call2(objGet(effects, "enter"), effects, tBlockQuote, fields);
+        JS.set(state, "open", true);
+      }
+      call1(objGet(effects, "enter"), effects, tBlockQuotePrefix);
+      call1(objGet(effects, "enter"), effects, tBlockQuoteMarker);
+      call1(objGet(effects, "consume"), effects, code);
+      call1(objGet(effects, "exit"), effects, tBlockQuoteMarker);
+      return after;
+    }
+    return call1(nok, undef(), code);
+  });
+
+  return start;
+});
+
+export JsValue blockQuote = makeNamedConstruct("blockQuote", tokenizeBlockQuoteStart);
+
+JsValue tokenizeBlockQuoteContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue contBefore = JS.method1((JsValue _s, JsValue code) => {
+    return call1(call3(objGet(effects, "attempt"), effects, blockQuote, ok, nok), undef(), code);
+  });
+
+  JsValue contStart = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      JsValue max = kTabSize;
+      if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
+        max = undef();
+      }
+      return call1(factorySpace(effects, contBefore, tLinePrefix, max), undef(), code);
+    }
+    return call1(contBefore, undef(), code);
+  });
+
+  return contStart;
+});
+
+JsValue exitBlockQuote = JS.method1((JsValue _self, JsValue effects) => {
+  call1(objGet(effects, "exit"), effects, tBlockQuote);
+  return undef();
+});
+
+JsValue continuation = JS.object();
+JS.set(continuation, "tokenize", tokenizeBlockQuoteContinuation);
+JS.set(blockQuote, "continuation", continuation);
+JS.set(blockQuote, "exit", exitBlockQuote);

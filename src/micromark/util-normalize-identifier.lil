@@ -1,0 +1,10 @@
+import { vSpace } from "./symbol/values.lil";
+
+Regex collapseWs = new Regex("[\\t\\n\\r ]+", "g");
+Regex trimEnds = new Regex("^ | $", "g");
+
+export string normalizeIdentifier(string value) {
+  string collapsed = value.replace(collapseWs, vSpace);
+  string trimmed = collapsed.replace(trimEnds, "");
+  return trimmed.toLowerCase().toUpperCase();
+}

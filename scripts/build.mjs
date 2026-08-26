@@ -16,7 +16,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const lilscriptRoot = process.env.LILSCRIPT_ROOT ?? resolve(root, "..", "lilscript")
 const dist = resolve(root, "dist")
 const file = "from-markdown"
-const banner = "/*! @itslil/mdast-util-from-markdown 2.0.2 | LilScript reimplementation of mdast-util-from-markdown | MIT */\n"
+const banner = "/*! @itslil/mdast-util-from-markdown 2.0.3 | LilScript reimplementation of mdast-util-from-markdown | MIT */\n"
 
 function compilerPath() {
   const candidates = [

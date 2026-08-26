@@ -1,0 +1,23 @@
+import { call1, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { markdownLineEnding } from "../util-character.lil";
+import { tHardBreakEscape } from "../symbol/types.lil";
+
+JsValue tokenizeHardBreakEscape = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEnding(code)) {
+      call1(objGet(effects, "exit"), effects, tHardBreakEscape);
+      return call1(ok, undef(), code);
+    }
+    return call1(nok, undef(), code);
+  });
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    call1(objGet(effects, "enter"), effects, tHardBreakEscape);
+    call1(objGet(effects, "consume"), effects, code);
+    return after;
+  });
+
+  return start;
+});
+
+export JsValue hardBreakEscape = makeNamedConstruct("hardBreakEscape", tokenizeHardBreakEscape);

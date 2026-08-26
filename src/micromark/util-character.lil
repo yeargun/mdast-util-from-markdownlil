@@ -1,0 +1,110 @@
+import { fromCharCode1, isEof } from "./host.lil";
+import { cDel, cHorizontalTab, cNul, cSpace, cVirtualSpace, codeEq } from "./symbol/codes.lil";
+
+Regex asciiAlphaRe = new Regex("[A-Za-z]", "");
+Regex asciiAlphanumericRe = new Regex("[\\dA-Za-z]", "");
+Regex asciiAtextRe = new Regex("[#-'*+\\--9=?A-Z^-~]", "");
+Regex asciiDigitRe = new Regex("\\d", "");
+Regex asciiHexDigitRe = new Regex("[\\dA-Fa-f]", "");
+Regex asciiPunctuationRe = new Regex("[!-/:-@[-`{-~]", "");
+Regex unicodePunctuationRe = new Regex("\\p{P}|\\p{S}", "u");
+Regex unicodeWhitespaceRe = new Regex("\\s", "");
+
+bool regexCode(Regex pattern, JsValue code) {
+  if (isEof(code)) {
+    return false;
+  }
+  if (code is float) {
+    if (code < 0.0) {
+      return false;
+    }
+    return pattern.test(fromCharCode1(code));
+  }
+  if (JS.typeOf(code) != "number") {
+    return false;
+  }
+  float n = JS.number(code);
+  if (n < 0.0) {
+    return false;
+  }
+  return pattern.test(fromCharCode1(code));
+}
+
+export bool asciiAlpha(JsValue code) {
+  return regexCode(asciiAlphaRe, code);
+}
+
+export bool asciiAlphanumeric(JsValue code) {
+  return regexCode(asciiAlphanumericRe, code);
+}
+
+export bool asciiAtext(JsValue code) {
+  return regexCode(asciiAtextRe, code);
+}
+
+export bool asciiControl(JsValue code) {
+  if (isEof(code)) {
+    return false;
+  }
+  if (code is float) {
+    int n = code.toInt();
+    return n < cSpace || n == cDel;
+  }
+  if (JS.typeOf(code) != "number") {
+    return false;
+  }
+  int n = JS.number(code).toInt();
+  return n < cSpace || n == cDel;
+}
+
+export bool asciiDigit(JsValue code) {
+  return regexCode(asciiDigitRe, code);
+}
+
+export bool asciiHexDigit(JsValue code) {
+  return regexCode(asciiHexDigitRe, code);
+}
+
+export bool asciiPunctuation(JsValue code) {
+  return regexCode(asciiPunctuationRe, code);
+}
+
+export bool markdownLineEnding(JsValue code) {
+  if (isEof(code)) {
+    return false;
+  }
+  if (code is float) {
+    return code.toInt() < cHorizontalTab;
+  }
+  if (JS.typeOf(code) != "number") {
+    return false;
+  }
+  return JS.number(code).toInt() < cHorizontalTab;
+}
+
+export bool markdownLineEndingOrSpace(JsValue code) {
+  if (isEof(code)) {
+    return false;
+  }
+  if (code is float) {
+    int n = code.toInt();
+    return n < cNul || n == cSpace;
+  }
+  if (JS.typeOf(code) != "number") {
+    return false;
+  }
+  int n = JS.number(code).toInt();
+  return n < cNul || n == cSpace;
+}
+
+export bool markdownSpace(JsValue code) {
+  return codeEq(code, cHorizontalTab) || codeEq(code, cVirtualSpace) || codeEq(code, cSpace);
+}
+
+export bool unicodePunctuation(JsValue code) {
+  return regexCode(unicodePunctuationRe, code);
+}
+
+export bool unicodeWhitespace(JsValue code) {
+  return regexCode(unicodeWhitespaceRe, code);
+}
