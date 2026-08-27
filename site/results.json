@@ -62,18 +62,18 @@
     {
       "id": "itslil",
       "name": "@itslil/mdast-util-from-markdown · library",
-      "raw": 121888,
-      "gzip9": 37770,
-      "brotli11": 31522,
+      "raw": 94640,
+      "gzip9": 31706,
+      "brotli11": 26977,
       "note": "LilScript js-module, extern_fields true. The npm ESM.",
       "primary": true
     },
     {
       "id": "itslil-closed",
       "name": "@itslil/mdast-util-from-markdown · closed",
-      "raw": 121778,
-      "gzip9": 37695,
-      "brotli11": 31437,
+      "raw": 95425,
+      "gzip9": 32153,
+      "brotli11": 27383,
       "note": "Same source, extern_fields false"
     }
   ],
