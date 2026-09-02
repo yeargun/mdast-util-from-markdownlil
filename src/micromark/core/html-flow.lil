@@ -1,4 +1,4 @@
-import { arrLen, call0, call1, call2, call3, fromCharCode1, includesVal, isEof, jsInt, jsString, makeConstruct, makeNamedConstruct, objGet, undef } from "../host.lil";
+import { arrLen, call0, call1, call2, call3, fromCharCode1, includesVal, isEof, makeConstruct, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { asciiAlpha, asciiAlphanumeric, markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from "../util-character.lil";
 import { htmlBlockNames, htmlRawNames } from "../util-html-tag-name.lil";
 import { cColon, cDash, cDot, cExclamationMark, cGreaterThan, cLeftSquareBracket, cLessThan, cQuestionMark, cRightSquareBracket, cSlash, cUnderscore, codeEq, codeInt } from "../symbol/codes.lil";
@@ -62,19 +62,27 @@ JsValue blankLineBefore = makeConstruct(tokenizeBlankLineBefore);
 JS.set(blankLineBefore, "partial", true);
 
 JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "marker", 0);
-  JS.set(st, "closingTag", false);
-  JS.set(st, "buffer", "");
-  JS.set(st, "index", 0);
-  JS.set(st, "markerB", undef());
+  int marker = 0;
+  bool closingTag = false;
+  string buffer = "";
+  int index = 0;
+  int markerB = 0;
+  JsValue continuationAfter = undef();
+  JsValue continuationStart = undef();
+  JsValue continuationBefore = undef();
+  JsValue continuationCommentInside = undef();
+  JsValue continuationRawTagOpen = undef();
+  JsValue continuationCdataInside = undef();
+  JsValue continuationDeclarationInside = undef();
+  JsValue completeAttributeNameBefore = undef();
+  JsValue completeAttributeNameAfter = undef();
 
   JsValue consume = JS.method1((JsValue _s, JsValue code) => {
     call1(objGet(effects, "consume"), effects, code);
     return undef();
   });
 
-  JsValue continuationAfter = JS.method1((JsValue _s, JsValue code) => {
+  continuationAfter = JS.method1((JsValue _s, JsValue code) => {
     call1(objGet(effects, "exit"), effects, tHtmlFlow);
     return call1(ok, undef(), code);
   });
@@ -82,21 +90,20 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
   JsValue continuationClose = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tHtmlFlowData);
-      return call1(objGet(st, "continuationAfter"), undef(), code);
+      return call1(continuationAfter, undef(), code);
     }
     call1(consume, undef(), code);
     return continuationClose;
   });
 
   JsValue continuation = JS.method1((JsValue _s, JsValue code) => {
-    int marker = jsInt(objGet(st, "marker"));
     if (codeEq(code, cDash) && marker == kHtmlComment) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationCommentInside");
+      return continuationCommentInside;
     }
     if (codeEq(code, cLessThan) && marker == kHtmlRaw) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationRawTagOpen");
+      return continuationRawTagOpen;
     }
     if (codeEq(code, cGreaterThan) && marker == kHtmlDeclaration) {
       call1(consume, undef(), code);
@@ -104,19 +111,19 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     }
     if (codeEq(code, cQuestionMark) && marker == kHtmlInstruction) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationDeclarationInside");
+      return continuationDeclarationInside;
     }
     if (codeEq(code, cRightSquareBracket) && marker == kHtmlCdata) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationCdataInside");
+      return continuationCdataInside;
     }
     if (markdownLineEnding(code) && (marker == kHtmlBasic || marker == kHtmlComplete)) {
       call1(objGet(effects, "exit"), effects, tHtmlFlowData);
-      return call1(call3(objGet(effects, "check"), effects, blankLineBefore, continuationAfter, objGet(st, "continuationStart")), undef(), code);
+      return call1(call3(objGet(effects, "check"), effects, blankLineBefore, continuationAfter, continuationStart), undef(), code);
     }
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tHtmlFlowData);
-      return call1(objGet(st, "continuationStart"), undef(), code);
+      return call1(continuationStart, undef(), code);
     }
     call1(consume, undef(), code);
     return continuation;
@@ -126,14 +133,14 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     call1(objGet(effects, "enter"), effects, tLineEnding);
     call1(consume, undef(), code);
     call1(objGet(effects, "exit"), effects, tLineEnding);
-    return objGet(st, "continuationBefore");
+    return continuationBefore;
   });
 
-  JsValue continuationStart = JS.method1((JsValue _s, JsValue code) => {
+  continuationStart = JS.method1((JsValue _s, JsValue code) => {
     return call1(call3(objGet(effects, "check"), effects, nonLazyContinuationStart, continuationStartNonLazy, continuationAfter), undef(), code);
   });
 
-  JsValue continuationBefore = JS.method1((JsValue _s, JsValue code) => {
+  continuationBefore = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       return call1(continuationStart, undef(), code);
     }
@@ -141,54 +148,54 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     return call1(continuation, undef(), code);
   });
 
-  JsValue continuationCommentInside = JS.method1((JsValue _s, JsValue code) => {
+  continuationCommentInside = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cDash)) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationDeclarationInside");
+      return continuationDeclarationInside;
     }
     return call1(continuation, undef(), code);
   });
 
   JsValue continuationRawEndTag = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cGreaterThan)) {
-      string name = jsString(objGet(st, "buffer")).toLowerCase();
+      string name = buffer.toLowerCase();
       if (includesVal(htmlRawNames, name)) {
         call1(consume, undef(), code);
         return continuationClose;
       }
       return call1(continuation, undef(), code);
     }
-    if (asciiAlpha(code) && jsString(objGet(st, "buffer")).length < kHtmlRawSizeMax) {
+    if (asciiAlpha(code) && buffer.length < kHtmlRawSizeMax) {
       call1(consume, undef(), code);
-      JS.set(st, "buffer", jsString(objGet(st, "buffer")) + fromCharCode1(code));
+      buffer = buffer + fromCharCode1(code);
       return continuationRawEndTag;
     }
     return call1(continuation, undef(), code);
   });
 
-  JsValue continuationRawTagOpen = JS.method1((JsValue _s, JsValue code) => {
+  continuationRawTagOpen = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cSlash)) {
       call1(consume, undef(), code);
-      JS.set(st, "buffer", "");
+      buffer = "";
       return continuationRawEndTag;
     }
     return call1(continuation, undef(), code);
   });
 
-  JsValue continuationCdataInside = JS.method1((JsValue _s, JsValue code) => {
+  continuationCdataInside = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cRightSquareBracket)) {
       call1(consume, undef(), code);
-      return objGet(st, "continuationDeclarationInside");
+      return continuationDeclarationInside;
     }
     return call1(continuation, undef(), code);
   });
 
-  JsValue continuationDeclarationInside = JS.method1((JsValue _s, JsValue code) => {
+  continuationDeclarationInside = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cGreaterThan)) {
       call1(consume, undef(), code);
       return continuationClose;
     }
-    if (codeEq(code, cDash) && jsInt(objGet(st, "marker")) == kHtmlComment) {
+    if (codeEq(code, cDash) && marker == kHtmlComment) {
       call1(consume, undef(), code);
       return continuationDeclarationInside;
     }
@@ -216,15 +223,15 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
 
   JsValue completeAttributeValueQuotedAfter = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownSpace(code)) {
-      return call1(objGet(st, "completeAttributeNameBefore"), undef(), code);
+      return call1(completeAttributeNameBefore, undef(), code);
     }
     return call1(nok, undef(), code);
   });
 
   JsValue completeAttributeValueQuoted = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "markerB")) {
+    if (code == markerB) {
       call1(consume, undef(), code);
-      JS.set(st, "markerB", undef());
+      markerB = 0;
       return completeAttributeValueQuotedAfter;
     }
     if (isEof(code) || markdownLineEnding(code)) {
@@ -236,7 +243,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
 
   JsValue completeAttributeValueUnquoted = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cSlash) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGreaterThan) || codeEq(code, cGraveAccent) || markdownLineEndingOrSpace(code)) {
-      return call1(objGet(st, "completeAttributeNameAfter"), undef(), code);
+      return call1(completeAttributeNameAfter, undef(), code);
     }
     call1(consume, undef(), code);
     return completeAttributeValueUnquoted;
@@ -248,7 +255,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     }
     if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe)) {
       call1(consume, undef(), code);
-      JS.set(st, "markerB", code);
+      markerB = JS.number(code).toInt();
       return completeAttributeValueQuoted;
     }
     if (markdownSpace(code)) {
@@ -258,7 +265,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     return call1(completeAttributeValueUnquoted, undef(), code);
   });
 
-  JsValue completeAttributeNameAfter = JS.method1((JsValue _s, JsValue code) => {
+  completeAttributeNameAfter = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cEqualsTo)) {
       call1(consume, undef(), code);
       return completeAttributeValueBefore;
@@ -267,7 +274,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
       call1(consume, undef(), code);
       return completeAttributeNameAfter;
     }
-    return call1(objGet(st, "completeAttributeNameBefore"), undef(), code);
+    return call1(completeAttributeNameBefore, undef(), code);
   });
 
   JsValue completeAttributeName = JS.method1((JsValue _s, JsValue code) => {
@@ -278,7 +285,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     return call1(completeAttributeNameAfter, undef(), code);
   });
 
-  JsValue completeAttributeNameBefore = JS.method1((JsValue _s, JsValue code) => {
+  completeAttributeNameBefore = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cSlash)) {
       call1(consume, undef(), code);
       return completeEnd;
@@ -316,16 +323,16 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
   JsValue tagName = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
       bool slash = codeEq(code, cSlash);
-      string name = jsString(objGet(st, "buffer")).toLowerCase();
-      if (!slash && !objGet(st, "closingTag").truthy() && includesVal(htmlRawNames, name)) {
-        JS.set(st, "marker", kHtmlRaw);
+      string name = buffer.toLowerCase();
+      if (!slash && !closingTag && includesVal(htmlRawNames, name)) {
+        marker = kHtmlRaw;
         if (objGet(self, "interrupt").truthy()) {
           return call1(ok, undef(), code);
         }
         return call1(continuation, undef(), code);
       }
       if (includesVal(htmlBlockNames, name)) {
-        JS.set(st, "marker", kHtmlBasic);
+        marker = kHtmlBasic;
         if (slash) {
           call1(consume, undef(), code);
           return basicSelfClosing;
@@ -335,18 +342,18 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
         }
         return call1(continuation, undef(), code);
       }
-      JS.set(st, "marker", kHtmlComplete);
+      marker = kHtmlComplete;
       if (objGet(self, "interrupt").truthy() && !objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")].truthy()) {
         return call1(nok, undef(), code);
       }
-      if (objGet(st, "closingTag").truthy()) {
+      if (closingTag) {
         return call1(completeClosingTagAfter, undef(), code);
       }
       return call1(completeAttributeNameBefore, undef(), code);
     }
     if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
       call1(consume, undef(), code);
-      JS.set(st, "buffer", jsString(objGet(st, "buffer")) + fromCharCode1(code));
+      buffer = buffer + fromCharCode1(code);
       return tagName;
     }
     return call1(nok, undef(), code);
@@ -355,18 +362,18 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
   JsValue tagCloseStart = JS.method1((JsValue _s, JsValue code) => {
     if (asciiAlpha(code)) {
       call1(consume, undef(), code);
-      JS.set(st, "buffer", fromCharCode1(code));
+      buffer = fromCharCode1(code);
       return tagName;
     }
     return call1(nok, undef(), code);
   });
 
   JsValue cdataOpenInside = JS.method1((JsValue _s, JsValue code) => {
-    int index = jsInt(objGet(st, "index"));
-    JS.set(st, "index", index + 1);
-    if (!isEof(code) && codeInt(code) == kCdataOpeningString.charCodeAt(index)) {
+    int currentIndex = index;
+    index = index + 1;
+    if (!isEof(code) && codeInt(code) == kCdataOpeningString.charCodeAt(currentIndex)) {
       call1(consume, undef(), code);
-      if (index + 1 == kCdataOpeningString.length) {
+      if (currentIndex + 1 == kCdataOpeningString.length) {
         if (objGet(self, "interrupt").truthy()) {
           return ok;
         }
@@ -391,18 +398,18 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
   JsValue declarationOpen = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cDash)) {
       call1(consume, undef(), code);
-      JS.set(st, "marker", kHtmlComment);
+      marker = kHtmlComment;
       return commentOpenInside;
     }
     if (codeEq(code, cLeftSquareBracket)) {
       call1(consume, undef(), code);
-      JS.set(st, "marker", kHtmlCdata);
-      JS.set(st, "index", 0);
+      marker = kHtmlCdata;
+      index = 0;
       return cdataOpenInside;
     }
     if (asciiAlpha(code)) {
       call1(consume, undef(), code);
-      JS.set(st, "marker", kHtmlDeclaration);
+      marker = kHtmlDeclaration;
       if (objGet(self, "interrupt").truthy()) {
         return ok;
       }
@@ -418,12 +425,12 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     }
     if (codeEq(code, cSlash)) {
       call1(consume, undef(), code);
-      JS.set(st, "closingTag", true);
+      closingTag = true;
       return tagCloseStart;
     }
     if (codeEq(code, cQuestionMark)) {
       call1(consume, undef(), code);
-      JS.set(st, "marker", kHtmlInstruction);
+      marker = kHtmlInstruction;
       if (objGet(self, "interrupt").truthy()) {
         return ok;
       }
@@ -431,36 +438,20 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
     }
     if (asciiAlpha(code)) {
       call1(consume, undef(), code);
-      JS.set(st, "buffer", fromCharCode1(code));
+      buffer = fromCharCode1(code);
       return tagName;
     }
     return call1(nok, undef(), code);
   });
 
-  JsValue before = JS.method1((JsValue _s, JsValue code) => {
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
     call1(objGet(effects, "enter"), effects, tHtmlFlow);
     call1(objGet(effects, "enter"), effects, tHtmlFlowData);
     call1(consume, undef(), code);
     return open;
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    return call1(before, undef(), code);
-  });
-
-  JS.set(st, "continuation", continuation);
-  JS.set(st, "continuationAfter", continuationAfter);
-  JS.set(st, "continuationStart", continuationStart);
-  JS.set(st, "continuationBefore", continuationBefore);
-  JS.set(st, "continuationCommentInside", continuationCommentInside);
-  JS.set(st, "continuationRawTagOpen", continuationRawTagOpen);
-  JS.set(st, "continuationCdataInside", continuationCdataInside);
-  JS.set(st, "continuationDeclarationInside", continuationDeclarationInside);
-  JS.set(st, "completeAttributeNameBefore", completeAttributeNameBefore);
-  JS.set(st, "completeAttributeNameAfter", completeAttributeNameAfter);
   return start;
 });
 
-export JsValue htmlFlow = makeNamedConstruct("htmlFlow", tokenizeHtmlFlow);
-JS.set(htmlFlow, "concrete", true);
-JS.set(htmlFlow, "resolveTo", resolveToHtmlFlow);
+export JsValue htmlFlow = JS.object("name", "htmlFlow", "tokenize", tokenizeHtmlFlow, "concrete", true, "resolveTo", resolveToHtmlFlow);

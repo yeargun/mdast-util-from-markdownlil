@@ -1,24 +1,23 @@
-import { decodeBytes, jsString, MathRef, push, undef } from "./host.lil";
-import { cByteOrderMarker, cCr, cHt, cLf, cNul, codes } from "./symbol/codes.lil";
+import { codeEof, decodeBytes, MathRef, push } from "./host.lil";
+import { cByteOrderMarker, cCarriageReturn, cCarriageReturnLineFeed, cCr, cHorizontalTab, cHt, cLf, cLineFeed, cNul, cReplacementCharacter, cVirtualSpace } from "./symbol/codes.lil";
 import { kTabSize } from "./symbol/constants.lil";
 
 export JsValue preprocess() {
-  JsValue st = JS.object();
-  JS.set(st, "column", 1);
-  JS.set(st, "buffer", "");
-  JS.set(st, "start", true);
-  JS.set(st, "atCarriageReturn", undef());
+  float column = 1.0;
+  string buffer = "";
+  bool start = true;
+  bool atCarriageReturn = false;
 
   return JS.method3((JsValue _self, JsValue value, JsValue encoding, JsValue end) => {
-    JsValue chunks = JS.array();
-    string text = jsString(JS.get(st, "buffer")) + decodeBytes(value, encoding);
+    JsValue[] chunks = [];
+    string text = buffer + decodeBytes(value, encoding);
     int startPosition = 0;
-    JS.set(st, "buffer", "");
-    if (JS.get(st, "start").truthy()) {
+    buffer = "";
+    if (start) {
       if (text.length > 0 && text.charCodeAt(0) == cByteOrderMarker) {
         startPosition = 1;
       }
-      JS.set(st, "start", undef());
+      start = false;
     }
     int n = text.length;
     while (startPosition < n) {
@@ -33,54 +32,51 @@ export JsValue preprocess() {
         endPosition = endPosition + 1;
       }
       if (found < 0) {
-        JS.set(st, "buffer", text.slice(startPosition));
+        buffer = text.slice(startPosition);
         break;
       }
       int code = found;
-      if (code == cLf && startPosition == endPosition && JS.get(st, "atCarriageReturn").truthy()) {
-        push(chunks, JS.get(codes, "carriageReturnLineFeed"));
-        JS.set(st, "atCarriageReturn", undef());
+      if (code == cLf && startPosition == endPosition && atCarriageReturn) {
+        push(chunks, cCarriageReturnLineFeed);
+        atCarriageReturn = false;
       } else {
-        if (JS.get(st, "atCarriageReturn").truthy()) {
-          push(chunks, JS.get(codes, "carriageReturn"));
-          JS.set(st, "atCarriageReturn", undef());
+        if (atCarriageReturn) {
+          push(chunks, cCarriageReturn);
+          atCarriageReturn = false;
         }
         if (startPosition < endPosition) {
           push(chunks, text.slice(startPosition, endPosition));
-          JS.set(st, "column", JS.number(JS.get(st, "column")) + JS.number(endPosition - startPosition));
+          column = column + (endPosition - startPosition);
         }
         if (code == cNul) {
-          push(chunks, JS.get(codes, "replacementCharacter"));
-          JS.set(st, "column", JS.number(JS.get(st, "column")) + 1.0);
+          push(chunks, cReplacementCharacter);
+          column = column + 1.0;
         } else if (code == cHt) {
-          float column = JS.number(JS.get(st, "column"));
           float next = JS.number(JS.call(JS.get(MathRef, "ceil"), MathRef, column / JS.number(kTabSize))) * JS.number(kTabSize);
-          push(chunks, JS.get(codes, "horizontalTab"));
+          push(chunks, cHorizontalTab);
           while (column < next) {
-            push(chunks, JS.get(codes, "virtualSpace"));
+            push(chunks, cVirtualSpace);
             column = column + 1.0;
           }
           column = column + 1.0;
-          JS.set(st, "column", column);
         } else if (code == cLf) {
-          push(chunks, JS.get(codes, "lineFeed"));
-          JS.set(st, "column", 1);
+          push(chunks, cLineFeed);
+          column = 1.0;
         } else {
-          JS.set(st, "atCarriageReturn", true);
-          JS.set(st, "column", 1);
+          atCarriageReturn = true;
+          column = 1.0;
         }
       }
       startPosition = endPosition + 1;
     }
     if (end.truthy()) {
-      if (JS.get(st, "atCarriageReturn").truthy()) {
-        push(chunks, JS.get(codes, "carriageReturn"));
+      if (atCarriageReturn) {
+        push(chunks, cCarriageReturn);
       }
-      string buf = jsString(JS.get(st, "buffer"));
-      if (buf.length > 0) {
-        push(chunks, buf);
+      if (buffer.length > 0) {
+        push(chunks, buffer);
       }
-      push(chunks, JS.get(codes, "eof"));
+      push(chunks, codeEof);
     }
     return chunks;
   });

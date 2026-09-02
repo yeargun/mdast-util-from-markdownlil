@@ -5,29 +5,29 @@ import { kThematicBreakMarkerCountMin } from "../symbol/constants.lil";
 import { tThematicBreak, tThematicBreakSequence, tWhitespace } from "../symbol/types.lil";
 
 JsValue tokenizeThematicBreak = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "size", 0);
-  JS.set(st, "marker", undef());
+  int size = 0;
+  int marker = 0;
+  JsValue atBreak = undef();
 
   JsValue sequence = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+    if (code == marker) {
       call1(objGet(effects, "consume"), effects, code);
-      JS.set(st, "size", JS.number(objGet(st, "size")) + 1.0);
+      size = size + 1;
       return sequence;
     }
     call1(objGet(effects, "exit"), effects, tThematicBreakSequence);
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, objGet(st, "atBreak"), tWhitespace, undef()), undef(), code);
+      return call1(factorySpace(effects, atBreak, tWhitespace, 0), undef(), code);
     }
-    return call1(objGet(st, "atBreak"), undef(), code);
+    return call1(atBreak, undef(), code);
   });
 
-  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+  atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (code == marker) {
       call1(objGet(effects, "enter"), effects, tThematicBreakSequence);
       return call1(sequence, undef(), code);
     }
-    if (JS.number(objGet(st, "size")) >= JS.number(kThematicBreakMarkerCountMin) && (isEof(code) || markdownLineEnding(code))) {
+    if (size >= kThematicBreakMarkerCountMin && (isEof(code) || markdownLineEnding(code))) {
       call1(objGet(effects, "exit"), effects, tThematicBreak);
       return call1(ok, undef(), code);
     }
@@ -35,7 +35,7 @@ JsValue tokenizeThematicBreak = JS.method3((JsValue _self, JsValue effects, JsVa
   });
 
   JsValue before = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(st, "marker", code);
+    marker = JS.number(code).toInt();
     return call1(atBreak, undef(), code);
   });
 
@@ -44,7 +44,6 @@ JsValue tokenizeThematicBreak = JS.method3((JsValue _self, JsValue effects, JsVa
     return call1(before, undef(), code);
   });
 
-  JS.set(st, "atBreak", atBreak);
   return start;
 });
 

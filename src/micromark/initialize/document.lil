@@ -4,11 +4,12 @@ import {
   call1,
   call2,
   call3,
+  codeEof,
   copyPoint,
   includesStr,
   isEof,
   isFn,
-  jsInt,
+  makeConstruct,
   objGet,
   objGetVal,
   objSetVal,
@@ -19,13 +20,12 @@ import {
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding } from "../util-character.lil";
 import { splice } from "../util-chunked.lil";
-import { codes } from "../symbol/codes.lil";
 import { kContentTypeFlow, kTabSize } from "../symbol/constants.lil";
 import { tChunkFlow, tLinePrefix } from "../symbol/types.lil";
 
 JsValue tokenizeContainer = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue disable = objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"];
-  JsValue max = undef();
+  int max = 0;
   if (!includesStr(disable, "codeIndented")) {
     max = kTabSize;
   }
@@ -40,45 +40,67 @@ JsValue tokenizeContainer = JS.method3((JsValue self, JsValue effects, JsValue o
 JsValue containerConstruct = JS.object();
 JS.set(containerConstruct, "tokenize", tokenizeContainer);
 
-void exitContainers(JsValue self, JsValue effects, JsValue stack, int size) {
-  int index = arrLen(stack);
-  while (index > size) {
-    index = index - 1;
-    JsValue entry = stack[index];
-    JS.set(self, "containerState", entry[1]);
-    call1(objGet(entry[0], "exit"), self, effects);
-  }
-  JS.set(stack, "length", size);
+struct ContainerEntry {
+  JsValue construct;
+  JsValue state;
 }
 
-void closeFlow(JsValue self, JsValue st) {
-  JsValue childFlow = objGet(st, "childFlow");
+class DocumentState {
+  ContainerEntry[] stack;
+  int continued;
+  JsValue effects;
+  JsValue childFlow;
+  JsValue childToken;
+  float lineStartOffset;
+  JsValue start;
+  JsValue documentContinued;
+
+  init(JsValue nextEffects) {
+    this.effects = nextEffects;
+  }
+}
+
+void exitContainers(JsValue self, JsValue effects, ContainerEntry[] stack, int size) {
+  int index = stack.length;
+  while (index > size) {
+    index = index - 1;
+    ContainerEntry entry = stack[index];
+    JS.set(self, "containerState", entry.state);
+    call1(objGet(entry.construct, "exit"), self, effects);
+  }
+  while (stack.length > size) {
+    stack.pop();
+  }
+}
+
+void closeFlow(JsValue self, DocumentState st) {
+  JsValue childFlow = st.childFlow;
   if (childFlow.truthy()) {
-    JsValue eofSlice = JS.array();
-    push(eofSlice, objGet(codes, "eof"));
+    JsValue[] eofSlice = [];
+    push(eofSlice, codeEof);
     call1(objGet(childFlow, "write"), childFlow, eofSlice);
   }
-  JS.set(st, "childToken", undef());
-  JS.set(st, "childFlow", undef());
+  st.childToken = undef();
+  st.childFlow = undef();
   JS.set(objGet(self, "containerState"), "_closeFlow", undef());
 }
 
-void writeToChild(JsValue self, JsValue st, JsValue token, JsValue endOfFile) {
-  JsValue childFlow = objGet(st, "childFlow");
+void writeToChild(JsValue self, DocumentState st, JsValue token, bool endOfFile) {
+  JsValue childFlow = st.childFlow;
   JsValue stream = call1(objGet(self, "sliceStream"), self, token);
-  if (endOfFile.truthy()) {
-    push(stream, objGet(codes, "eof"));
+  if (endOfFile) {
+    push(stream, codeEof);
   }
-  JS.set(token, "previous", objGet(st, "childToken"));
-  if (objGet(st, "childToken").truthy()) {
-    JS.set(objGet(st, "childToken"), "next", token);
+  JS.set(token, "previous", st.childToken);
+  if (st.childToken.truthy()) {
+    JS.set(st.childToken, "next", token);
   }
-  JS.set(st, "childToken", token);
+  st.childToken = token;
   call1(objGet(childFlow, "defineSkip"), childFlow, objGet(token, "start"));
   call1(objGet(childFlow, "write"), childFlow, stream);
   if (objGet(objGet(self, "parser"), "lazy")[objGet(objGet(token, "start"), "line")].truthy()) {
     int index = arrLen(objGet(childFlow, "events"));
-    float lineStartOffset = JS.number(objGet(st, "lineStartOffset"));
+    float lineStartOffset = st.lineStartOffset;
     while (true) {
       index = index - 1;
       if (index < 0) {
@@ -107,7 +129,7 @@ void writeToChild(JsValue self, JsValue st, JsValue token, JsValue endOfFile) {
         seen = true;
       }
     }
-    exitContainers(self, objGet(st, "effects"), objGet(st, "stack"), jsInt(objGet(st, "continued")));
+    exitContainers(self, st.effects, st.stack, st.continued);
     int fix = indexBeforeExits;
     while (fix < arrLen(objGet(self, "events"))) {
       JS.set(objGet(self, "events")[fix][1], "end", copyPoint(point));
@@ -118,27 +140,27 @@ void writeToChild(JsValue self, JsValue st, JsValue token, JsValue endOfFile) {
   }
 }
 
+JsValue createFlowTokenizer(JsValue self) {
+  JsValue parser = objGet(self, "parser");
+  return call1(objGet(parser, "flow"), parser, call0(objGet(self, "now"), self));
+}
+
 JsValue initializeDocument = JS.method1((JsValue self, JsValue effects) => {
-  JsValue st = JS.object();
-  JS.set(st, "stack", JS.array());
-  JS.set(st, "continued", 0);
-  JS.set(st, "effects", effects);
-  JS.set(st, "childFlow", undef());
-  JS.set(st, "childToken", undef());
+  DocumentState st = new DocumentState(effects);
 
   JsValue flowContinue = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code)) {
       writeToChild(self, st, call1(objGet(effects, "exit"), effects, tChunkFlow), true);
-      exitContainers(self, effects, objGet(st, "stack"), 0);
+      exitContainers(self, effects, st.stack, 0);
       call1(objGet(effects, "consume"), effects, code);
       return undef();
     }
     if (markdownLineEnding(code)) {
       call1(objGet(effects, "consume"), effects, code);
-      writeToChild(self, st, call1(objGet(effects, "exit"), effects, tChunkFlow), undef());
-      JS.set(st, "continued", 0);
+      writeToChild(self, st, call1(objGet(effects, "exit"), effects, tChunkFlow), false);
+      st.continued = 0;
       JS.set(self, "interrupt", undef());
-      return objGet(st, "start");
+      return st.start;
     }
     call1(objGet(effects, "consume"), effects, code);
     return flowContinue;
@@ -146,31 +168,28 @@ JsValue initializeDocument = JS.method1((JsValue self, JsValue effects) => {
 
   JsValue flowStart = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code)) {
-      if (objGet(st, "childFlow").truthy()) {
+      if (st.childFlow.truthy()) {
         closeFlow(self, st);
       }
-      exitContainers(self, effects, objGet(st, "stack"), 0);
+      exitContainers(self, effects, st.stack, 0);
       call1(objGet(effects, "consume"), effects, code);
       return undef();
     }
-    if (!objGet(st, "childFlow").truthy()) {
-      JS.set(st, "childFlow", call1(objGet(objGet(self, "parser"), "flow"), objGet(self, "parser"), call0(objGet(self, "now"), self)));
+    if (!st.childFlow.truthy()) {
+      st.childFlow = createFlowTokenizer(self);
     }
     JsValue fields = JS.object();
-    JS.set(fields, "_tokenizer", objGet(st, "childFlow"));
+    JS.set(fields, "_tokenizer", st.childFlow);
     JS.set(fields, "contentType", kContentTypeFlow);
-    JS.set(fields, "previous", objGet(st, "childToken"));
+    JS.set(fields, "previous", st.childToken);
     call2(objGet(effects, "enter"), effects, tChunkFlow, fields);
     return call1(flowContinue, JS.undefined(), code);
   });
 
   JsValue containerContinue = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(st, "continued", jsInt(objGet(st, "continued")) + 1);
-    JsValue item = JS.array();
-    push(item, objGet(self, "currentConstruct"));
-    push(item, objGet(self, "containerState"));
-    push(objGet(st, "stack"), item);
-    return call1(objGet(st, "documentContinued"), JS.undefined(), code);
+    st.continued = st.continued + 1;
+    st.stack.push(ContainerEntry{objGet(self, "currentConstruct"), objGet(self, "containerState")});
+    return call1(st.documentContinued, JS.undefined(), code);
   });
 
   JsValue documentContinued = JS.method1((JsValue _s, JsValue code) => {
@@ -179,39 +198,39 @@ JsValue initializeDocument = JS.method1((JsValue self, JsValue effects) => {
   });
 
   JsValue thereIsNoNewContainer = JS.method1((JsValue _s, JsValue code) => {
-    objSetVal(objGet(objGet(self, "parser"), "lazy"), objGet(call0(objGet(self, "now"), self), "line"), jsInt(objGet(st, "continued")) != arrLen(objGet(st, "stack")));
-    JS.set(st, "lineStartOffset", objGet(call0(objGet(self, "now"), self), "offset"));
+    objSetVal(objGet(objGet(self, "parser"), "lazy"), objGet(call0(objGet(self, "now"), self), "line"), st.continued != arrLen(st.stack));
+    st.lineStartOffset = JS.number(objGet(call0(objGet(self, "now"), self), "offset"));
     return call1(flowStart, JS.undefined(), code);
   });
 
   JsValue thereIsANewContainer = JS.method1((JsValue _s, JsValue code) => {
-    if (objGet(st, "childFlow").truthy()) {
+    if (st.childFlow.truthy()) {
       closeFlow(self, st);
     }
-    exitContainers(self, effects, objGet(st, "stack"), jsInt(objGet(st, "continued")));
+    exitContainers(self, effects, st.stack, st.continued);
     return call1(documentContinued, JS.undefined(), code);
   });
 
   JsValue checkNewContainers = JS.method1((JsValue _s, JsValue code) => {
-    if (jsInt(objGet(st, "continued")) == arrLen(objGet(st, "stack"))) {
-      if (!objGet(st, "childFlow").truthy()) {
+    if (st.continued == st.stack.length) {
+      if (!st.childFlow.truthy()) {
         return call1(documentContinued, JS.undefined(), code);
       }
-      JsValue current = objGet(objGet(st, "childFlow"), "currentConstruct");
+      JsValue current = objGet(st.childFlow, "currentConstruct");
       if (current.truthy() && objGet(current, "concrete").truthy()) {
         return call1(flowStart, JS.undefined(), code);
       }
-      JS.set(self, "interrupt", current.truthy() && !objGet(objGet(st, "childFlow"), "_gfmTableDynamicInterruptHack").truthy());
+      JS.set(self, "interrupt", current.truthy() && !objGet(st.childFlow, "_gfmTableDynamicInterruptHack").truthy());
     }
     JS.set(self, "containerState", JS.object());
     return call1(call3(objGet(effects, "check"), effects, containerConstruct, thereIsANewContainer, thereIsNoNewContainer), JS.undefined(), code);
   });
 
   JsValue documentContinue = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(st, "continued", jsInt(objGet(st, "continued")) + 1);
+    st.continued = st.continued + 1;
     if (objGet(objGet(self, "containerState"), "_closeFlow").truthy()) {
       JS.set(objGet(self, "containerState"), "_closeFlow", undef());
-      if (objGet(st, "childFlow").truthy()) {
+      if (st.childFlow.truthy()) {
         closeFlow(self, st);
       }
       int indexBeforeExits = arrLen(objGet(self, "events"));
@@ -228,7 +247,7 @@ JsValue initializeDocument = JS.method1((JsValue self, JsValue effects) => {
           break;
         }
       }
-      exitContainers(self, effects, objGet(st, "stack"), jsInt(objGet(st, "continued")));
+      exitContainers(self, effects, st.stack, st.continued);
       int fix = indexBeforeExits;
       while (fix < arrLen(objGet(self, "events"))) {
         JS.set(objGet(self, "events")[fix][1], "end", copyPoint(point));
@@ -238,22 +257,21 @@ JsValue initializeDocument = JS.method1((JsValue self, JsValue effects) => {
       JS.set(objGet(self, "events"), "length", fix);
       return call1(checkNewContainers, JS.undefined(), code);
     }
-    return call1(objGet(st, "start"), JS.undefined(), code);
+    return call1(st.start, JS.undefined(), code);
   });
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    if (jsInt(objGet(st, "continued")) < arrLen(objGet(st, "stack"))) {
-      JsValue item = objGet(st, "stack")[jsInt(objGet(st, "continued"))];
-      JS.set(self, "containerState", item[1]);
-      return call1(call3(objGet(effects, "attempt"), effects, objGet(item[0], "continuation"), documentContinue, checkNewContainers), JS.undefined(), code);
+    if (st.continued < st.stack.length) {
+      ContainerEntry item = st.stack[st.continued];
+      JS.set(self, "containerState", item.state);
+      return call1(call3(objGet(effects, "attempt"), effects, objGet(item.construct, "continuation"), documentContinue, checkNewContainers), JS.undefined(), code);
     }
     return call1(checkNewContainers, JS.undefined(), code);
   });
 
-  JS.set(st, "start", start);
-  JS.set(st, "documentContinued", documentContinued);
+  st.start = start;
+  st.documentContinued = documentContinued;
   return start;
 });
 
-export JsValue documentConstruct = JS.object();
-JS.set(documentConstruct, "tokenize", initializeDocument);
+export JsValue documentConstruct = makeConstruct(initializeDocument);

@@ -13,7 +13,7 @@ JsValue tokenizeBlankLine = JS.method3((JsValue _self, JsValue effects, JsValue 
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, after, tLinePrefix, undef()), undef(), code);
+      return call1(factorySpace(effects, after, tLinePrefix, 0), undef(), code);
     }
     return call1(after, undef(), code);
   });

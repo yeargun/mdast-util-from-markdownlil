@@ -29,7 +29,7 @@ JsValue tokenizeContinuation = JS.method3((JsValue self, JsValue effects, JsValu
     call1(objGet(effects, "enter"), effects, tLineEnding);
     call1(objGet(effects, "consume"), effects, code);
     call1(objGet(effects, "exit"), effects, tLineEnding);
-    return factorySpace(effects, prefixed, tLinePrefix, undef());
+    return factorySpace(effects, prefixed, tLinePrefix, 0);
   });
 
   return startLookahead;
@@ -39,35 +39,36 @@ JsValue continuationConstruct = makeConstruct(tokenizeContinuation);
 JS.set(continuationConstruct, "partial", true);
 
 JsValue tokenizeContent = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue _nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "previous", undef());
+  JsValue previous = undef();
+  JsValue contentEnd = undef();
+  JsValue contentContinue = undef();
 
   JsValue chunkInside = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code)) {
-      return call1(objGet(st, "contentEnd"), undef(), code);
+      return call1(contentEnd, undef(), code);
     }
     if (markdownLineEnding(code)) {
-      return call1(call3(objGet(effects, "check"), effects, continuationConstruct, objGet(st, "contentContinue"), objGet(st, "contentEnd")), undef(), code);
+      return call1(call3(objGet(effects, "check"), effects, continuationConstruct, contentContinue, contentEnd), undef(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
     return chunkInside;
   });
 
-  JsValue contentEnd = JS.method1((JsValue _s, JsValue code) => {
+  contentEnd = JS.method1((JsValue _s, JsValue code) => {
     call1(objGet(effects, "exit"), effects, tChunkContent);
     call1(objGet(effects, "exit"), effects, tContent);
     return call1(ok, undef(), code);
   });
 
-  JsValue contentContinue = JS.method1((JsValue _s, JsValue code) => {
+  contentContinue = JS.method1((JsValue _s, JsValue code) => {
     call1(objGet(effects, "consume"), effects, code);
     call1(objGet(effects, "exit"), effects, tChunkContent);
     JsValue fields = JS.object();
     JS.set(fields, "contentType", kContentTypeContent);
-    JS.set(fields, "previous", objGet(st, "previous"));
+    JS.set(fields, "previous", previous);
     JsValue next = call2(objGet(effects, "enter"), effects, tChunkContent, fields);
-    JS.set(objGet(st, "previous"), "next", next);
-    JS.set(st, "previous", next);
+    JS.set(previous, "next", next);
+    previous = next;
     return chunkInside;
   });
 
@@ -75,14 +76,11 @@ JsValue tokenizeContent = JS.method3((JsValue _self, JsValue effects, JsValue ok
     call1(objGet(effects, "enter"), effects, tContent);
     JsValue fields = JS.object();
     JS.set(fields, "contentType", kContentTypeContent);
-    JS.set(st, "previous", call2(objGet(effects, "enter"), effects, tChunkContent, fields));
+    previous = call2(objGet(effects, "enter"), effects, tChunkContent, fields);
     return call1(chunkInside, undef(), code);
   });
 
-  JS.set(st, "contentEnd", contentEnd);
-  JS.set(st, "contentContinue", contentContinue);
   return chunkStart;
 });
 
-export JsValue content = makeConstruct(tokenizeContent);
-JS.set(content, "resolve", resolveContent);
+export JsValue content = JS.object("tokenize", tokenizeContent, "resolve", resolveContent);

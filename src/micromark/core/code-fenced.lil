@@ -30,14 +30,16 @@ JsValue nonLazyContinuation = makeConstruct(tokenizeNonLazyContinuation);
 JS.set(nonLazyContinuation, "partial", true);
 
 JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "initialPrefix", 0);
-  JS.set(st, "sizeOpen", 0);
-  JS.set(st, "marker", undef());
+  float initialPrefix = 0.0;
+  int sizeOpen = 0;
+  int marker = 0;
+  JsValue infoBefore = undef();
+  JsValue metaBefore = undef();
+  JsValue beforeContentChunk = undef();
+  JsValue atNonLazyBreak = undef();
 
   JsValue tokenizeCloseStart = JS.method3((JsValue _ctx, JsValue closeEffects, JsValue closeOk, JsValue closeNok) => {
-    JsValue closeSt = JS.object();
-    JS.set(closeSt, "size", 0);
+    int size = 0;
 
     JsValue sequenceCloseAfter = JS.method1((JsValue _s, JsValue code) => {
       if (isEof(code) || markdownLineEnding(code)) {
@@ -48,15 +50,15 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     });
 
     JsValue sequenceClose = JS.method1((JsValue _s, JsValue code) => {
-      if (code == objGet(st, "marker")) {
-        JS.set(closeSt, "size", JS.number(objGet(closeSt, "size")) + 1.0);
+      if (code == marker) {
+        size = size + 1;
         call1(objGet(closeEffects, "consume"), closeEffects, code);
         return sequenceClose;
       }
-      if (JS.number(objGet(closeSt, "size")) >= JS.number(objGet(st, "sizeOpen"))) {
+      if (size >= sizeOpen) {
         call1(objGet(closeEffects, "exit"), closeEffects, tCodeFencedFenceSequence);
         if (markdownSpace(code)) {
-          return call1(factorySpace(closeEffects, sequenceCloseAfter, tWhitespace, undef()), undef(), code);
+          return call1(factorySpace(closeEffects, sequenceCloseAfter, tWhitespace, 0), undef(), code);
         }
         return call1(sequenceCloseAfter, undef(), code);
       }
@@ -64,7 +66,7 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     });
 
     JsValue beforeSequenceClose = JS.method1((JsValue _s, JsValue code) => {
-      if (code == objGet(st, "marker")) {
+      if (code == marker) {
         call1(objGet(closeEffects, "enter"), closeEffects, tCodeFencedFenceSequence);
         return call1(sequenceClose, undef(), code);
       }
@@ -74,9 +76,9 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     JsValue closeLineStart = JS.method1((JsValue _s, JsValue code) => {
       call1(objGet(closeEffects, "enter"), closeEffects, tCodeFencedFence);
       if (markdownSpace(code)) {
-        JsValue max = kTabSize;
+        int max = kTabSize;
         if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-          max = undef();
+          max = 0;
         }
         return call1(factorySpace(closeEffects, beforeSequenceClose, tLinePrefix, max), undef(), code);
       }
@@ -104,23 +106,23 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
   JsValue contentChunk = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tCodeFlowValue);
-      return call1(objGet(st, "beforeContentChunk"), undef(), code);
+      return call1(beforeContentChunk, undef(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
     return contentChunk;
   });
 
-  JsValue beforeContentChunk = JS.method1((JsValue _s, JsValue code) => {
+  beforeContentChunk = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
-      return call1(call3(objGet(effects, "check"), effects, nonLazyContinuation, objGet(st, "atNonLazyBreak"), after), undef(), code);
+      return call1(call3(objGet(effects, "check"), effects, nonLazyContinuation, atNonLazyBreak, after), undef(), code);
     }
     call1(objGet(effects, "enter"), effects, tCodeFlowValue);
     return call1(contentChunk, undef(), code);
   });
 
   JsValue contentStart = JS.method1((JsValue _s, JsValue code) => {
-    if (JS.number(objGet(st, "initialPrefix")) > 0.0 && markdownSpace(code)) {
-      return call1(factorySpace(effects, beforeContentChunk, tLinePrefix, JS.number(objGet(st, "initialPrefix")) + 1.0), undef(), code);
+    if (initialPrefix > 0.0 && markdownSpace(code)) {
+      return call1(factorySpace(effects, beforeContentChunk, tLinePrefix, initialPrefix + 1.0), undef(), code);
     }
     return call1(beforeContentChunk, undef(), code);
   });
@@ -132,7 +134,7 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     return contentStart;
   });
 
-  JsValue atNonLazyBreak = JS.method1((JsValue _s, JsValue code) => {
+  atNonLazyBreak = JS.method1((JsValue _s, JsValue code) => {
     return call1(call3(objGet(effects, "attempt"), effects, closeStart, after, contentBefore), undef(), code);
   });
 
@@ -140,14 +142,14 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tChunkString);
       call1(objGet(effects, "exit"), effects, tCodeFencedFenceInfo);
-      return call1(objGet(st, "infoBefore"), undef(), code);
+      return call1(infoBefore, undef(), code);
     }
     if (markdownSpace(code)) {
       call1(objGet(effects, "exit"), effects, tChunkString);
       call1(objGet(effects, "exit"), effects, tCodeFencedFenceInfo);
-      return call1(factorySpace(effects, objGet(st, "metaBefore"), tWhitespace, undef()), undef(), code);
+      return call1(factorySpace(effects, metaBefore, tWhitespace, 0), undef(), code);
     }
-    if (codeEq(code, cGraveAccent) && code == objGet(st, "marker")) {
+    if (codeEq(code, cGraveAccent) && code == marker) {
       return call1(nok, undef(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
@@ -158,18 +160,18 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tChunkString);
       call1(objGet(effects, "exit"), effects, tCodeFencedFenceMeta);
-      return call1(objGet(st, "infoBefore"), undef(), code);
+      return call1(infoBefore, undef(), code);
     }
-    if (codeEq(code, cGraveAccent) && code == objGet(st, "marker")) {
+    if (codeEq(code, cGraveAccent) && code == marker) {
       return call1(nok, undef(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
     return meta;
   });
 
-  JsValue metaBefore = JS.method1((JsValue _s, JsValue code) => {
+  metaBefore = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
-      return call1(objGet(st, "infoBefore"), undef(), code);
+      return call1(infoBefore, undef(), code);
     }
     call1(objGet(effects, "enter"), effects, tCodeFencedFenceMeta);
     JsValue fields = JS.object();
@@ -178,7 +180,7 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     return call1(meta, undef(), code);
   });
 
-  JsValue infoBefore = JS.method1((JsValue _s, JsValue code) => {
+  infoBefore = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tCodeFencedFence);
       if (objGet(self, "interrupt").truthy()) {
@@ -194,17 +196,17 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
   });
 
   JsValue sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
-      JS.set(st, "sizeOpen", JS.number(objGet(st, "sizeOpen")) + 1.0);
+    if (code == marker) {
+      sizeOpen = sizeOpen + 1;
       call1(objGet(effects, "consume"), effects, code);
       return sequenceOpen;
     }
-    if (JS.number(objGet(st, "sizeOpen")) < JS.number(kCodeFencedSequenceSizeMin)) {
+    if (sizeOpen < kCodeFencedSequenceSizeMin) {
       return call1(nok, undef(), code);
     }
     call1(objGet(effects, "exit"), effects, tCodeFencedFenceSequence);
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, infoBefore, tWhitespace, undef()), undef(), code);
+      return call1(factorySpace(effects, infoBefore, tWhitespace, 0), undef(), code);
     }
     return call1(infoBefore, undef(), code);
   });
@@ -216,24 +218,15 @@ JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue 
     if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix) {
       prefix = JS.number(jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length);
     }
-    JS.set(st, "initialPrefix", prefix);
-    JS.set(st, "marker", code);
+    initialPrefix = prefix;
+    marker = JS.number(code).toInt();
     call1(objGet(effects, "enter"), effects, tCodeFenced);
     call1(objGet(effects, "enter"), effects, tCodeFencedFence);
     call1(objGet(effects, "enter"), effects, tCodeFencedFenceSequence);
     return call1(sequenceOpen, undef(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    return call1(beforeSequenceOpen, undef(), code);
-  });
-
-  JS.set(st, "infoBefore", infoBefore);
-  JS.set(st, "metaBefore", metaBefore);
-  JS.set(st, "beforeContentChunk", beforeContentChunk);
-  JS.set(st, "atNonLazyBreak", atNonLazyBreak);
-  return start;
+  return beforeSequenceOpen;
 });
 
-export JsValue codeFenced = makeNamedConstruct("codeFenced", tokenizeCodeFenced);
-JS.set(codeFenced, "concrete", true);
+export JsValue codeFenced = JS.object("name", "codeFenced", "tokenize", tokenizeCodeFenced, "concrete", true);

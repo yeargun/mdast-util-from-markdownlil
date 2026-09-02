@@ -16,9 +16,9 @@ JsValue tokenizeListItemPrefixWhitespace = JS.method3((JsValue self, JsValue eff
     }
     return call1(nok, undef(), code);
   });
-  JsValue max = kTabSize + 1;
+  int max = kTabSize + 1;
   if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-    max = undef();
+    max = 0;
   }
   return factorySpace(effects, afterPrefix, tListItemPrefixWhitespace, max);
 });
@@ -47,17 +47,15 @@ JS.set(list, "name", "list");
 JsValue tokenizeListStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue events = objGet(self, "events");
   JsValue tail = events[arrLen(events) - 1];
-  JsValue st = JS.object();
   float initialSize = 0.0;
   if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix) {
     initialSize = JS.number(jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length);
   }
-  JS.set(st, "initialSize", initialSize);
-  JS.set(st, "size", 0);
+  int size = 0;
 
   JsValue endOfPrefix = JS.method1((JsValue _s, JsValue code) => {
     JsValue prefix = call1(objGet(effects, "exit"), effects, tListItemPrefix);
-    JS.set(objGet(self, "containerState"), "size", JS.number(objGet(st, "initialSize")) + JS.number(jsString(call2(objGet(self, "sliceSerialize"), self, prefix, true)).length));
+    JS.set(objGet(self, "containerState"), "size", initialSize + JS.number(jsString(call2(objGet(self, "sliceSerialize"), self, prefix, true)).length));
     return call1(ok, undef(), code);
   });
 
@@ -73,7 +71,7 @@ JsValue tokenizeListStart = JS.method3((JsValue self, JsValue effects, JsValue o
 
   JsValue onBlank = JS.method1((JsValue _s, JsValue code) => {
     JS.set(objGet(self, "containerState"), "initialBlankLine", true);
-    JS.set(st, "initialSize", JS.number(objGet(st, "initialSize")) + 1.0);
+    initialSize = initialSize + 1.0;
     return call1(endOfPrefix, undef(), code);
   });
 
@@ -92,9 +90,8 @@ JsValue tokenizeListStart = JS.method3((JsValue self, JsValue effects, JsValue o
   });
 
   JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    int size = JS.number(objGet(st, "size")).toInt();
     if (asciiDigit(code) && size + 1 < kListItemValueSizeMax) {
-      JS.set(st, "size", size + 1);
+      size = size + 1;
       call1(objGet(effects, "consume"), effects, code);
       return inside;
     }
@@ -159,9 +156,9 @@ JsValue tokenizeListContinuation = JS.method3((JsValue self, JsValue effects, Js
   JsValue notInCurrentItem = JS.method1((JsValue _s, JsValue code) => {
     JS.set(objGet(self, "containerState"), "_closeFlow", true);
     JS.set(self, "interrupt", undef());
-    JsValue max = kTabSize;
+    int max = kTabSize;
     if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-      max = undef();
+      max = 0;
     }
     return call1(factorySpace(effects, call3(objGet(effects, "attempt"), effects, list, ok, nok), tLinePrefix, max), undef(), code);
   });

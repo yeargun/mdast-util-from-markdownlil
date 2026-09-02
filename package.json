@@ -1,6 +1,6 @@
 {
   "name": "@itslil/mdast-util-from-markdown",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "mdast-util-from-markdown reimplemented in LilScript",
   "keywords": [
     "mdast",
@@ -34,7 +34,11 @@
       "require": "./dist/from-markdown.cjs",
       "default": "./dist/from-markdown.esm.js"
     },
-    "./closed": "./dist/from-markdown.closed.js",
+    "./closed": {
+      "types": "./dist/from-markdown.d.ts",
+      "import": "./dist/from-markdown.closed.js",
+      "default": "./dist/from-markdown.closed.js"
+    },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
@@ -47,7 +51,8 @@
     "dist/from-markdown.d.ts",
     "LICENSE",
     "NOTICE.md",
-    "README.md"
+    "README.md",
+    "UPSTREAM.md"
   ],
   "sideEffects": false,
   "engines": {
@@ -56,10 +61,16 @@
   "scripts": {
     "build": "node scripts/build.mjs --compile",
     "build:site": "node scripts/build-site.mjs",
-    "test": "node --test test/*.test.mjs test/official/index.js",
+    "test": "npm run check:types && node --test test/*.test.mjs test/official/index.js",
+    "check:types": "tsc --project tsconfig.json",
     "check:site": "npm run build:site && node --test test/site.test.mjs",
     "check:pack": "node scripts/check-pack.mjs",
     "prepublishOnly": "npm test && npm run check:pack && npm run check:site"
+  },
+  "dependencies": {
+    "@types/mdast": "^4.0.0",
+    "@types/unist": "^3.0.0",
+    "micromark-util-types": "^2.0.0"
   },
   "devDependencies": {
     "commonmark.json": "^0.31.0",
@@ -67,6 +78,7 @@
     "hast-util-from-html": "^2.0.0",
     "hast-util-to-html": "^9.0.0",
     "mdast-util-to-hast": "^13.0.0",
-    "mdast-util-to-string": "^4.0.0"
+    "mdast-util-to-string": "^4.0.0",
+    "typescript": "^5.0.0"
   }
 }

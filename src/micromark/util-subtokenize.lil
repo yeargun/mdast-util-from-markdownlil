@@ -3,7 +3,6 @@ import {
   call1,
   call2,
   copyPoint,
-  isUndef,
   jsInt,
   jsString,
   objGet,
@@ -19,10 +18,6 @@ import { codeEof } from "./host.lil";
 import { tChunkFlow, tChunkText, tContent, tLineEnding, tLineEndingBlank, tLinePrefix, tListItemIndent, tListItemPrefix } from "./symbol/types.lil";
 
 export { SpliceBuffer };
-
-bool hasJump(JsValue jumps, int index) {
-  return !isUndef(objGet(jumps, JS.string(index)));
-}
 
 JsValue sbGet(JsValue events, int index) {
   return call1(objGet(events, "get"), events, index);
@@ -48,8 +43,9 @@ JsValue subcontent(JsValue events, int eventIndex) {
   JsValue startPositions = JS.array();
   JsValue tokenizer = objGet(token, "_tokenizer");
   if (!tokenizer.truthy()) {
+    JsValue parser = objGet(context, "parser");
     JsValue contentType = objGet(token, "contentType");
-    tokenizer = call1(objGet(objGet(context, "parser"), jsString(contentType)), objGet(context, "parser"), objGet(token, "start"));
+    tokenizer = call1(objGet(parser, jsString(contentType)), parser, objGet(token, "start"));
     if (objGet(token, "_contentTypeTextTrailing").truthy()) {
       JS.set(tokenizer, "_contentTypeTextTrailing", true);
     }
@@ -134,10 +130,10 @@ JsValue subcontent(JsValue events, int eventIndex) {
       endBreak = breaks[index + 1];
     }
     JsValue sl = slice2(childEvents, breaks[index], endBreak);
-    JsValue startPos = JS.call(objGet(startPositions, "pop"), startPositions);
+    int startPos = jsInt(JS.call(objGet(startPositions, "pop"), startPositions));
     JsValue jump = JS.array();
     push(jump, startPos);
-    push(jump, JS.number(startPos) + JS.number(arrLen(sl)) - 1.0);
+    push(jump, startPos + arrLen(sl) - 1);
     push(jumps, jump);
     sbSplice(events, startPos, 2, sl);
   }
@@ -151,10 +147,10 @@ JsValue subcontent(JsValue events, int eventIndex) {
       break;
     }
     JsValue jump = jumps[index];
-    float a = JS.number(adjust) + JS.number(jump[0]);
-    float b = JS.number(adjust) + JS.number(jump[1]);
-    JS.set(gaps, JS.string(a.toInt()), b);
-    adjust = adjust + (JS.number(jump[1]).toInt() - JS.number(jump[0]).toInt() - 1);
+    int jumpStart = jsInt(jump[0]);
+    int jumpEnd = jsInt(jump[1]);
+    JS.set(gaps, JS.string(adjust + jumpStart), adjust + jumpEnd);
+    adjust = adjust + jumpEnd - jumpStart - 1;
   }
   return gaps;
 }
@@ -170,7 +166,7 @@ export bool subtokenize(JsValue eventsArray) {
     if (index >= sbLen(events)) {
       break;
     }
-    while (hasJump(jumps, index)) {
+    while (JS.has(jumps, JS.string(index))) {
       index = jsInt(objGet(jumps, JS.string(index)));
     }
     JsValue event = sbGet(events, index);
@@ -209,7 +205,7 @@ export bool subtokenize(JsValue eventsArray) {
       }
     } else if (objGet(event[1], "_container").truthy()) {
       int otherIndex = index;
-      JsValue lineIndex = undef();
+      int lineIndex = 0;
       while (true) {
         otherIndex = otherIndex - 1;
         if (otherIndex < 0) {
@@ -219,8 +215,8 @@ export bool subtokenize(JsValue eventsArray) {
         string otherType = jsString(objGet(otherEvent[1], "type"));
         if (otherType == tLineEnding || otherType == tLineEndingBlank) {
           if (otherEvent[0] == "enter") {
-            if (lineIndex.truthy()) {
-              JS.set(sbGet(events, jsInt(lineIndex))[1], "type", tLineEndingBlank);
+            if (lineIndex > 0) {
+              JS.set(sbGet(events, lineIndex)[1], "type", tLineEndingBlank);
             }
             JS.set(otherEvent[1], "type", tLineEnding);
             lineIndex = otherIndex;
@@ -230,11 +226,11 @@ export bool subtokenize(JsValue eventsArray) {
           break;
         }
       }
-      if (lineIndex.truthy()) {
-        JS.set(event[1], "end", copyPoint(objGet(sbGet(events, jsInt(lineIndex))[1], "start")));
+      if (lineIndex > 0) {
+        JS.set(event[1], "end", copyPoint(objGet(sbGet(events, lineIndex)[1], "start")));
         JsValue parameters = sbSlice(events, lineIndex, index);
         unshift(parameters, event);
-        sbSplice(events, lineIndex, index - jsInt(lineIndex) + 1, parameters);
+        sbSplice(events, lineIndex, index - lineIndex + 1, parameters);
       }
     }
   }

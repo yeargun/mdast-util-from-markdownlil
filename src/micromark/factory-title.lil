@@ -1,4 +1,4 @@
-import { call1, call2, objGet } from "./host.lil";
+import { call1, call2, objGet, undef } from "./host.lil";
 import { factorySpace } from "./factory-space.lil";
 import { markdownLineEnding } from "./util-character.lil";
 import { cApostrophe, cBackslash, cLeftParenthesis, cQuotationMark, cRightParenthesis, codeEq } from "./symbol/codes.lil";
@@ -6,21 +6,24 @@ import { isEof } from "./host.lil";
 import { kContentTypeString } from "./symbol/constants.lil";
 import { tChunkString, tLineEnding, tLinePrefix } from "./symbol/types.lil";
 
-export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue typ, JsValue markerType, JsValue stringType) {
-  JsValue st = JS.object();
+export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, string typ, string markerType, string stringType) {
+  int marker = 0;
+  JsValue inside = undef();
+  JsValue atBreak = undef();
+  JsValue begin = undef();
 
   JsValue escape = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker") || codeEq(code, cBackslash)) {
+    if (code == marker || codeEq(code, cBackslash)) {
       call1(objGet(effects, "consume"), effects, code);
-      return objGet(st, "inside");
+      return inside;
     }
-    return call1(objGet(st, "inside"), JS.undefined(), code);
+    return call1(inside, JS.undefined(), code);
   });
 
-  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker") || isEof(code) || markdownLineEnding(code)) {
+  inside = JS.method1((JsValue _s, JsValue code) => {
+    if (code == marker || isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tChunkString);
-      return call1(objGet(st, "atBreak"), JS.undefined(), code);
+      return call1(atBreak, JS.undefined(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
     if (codeEq(code, cBackslash)) {
@@ -29,10 +32,10 @@ export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue ty
     return inside;
   });
 
-  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+  atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (code == marker) {
       call1(objGet(effects, "exit"), effects, stringType);
-      return call1(objGet(st, "begin"), JS.undefined(), objGet(st, "marker"));
+      return call1(begin, JS.undefined(), marker);
     }
     if (isEof(code)) {
       return call1(nok, JS.undefined(), code);
@@ -41,7 +44,7 @@ export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue ty
       call1(objGet(effects, "enter"), effects, tLineEnding);
       call1(objGet(effects, "consume"), effects, code);
       call1(objGet(effects, "exit"), effects, tLineEnding);
-      return factorySpace(effects, atBreak, tLinePrefix, JS.undefined());
+      return factorySpace(effects, atBreak, tLinePrefix, 0);
     }
     JsValue fields = JS.object();
     JS.set(fields, "contentType", kContentTypeString);
@@ -49,8 +52,8 @@ export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue ty
     return call1(inside, JS.undefined(), code);
   });
 
-  JsValue begin = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+  begin = JS.method1((JsValue _s, JsValue code) => {
+    if (code == marker) {
       call1(objGet(effects, "enter"), effects, markerType);
       call1(objGet(effects, "consume"), effects, code);
       call1(objGet(effects, "exit"), effects, markerType);
@@ -68,17 +71,14 @@ export JsValue factoryTitle(JsValue effects, JsValue ok, JsValue nok, JsValue ty
       call1(objGet(effects, "consume"), effects, code);
       call1(objGet(effects, "exit"), effects, markerType);
       if (codeEq(code, cLeftParenthesis)) {
-        JS.set(st, "marker", cRightParenthesis);
+        marker = cRightParenthesis;
       } else {
-        JS.set(st, "marker", code);
+        marker = JS.number(code).toInt();
       }
       return begin;
     }
     return call1(nok, JS.undefined(), code);
   });
 
-  JS.set(st, "inside", inside);
-  JS.set(st, "atBreak", atBreak);
-  JS.set(st, "begin", begin);
   return start;
 }

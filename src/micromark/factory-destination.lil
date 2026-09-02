@@ -1,4 +1,4 @@
-import { call1, call2, objGet } from "./host.lil";
+import { call1, call2, objGet, undef } from "./host.lil";
 import { asciiControl, markdownLineEnding, markdownLineEndingOrSpace } from "./util-character.lil";
 import { cLessThan, codeEq } from "./symbol/codes.lil";
 import { isEof } from "./host.lil";
@@ -15,33 +15,35 @@ export JsValue factoryDestination(
   JsValue effects,
   JsValue ok,
   JsValue nok,
-  JsValue typ,
-  JsValue literalType,
-  JsValue literalMarkerType,
-  JsValue rawType,
-  JsValue stringType,
-  JsValue max
+  string typ,
+  string literalType,
+  string literalMarkerType,
+  string rawType,
+  string stringType,
+  float max
 ) {
-  JsValue st = JS.object();
   float limit = 1.0 / 0.0;
-  if (max.truthy()) {
-    limit = JS.number(max);
+  if (max != 0.0) {
+    limit = max;
   }
-  JS.set(st, "balance", 0);
+  int balance = 0;
+  JsValue enclosed = undef();
+  JsValue enclosedBefore = undef();
+  JsValue raw = undef();
 
   JsValue enclosedEscape = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cLessThan) || codeEq(code, 62) || codeEq(code, 92)) {
       call1(objGet(effects, "consume"), effects, code);
-      return objGet(st, "enclosed");
+      return enclosed;
     }
-    return call1(objGet(st, "enclosed"), JS.undefined(), code);
+    return call1(enclosed, JS.undefined(), code);
   });
 
-  JsValue enclosed = JS.method1((JsValue _s, JsValue code) => {
+  enclosed = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, 62)) {
       call1(objGet(effects, "exit"), effects, tChunkString);
       call1(objGet(effects, "exit"), effects, stringType);
-      return call1(objGet(st, "enclosedBefore"), JS.undefined(), code);
+      return call1(enclosedBefore, JS.undefined(), code);
     }
     if (isEof(code) || codeEq(code, 60) || markdownLineEnding(code)) {
       return call1(nok, JS.undefined(), code);
@@ -53,7 +55,7 @@ export JsValue factoryDestination(
     return enclosed;
   });
 
-  JsValue enclosedBefore = JS.method1((JsValue _s, JsValue code) => {
+  enclosedBefore = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, 62)) {
       call1(objGet(effects, "enter"), effects, literalMarkerType);
       call1(objGet(effects, "consume"), effects, code);
@@ -70,13 +72,12 @@ export JsValue factoryDestination(
   JsValue rawEscape = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, 40) || codeEq(code, 41) || codeEq(code, 92)) {
       call1(objGet(effects, "consume"), effects, code);
-      return objGet(st, "raw");
+      return raw;
     }
-    return call1(objGet(st, "raw"), JS.undefined(), code);
+    return call1(raw, JS.undefined(), code);
   });
 
-  JsValue raw = JS.method1((JsValue _s, JsValue code) => {
-    int balance = JS.number(objGet(st, "balance")).toInt();
+  raw = JS.method1((JsValue _s, JsValue code) => {
     if (balance == 0 && (isEof(code) || codeEq(code, 41) || markdownLineEndingOrSpace(code))) {
       call1(objGet(effects, "exit"), effects, tChunkString);
       call1(objGet(effects, "exit"), effects, stringType);
@@ -84,14 +85,14 @@ export JsValue factoryDestination(
       call1(objGet(effects, "exit"), effects, typ);
       return call1(ok, JS.undefined(), code);
     }
-    if (JS.number(balance) < limit && codeEq(code, 40)) {
+    if (balance < limit && codeEq(code, 40)) {
       call1(objGet(effects, "consume"), effects, code);
-      JS.set(st, "balance", balance + 1);
+      balance = balance + 1;
       return raw;
     }
     if (codeEq(code, 41)) {
       call1(objGet(effects, "consume"), effects, code);
-      JS.set(st, "balance", balance - 1);
+      balance = balance - 1;
       return raw;
     }
     if (isEof(code) || codeEq(code, 32) || codeEq(code, 40) || asciiControl(code)) {
@@ -123,8 +124,5 @@ export JsValue factoryDestination(
     return call1(raw, JS.undefined(), code);
   });
 
-  JS.set(st, "enclosed", enclosed);
-  JS.set(st, "enclosedBefore", enclosedBefore);
-  JS.set(st, "raw", raw);
   return start;
 }

@@ -5,16 +5,13 @@ import {
   call1,
   call2,
   call3,
-  copyPoint,
+  codeEof,
   eventEnter,
   eventExit,
   fromCharCode1,
-  hasKey,
   includesVal,
   isEof,
-  isFn,
   isStr,
-  isUndef,
   jsInt,
   jsNum,
   jsString,
@@ -38,10 +35,18 @@ import {
   cHorizontalTab,
   cLineFeed,
   cVirtualSpace,
-  codeEq,
-  codes
+  codeEq
 } from "./symbol/codes.lil";
 import { vCr, vHt, vLf, vSpace } from "./symbol/values.lil";
+
+struct PointState {
+  float _bufferIndex;
+  float _index;
+  float line;
+  float column;
+  float offset;
+
+}
 
 JsValue sliceChunks(JsValue chunks, JsValue token) {
   JsValue start = objGet(token, "start");
@@ -50,11 +55,12 @@ JsValue sliceChunks(JsValue chunks, JsValue token) {
   int startBufferIndex = jsInt(objGet(start, "_bufferIndex"));
   int endIndex = jsInt(objGet(end, "_index"));
   int endBufferIndex = jsInt(objGet(end, "_bufferIndex"));
-  JsValue view = JS.array();
+  JsValue[] view = [];
   if (startIndex == endIndex) {
-    push(view, JS.call(JS.get(chunks[startIndex], "slice"), chunks[startIndex], startBufferIndex, endBufferIndex));
+    string chunk = JS.assume(chunks[startIndex]);
+    view = [chunk.slice(startBufferIndex, endBufferIndex)];
   } else {
-    view = slice2(chunks, startIndex, endIndex);
+    view = JS.assume(slice2(chunks, startIndex, endIndex));
     if (startBufferIndex > -1) {
       JsValue head = view[0];
       if (isStr(head)) {
@@ -64,7 +70,8 @@ JsValue sliceChunks(JsValue chunks, JsValue token) {
       }
     }
     if (endBufferIndex > 0) {
-      push(view, JS.call(JS.get(chunks[endIndex], "slice"), chunks[endIndex], 0, endBufferIndex));
+      string chunk = JS.assume(chunks[endIndex]);
+      push(view, chunk.slice(0, endBufferIndex));
     }
   }
   return view;
@@ -72,7 +79,7 @@ JsValue sliceChunks(JsValue chunks, JsValue token) {
 
 string serializeChunks(JsValue chunks, JsValue expandTabs) {
   int index = -1;
-  string result = "";
+  string[] result = [];
   bool atTab = false;
   int n = arrLen(chunks);
   while (true) {
@@ -105,279 +112,214 @@ string serializeChunks(JsValue chunks, JsValue expandTabs) {
       value = fromCharCode1(chunk);
     }
     atTab = codeEq(chunk, cHorizontalTab);
-    result = result + value;
+    result.push(value);
   }
-  return result;
+  return result.join("");
 }
 
-void accountForPotentialSkip(JsValue tok) {
-  JsValue p = objGet(tok, "point");
-  JsValue columnStart = objGet(tok, "columnStart");
-  JsValue lineKey = objGet(p, "line");
-  if (hasKey(columnStart, lineKey) && jsNum(objGet(p, "column")) < 2.0) {
-    JS.set(p, "column", objGetVal(columnStart, lineKey));
-    JS.set(p, "offset", jsNum(objGet(p, "offset")) + jsNum(objGetVal(columnStart, lineKey)) - 1.0);
-  }
+pure PointState clonePointState(PointState point) {
+  return PointState{point._bufferIndex, point._index, point.line, point.column, point.offset};
 }
 
-void restorePoint(JsValue target, JsValue source) {
-  JS.set(target, "_bufferIndex", objGet(source, "_bufferIndex"));
-  JS.set(target, "_index", objGet(source, "_index"));
-  JS.set(target, "line", objGet(source, "line"));
-  JS.set(target, "column", objGet(source, "column"));
-  JS.set(target, "offset", objGet(source, "offset"));
-}
-
-void restoreInfo(JsValue tok, JsValue info) {
-  call0(objGet(info, "restore"), info);
-}
-
-JsValue storeState(JsValue tok) {
-  JsValue context = objGet(tok, "context");
-  JsValue info = JS.object();
-  JsValue startPoint = copyPoint(objGet(tok, "point"));
-  JsValue startPrevious = objGet(context, "previous");
-  JsValue startCurrentConstruct = objGet(context, "currentConstruct");
-  int startEventsIndex = arrLen(objGet(context, "events"));
-  JsValue startStack = arrayFrom(objGet(tok, "stack"));
-  JS.set(info, "from", startEventsIndex);
-  JS.set(info, "restore", JS.method0((JsValue _s) => {
-    restorePoint(objGet(tok, "point"), startPoint);
-    JS.set(context, "previous", startPrevious);
-    JS.set(context, "currentConstruct", startCurrentConstruct);
-    JS.set(objGet(context, "events"), "length", startEventsIndex);
-    JS.set(tok, "stack", startStack);
-    accountForPotentialSkip(tok);
-    return undef();
-  }));
-  return info;
-}
-
-void addResult(JsValue tok, JsValue construct, int from) {
-  JsValue context = objGet(tok, "context");
-  JsValue resolveAllConstructs = objGet(tok, "resolveAllConstructs");
-  if (isFn(objGet(construct, "resolveAll")) && !includesVal(resolveAllConstructs, construct)) {
-    push(resolveAllConstructs, construct);
-  }
-  if (isFn(objGet(construct, "resolve"))) {
-    JsValue evs = objGet(context, "events");
-    JsValue resolved = call2(objGet(construct, "resolve"), construct, slice1(evs, from), context);
-    splice(evs, from, arrLen(evs) - from, resolved);
-  }
-  if (isFn(objGet(construct, "resolveTo"))) {
-    JS.set(context, "events", call2(objGet(construct, "resolveTo"), construct, objGet(context, "events"), context));
-  }
-}
-
-JsValue handleConstruct(JsValue tok, JsValue run, JsValue construct) {
-  JsValue context = objGet(tok, "context");
-  return JS.method1((JsValue _s, JsValue code) => {
-    JS.set(run, "info", storeState(tok));
-    JS.set(run, "currentConstruct", construct);
-    if (!objGet(construct, "partial").truthy()) {
-      JS.set(context, "currentConstruct", construct);
-    }
-    JsValue disable = objGet(objGet(objGet(context, "parser"), "constructs"), "disable");
-    JsValue disabled = objGet(disable, "null");
-    if (objGet(construct, "name").truthy() && includesVal(disabled, objGet(construct, "name"))) {
-      return call1(objGet(run, "nok"), JS.undefined(), code);
-    }
-    JsValue selfCtx = context;
-    if (objGet(run, "fields").truthy()) {
-      selfCtx = objectAssign(objectCreate(context), objGet(run, "fields"));
-    }
-    JsValue state = call3(objGet(construct, "tokenize"), selfCtx, objGet(tok, "effects"), objGet(run, "ok"), objGet(run, "nok"));
-    return call1(state, JS.undefined(), code);
-  });
-}
-
-JsValue handleListOfConstructs(JsValue tok, JsValue run, JsValue list) {
-  JS.set(run, "listOfConstructs", list);
-  JS.set(run, "constructIndex", 0);
-  if (arrLen(list) == 0) {
-    return objGet(run, "bogusState");
-  }
-  return handleConstruct(tok, run, list[0]);
-}
-
-JsValue handleMapOfConstructs(JsValue tok, JsValue run, JsValue map) {
-  return JS.method1((JsValue _s, JsValue code) => {
-    JsValue left = undef();
-    JsValue all = undef();
-    if (!isEof(code)) {
-      left = objGetVal(map, code);
-      all = objGet(map, "null");
-    }
-    JsValue list = JS.array();
-    if (left.isArray()) {
-      int i = 0;
-      int n = arrLen(left);
-      while (i < n) {
-        push(list, left[i]);
-        i = i + 1;
-      }
-    } else if (left.truthy()) {
-      push(list, left);
-    }
-    if (all.isArray()) {
-      int i = 0;
-      int n = arrLen(all);
-      while (i < n) {
-        push(list, all[i]);
-        i = i + 1;
-      }
-    } else if (all.truthy()) {
-      push(list, all);
-    }
-    return call1(handleListOfConstructs(tok, run, list), JS.undefined(), code);
-  });
-}
-
-JsValue constructFactory(JsValue tok, JsValue onreturn, JsValue fields) {
-  return JS.method3((JsValue _self, JsValue constructs, JsValue returnState, JsValue bogusState) => {
-    JsValue run = JS.object();
-    JS.set(run, "returnState", returnState);
-    JS.set(run, "bogusState", bogusState);
-    JS.set(run, "onreturn", onreturn);
-    JS.set(run, "fields", fields);
-    JS.set(run, "ok", JS.method1((JsValue _s, JsValue code) => {
-      JS.set(tok, "consumed", true);
-      call2(onreturn, JS.undefined(), objGet(run, "currentConstruct"), objGet(run, "info"));
-      return returnState;
-    }));
-    JS.set(run, "nok", JS.method1((JsValue _s, JsValue code) => {
-      JS.set(tok, "consumed", true);
-      restoreInfo(tok, objGet(run, "info"));
-      JS.set(run, "constructIndex", jsInt(objGet(run, "constructIndex")) + 1);
-      if (jsInt(objGet(run, "constructIndex")) < arrLen(objGet(run, "listOfConstructs"))) {
-        return handleConstruct(tok, run, objGet(run, "listOfConstructs")[jsInt(objGet(run, "constructIndex"))]);
-      }
-      return bogusState;
-    }));
-    if (constructs.isArray()) {
-      return handleListOfConstructs(tok, run, constructs);
-    }
-    if (hasKey(constructs, "tokenize")) {
-      JsValue list = JS.array();
-      push(list, constructs);
-      return handleListOfConstructs(tok, run, list);
-    }
-    return handleMapOfConstructs(tok, run, constructs);
-  });
-}
-
-void go(JsValue tok, JsValue code) {
-  JS.set(tok, "consumed", undef());
-  JS.set(tok, "expectedCode", code);
-  JS.set(tok, "state", call1(objGet(tok, "state"), JS.undefined(), code));
-}
-
-void mainLoop(JsValue tok) {
-  JsValue chunks = objGet(tok, "chunks");
-  while (jsInt(objGet(objGet(tok, "point"), "_index")) < arrLen(chunks)) {
-    JsValue p = objGet(tok, "point");
-    JsValue chunk = chunks[jsInt(objGet(p, "_index"))];
-    if (isStr(chunk)) {
-      int chunkIndex = jsInt(objGet(p, "_index"));
-      if (jsInt(objGet(p, "_bufferIndex")) < 0) {
-        JS.set(p, "_bufferIndex", 0);
-      }
-      string text = jsString(chunk);
-      while (jsInt(objGet(objGet(tok, "point"), "_index")) == chunkIndex && jsInt(objGet(objGet(tok, "point"), "_bufferIndex")) < text.length) {
-        go(tok, text.charCodeAt(jsInt(objGet(objGet(tok, "point"), "_bufferIndex"))));
-      }
-    } else {
-      go(tok, chunk);
-    }
-  }
+pure JsValue pointValue(PointState point) {
+  return JS.object(
+    "_bufferIndex", point._bufferIndex,
+    "_index", point._index,
+    "line", point.line,
+    "column", point.column,
+    "offset", point.offset
+  );
 }
 
 export JsValue createTokenizer(JsValue parser, JsValue initialize, JsValue from) {
-  JsValue tok = JS.object();
-  JsValue point = JS.object();
-  JS.set(point, "_bufferIndex", -1);
-  JS.set(point, "_index", 0);
   float line = 1.0;
   float column = 1.0;
   float offset = 0.0;
   if (from.truthy()) {
-    if (objGet(from, "line").truthy()) {
-      line = jsNum(objGet(from, "line"));
+    JsValue fromLine = objGet(from, "line");
+    if (fromLine.truthy()) {
+      line = jsNum(fromLine);
     }
-    if (objGet(from, "column").truthy()) {
-      column = jsNum(objGet(from, "column"));
+    JsValue fromColumn = objGet(from, "column");
+    if (fromColumn.truthy()) {
+      column = jsNum(fromColumn);
     }
-    JsValue off = objGet(from, "offset");
-    if (!isUndef(off) && !isEof(off)) {
-      offset = jsNum(off);
+    JsValue fromOffset = objGet(from, "offset");
+    if (fromOffset.truthy()) {
+      offset = jsNum(fromOffset);
     }
   }
-  JS.set(point, "line", line);
-  JS.set(point, "column", column);
-  JS.set(point, "offset", offset);
-  JS.set(tok, "point", point);
-  JS.set(tok, "columnStart", JS.object());
-  JS.set(tok, "resolveAllConstructs", JS.array());
-  JS.set(tok, "chunks", JS.array());
-  JS.set(tok, "stack", JS.array());
-  JS.set(tok, "consumed", true);
-  JS.set(tok, "parser", parser);
-
+  PointState point = PointState{-1.0, 0.0, line, column, offset};
+  JsValue columnStart = JS.object();
+  JsValue resolveAllConstructs = JS.array();
+  JsValue chunks = JS.array();
+  JsValue[] stack = [];
   JsValue context = JS.object();
-  JS.set(context, "code", objGet(codes, "eof"));
-  JS.set(context, "containerState", JS.object());
-  JS.set(context, "events", JS.array());
-  JS.set(context, "parser", parser);
-  JS.set(context, "previous", objGet(codes, "eof"));
-  JS.set(tok, "context", context);
+  JsValue effects = undef();
+  JsValue state = undef();
+
+  JsValue accountForPotentialSkip = JS.method0((JsValue _self) => {
+    string lineKey = JS.string(point.line);
+    if (JS.has(columnStart, lineKey) && point.column < 2.0) {
+      point.column = jsNum(objGetVal(columnStart, lineKey));
+      point.offset = point.offset + jsNum(objGetVal(columnStart, lineKey)) - 1.0;
+    }
+    return undef();
+  });
+
+  JsValue addResult = JS.method2((JsValue _self, JsValue construct, JsValue from) => {
+    if (objGet(construct, "resolveAll").truthy() && !includesVal(resolveAllConstructs, construct)) {
+      push(resolveAllConstructs, construct);
+    }
+    if (objGet(construct, "resolve").truthy()) {
+      JsValue events = objGet(context, "events");
+      JsValue resolved = call2(objGet(construct, "resolve"), construct, slice1(events, from), context);
+      splice(events, from, arrLen(events) - jsInt(from), resolved);
+    }
+    if (objGet(construct, "resolveTo").truthy()) {
+      JS.set(context, "events", call2(objGet(construct, "resolveTo"), construct, objGet(context, "events"), context));
+    }
+    return undef();
+  });
+
+  JsValue constructFactory = JS.method2((JsValue _self, JsValue onreturn, JsValue fields) => {
+    return JS.method3((JsValue _hookSelf, JsValue constructs, JsValue returnState, JsValue bogusState) => {
+      JsValue[] listOfConstructs = [];
+      int constructIndex = 0;
+      JsValue currentConstruct = undef();
+      float eventStart = 0.0;
+      JsValue restore = undef();
+      JsValue handleConstruct = undef();
+      JsValue handleListOfConstructs = undef();
+
+      JsValue ok = JS.method1((JsValue _s, JsValue code) => {
+        call3(onreturn, JS.undefined(), currentConstruct, restore, eventStart);
+        return returnState;
+      });
+      JsValue nok = JS.method1((JsValue _s, JsValue code) => {
+        call0(restore, JS.undefined());
+        constructIndex = constructIndex + 1;
+        if (constructIndex < listOfConstructs.length) {
+          return call1(handleConstruct, JS.undefined(), listOfConstructs[constructIndex]);
+        }
+        return bogusState;
+      });
+
+      handleConstruct = JS.method1((JsValue _s, JsValue construct) => {
+        return JS.method1((JsValue _stateSelf, JsValue code) => {
+          PointState startPoint = clonePointState(point);
+          JsValue startPrevious = objGet(context, "previous");
+          JsValue startCurrentConstruct = objGet(context, "currentConstruct");
+          eventStart = arrLen(objGet(context, "events"));
+          JsValue[] startStack = JS.assume(arrayFrom(stack));
+          restore = JS.method0((JsValue _restoreSelf) => {
+            point = startPoint;
+            JS.set(context, "previous", startPrevious);
+            JS.set(context, "currentConstruct", startCurrentConstruct);
+            JS.set(objGet(context, "events"), "length", eventStart);
+            stack = startStack;
+            call0(accountForPotentialSkip, JS.undefined());
+            return undef();
+          });
+          currentConstruct = construct;
+          if (!objGet(construct, "partial").truthy()) {
+            JS.set(context, "currentConstruct", construct);
+          }
+          JsValue name = objGet(construct, "name");
+          if (name.truthy()) {
+            JsValue disable = objGet(objGet(objGet(context, "parser"), "constructs"), "disable");
+            JsValue disabled = objGet(disable, "null");
+            if (JS.call(JS.get(disabled, "includes"), disabled, objGet(construct, "name")).truthy()) {
+              return call1(nok, JS.undefined(), code);
+            }
+          }
+          JsValue selfCtx = context;
+          if (fields.truthy()) {
+            selfCtx = objectAssign(objectCreate(context), fields);
+          }
+          JsValue next = call3(objGet(construct, "tokenize"), selfCtx, effects, ok, nok);
+          return call1(next, JS.undefined(), code);
+        });
+      });
+
+      handleListOfConstructs = JS.method1((JsValue _s, JsValue list) => {
+        listOfConstructs = JS.assume(list);
+        constructIndex = 0;
+        if (listOfConstructs.length == 0) {
+          return bogusState;
+        }
+        return call1(handleConstruct, JS.undefined(), listOfConstructs[0]);
+      });
+
+      if (constructs.isArray()) {
+        return call1(handleListOfConstructs, JS.undefined(), constructs);
+      }
+      if (JS.has(constructs, "tokenize")) {
+        JsValue[] list = [constructs];
+        return call1(handleListOfConstructs, JS.undefined(), list);
+      }
+      return JS.method1((JsValue _s, JsValue code) => {
+        JsValue left = undef();
+        JsValue all = undef();
+        if (!isEof(code)) {
+          left = objGetVal(constructs, code);
+          all = objGet(constructs, "null");
+        }
+        JsValue[] leftList = [];
+        if (left.isArray()) {
+          leftList = JS.assume(left);
+        } else if (left.truthy()) {
+          leftList = [left];
+        }
+        JsValue[] allList = [];
+        if (all.isArray()) {
+          allList = JS.assume(all);
+        } else if (all.truthy()) {
+          allList = [all];
+        }
+        JsValue[] list = [...leftList, ...allList];
+        return call1(call1(handleListOfConstructs, JS.undefined(), list), JS.undefined(), code);
+      });
+    });
+  });
 
   JsValue nowFn = JS.method0((JsValue _self) => {
-    return copyPoint(objGet(tok, "point"));
+    return pointValue(point);
   });
   JsValue defineSkipFn = JS.method1((JsValue _self, JsValue value) => {
-    objSetVal(objGet(tok, "columnStart"), objGet(value, "line"), objGet(value, "column"));
-    accountForPotentialSkip(tok);
+    objSetVal(columnStart, objGet(value, "line"), objGet(value, "column"));
+    call0(accountForPotentialSkip, JS.undefined());
     return undef();
   });
   JsValue sliceStreamFn = JS.method1((JsValue _self, JsValue token) => {
-    return sliceChunks(objGet(tok, "chunks"), token);
+    return sliceChunks(chunks, token);
   });
   JsValue sliceSerializeFn = JS.method2((JsValue _self, JsValue token, JsValue expandTabs) => {
-    return serializeChunks(sliceChunks(objGet(tok, "chunks"), token), expandTabs);
+    return serializeChunks(sliceChunks(chunks, token), expandTabs);
   });
   JsValue consumeFn = JS.method1((JsValue _self, JsValue code) => {
-    JsValue p = objGet(tok, "point");
     if (markdownLineEnding(code)) {
-      JS.set(p, "line", jsNum(objGet(p, "line")) + 1.0);
-      JS.set(p, "column", 1);
-      float add = 1.0;
-      if (codeEq(code, cCarriageReturnLineFeed)) {
-        add = 2.0;
-      }
-      JS.set(p, "offset", jsNum(objGet(p, "offset")) + add);
-      accountForPotentialSkip(tok);
+      point.line = point.line + 1.0;
+      point.column = 1.0;
+      float add = if (codeEq(code, cCarriageReturnLineFeed)) { 2.0 } else { 1.0 };
+      point.offset = point.offset + add;
+      call0(accountForPotentialSkip, JS.undefined());
     } else if (!codeEq(code, cVirtualSpace)) {
-      JS.set(p, "column", jsNum(objGet(p, "column")) + 1.0);
-      JS.set(p, "offset", jsNum(objGet(p, "offset")) + 1.0);
+      point.column = point.column + 1.0;
+      point.offset = point.offset + 1.0;
     }
-    if (jsInt(objGet(p, "_bufferIndex")) < 0) {
-      JS.set(p, "_index", jsInt(objGet(p, "_index")) + 1);
+    if (point._bufferIndex < 0.0) {
+      point._index = point._index + 1.0;
     } else {
-      JS.set(p, "_bufferIndex", jsInt(objGet(p, "_bufferIndex")) + 1);
-      JsValue chunk = objGet(tok, "chunks")[jsInt(objGet(p, "_index"))];
-      int chunkLength = 0;
-      if (isStr(chunk)) {
-        chunkLength = jsString(chunk).length;
-      } else {
-        chunkLength = jsInt(objGet(chunk, "length"));
-      }
-      if (jsInt(objGet(p, "_bufferIndex")) == chunkLength) {
-        JS.set(p, "_bufferIndex", -1);
-        JS.set(p, "_index", jsInt(objGet(p, "_index")) + 1);
+      point._bufferIndex = point._bufferIndex + 1.0;
+      JsValue chunk = chunks[point._index.toInt()];
+      float chunkLength = chunk.length;
+      if (point._bufferIndex == chunkLength) {
+        point._bufferIndex = -1.0;
+        point._index = point._index + 1.0;
       }
     }
     JS.set(context, "previous", code);
-    JS.set(tok, "consumed", true);
     return undef();
   });
   JsValue enterFn = JS.method2((JsValue _self, JsValue typ, JsValue fields) => {
@@ -386,54 +328,71 @@ export JsValue createTokenizer(JsValue parser, JsValue initialize, JsValue from)
       token = JS.object();
     }
     JS.set(token, "type", typ);
-    JS.set(token, "start", copyPoint(objGet(tok, "point")));
+    JS.set(token, "start", pointValue(point));
     push(objGet(context, "events"), eventEnter(token, context));
-    push(objGet(tok, "stack"), token);
+    stack.push(token);
     return token;
   });
   JsValue exitFn = JS.method1((JsValue _self, JsValue typ) => {
-    JsValue token = pop(objGet(tok, "stack"));
-    JS.set(token, "end", copyPoint(objGet(tok, "point")));
+    JsValue token = stack.pop();
+    JS.set(token, "end", pointValue(point));
     push(objGet(context, "events"), eventExit(token, context));
     return token;
   });
   JsValue writeFn = JS.method1((JsValue _self, JsValue slice) => {
-    JS.set(tok, "chunks", pushAll(objGet(tok, "chunks"), slice));
-    mainLoop(tok);
-    JsValue chunks = objGet(tok, "chunks");
-    if (arrLen(chunks) == 0 || !isEof(chunks[arrLen(chunks) - 1])) {
+    chunks = pushAll(chunks, slice);
+    while (point._index < arrLen(chunks)) {
+      JsValue chunk = chunks[point._index.toInt()];
+      if (chunk is string) {
+        float chunkIndex = point._index;
+        if (point._bufferIndex < 0.0) {
+          point._bufferIndex = 0.0;
+        }
+        string text = chunk;
+        while (point._index == chunkIndex && point._bufferIndex < text.length) {
+          state = call1(state, JS.undefined(), text.charCodeAt(point._bufferIndex.toInt()));
+        }
+      } else {
+        state = call1(state, JS.undefined(), chunk);
+      }
+    }
+    if (!isEof(chunks[arrLen(chunks) - 1])) {
       return JS.array();
     }
-    addResult(tok, initialize, 0);
-    JS.set(context, "events", resolveAll(objGet(tok, "resolveAllConstructs"), objGet(context, "events"), context));
+    call2(addResult, JS.undefined(), initialize, 0);
+    JS.set(context, "events", resolveAll(resolveAllConstructs, objGet(context, "events"), context));
     return objGet(context, "events");
   });
-  JsValue onsuccessfulconstruct = JS.method2((JsValue _s, JsValue construct, JsValue info) => {
-    addResult(tok, construct, jsInt(objGet(info, "from")));
+  JsValue onsuccessfulconstruct = JS.method3((JsValue _s, JsValue construct, JsValue _restore, JsValue from) => {
+    call2(addResult, JS.undefined(), construct, from);
     return undef();
   });
-  JsValue onsuccessfulcheck = JS.method2((JsValue _s, JsValue _construct, JsValue info) => {
-    restoreInfo(tok, info);
+  JsValue onsuccessfulcheck = JS.method3((JsValue _s, JsValue _construct, JsValue restore, JsValue _from) => {
+    call0(restore, JS.undefined());
     return undef();
   });
-  JsValue interruptFields = JS.object();
-  JS.set(interruptFields, "interrupt", true);
-  JsValue effects = JS.object();
-  JS.set(effects, "attempt", constructFactory(tok, onsuccessfulconstruct, undef()));
-  JS.set(effects, "check", constructFactory(tok, onsuccessfulcheck, undef()));
-  JS.set(effects, "consume", consumeFn);
-  JS.set(effects, "enter", enterFn);
-  JS.set(effects, "exit", exitFn);
-  JS.set(effects, "interrupt", constructFactory(tok, onsuccessfulcheck, interruptFields));
-  JS.set(tok, "effects", effects);
+  JsValue interruptFields = JS.object("interrupt", true);
+  effects = JS.object(
+    "attempt", call2(constructFactory, JS.undefined(), onsuccessfulconstruct, undef()),
+    "check", call2(constructFactory, JS.undefined(), onsuccessfulcheck, undef()),
+    "consume", consumeFn,
+    "enter", enterFn,
+    "exit", exitFn,
+    "interrupt", call2(constructFactory, JS.undefined(), onsuccessfulcheck, interruptFields)
+  );
+  JS.set(context, "code", codeEof);
+  JS.set(context, "containerState", JS.object());
   JS.set(context, "defineSkip", defineSkipFn);
+  JS.set(context, "events", JS.array());
   JS.set(context, "now", nowFn);
+  JS.set(context, "parser", parser);
+  JS.set(context, "previous", codeEof);
   JS.set(context, "sliceSerialize", sliceSerializeFn);
   JS.set(context, "sliceStream", sliceStreamFn);
   JS.set(context, "write", writeFn);
-  JS.set(tok, "state", call1(objGet(initialize, "tokenize"), context, effects));
-  if (isFn(objGet(initialize, "resolveAll"))) {
-    push(objGet(tok, "resolveAllConstructs"), initialize);
+  state = call1(objGet(initialize, "tokenize"), context, effects);
+  if (objGet(initialize, "resolveAll").truthy()) {
+    push(resolveAllConstructs, initialize);
   }
   return context;
 }

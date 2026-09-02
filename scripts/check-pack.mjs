@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process"
+import assert from "node:assert/strict"
 import { readFileSync } from "node:fs"
 
 const json = execFileSync("npm", ["pack", "--dry-run", "--json"], { encoding: "utf8" })
@@ -13,6 +14,7 @@ const required = new Set([
   "LICENSE",
   "NOTICE.md",
   "README.md",
+  "UPSTREAM.md",
 ])
 const files = new Set(result.files.map(({ path }) => path))
 for (const path of required) {
@@ -20,7 +22,9 @@ for (const path of required) {
 }
 const manifest = JSON.parse(readFileSync("package.json", "utf8"))
 if (manifest.name !== "@itslil/mdast-util-from-markdown") throw new Error("unexpected package name")
-if (manifest.dependencies && Object.keys(manifest.dependencies).length) {
-  throw new Error("package must stay dependency-free")
-}
+assert.deepEqual(Object.keys(manifest.dependencies).sort(), [
+  "@types/mdast",
+  "@types/unist",
+  "micromark-util-types",
+])
 console.log(`npm pack: ${result.entryCount} files, ${result.size} bytes packed, ${result.unpackedSize} bytes unpacked`)

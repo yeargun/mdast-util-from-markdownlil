@@ -10,8 +10,6 @@ import { cColon, codeEq } from "../symbol/codes.lil";
 import { tDefinition, tDefinitionDestination, tDefinitionDestinationLiteral, tDefinitionDestinationLiteralMarker, tDefinitionDestinationRaw, tDefinitionDestinationString, tDefinitionLabel, tDefinitionLabelMarker, tDefinitionLabelString, tDefinitionMarker, tDefinitionTitle, tDefinitionTitleMarker, tDefinitionTitleString, tWhitespace } from "../symbol/types.lil";
 
 JsValue tokenizeTitleBefore = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-
   JsValue titleAfterOptionalWhitespace = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       return call1(ok, undef(), code);
@@ -21,7 +19,7 @@ JsValue tokenizeTitleBefore = JS.method3((JsValue _self, JsValue effects, JsValu
 
   JsValue titleAfter = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, titleAfterOptionalWhitespace, tWhitespace, undef()), undef(), code);
+      return call1(factorySpace(effects, titleAfterOptionalWhitespace, tWhitespace, 0), undef(), code);
     }
     return call1(titleAfterOptionalWhitespace, undef(), code);
   });
@@ -37,7 +35,6 @@ JsValue tokenizeTitleBefore = JS.method3((JsValue _self, JsValue effects, JsValu
     return call1(nok, undef(), code);
   });
 
-  JS.set(st, "titleBefore", titleBefore);
   return titleBefore;
 });
 
@@ -45,13 +42,12 @@ JsValue titleBeforeConstruct = makeConstruct(tokenizeTitleBefore);
 JS.set(titleBeforeConstruct, "partial", true);
 
 JsValue tokenizeDefinition = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "identifier", "");
+  string identifier = "";
 
   JsValue afterWhitespace = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tDefinition);
-      push(objGet(objGet(self, "parser"), "defined"), objGet(st, "identifier"));
+      push(objGet(objGet(self, "parser"), "defined"), identifier);
       return call1(ok, undef(), code);
     }
     return call1(nok, undef(), code);
@@ -59,7 +55,7 @@ JsValue tokenizeDefinition = JS.method3((JsValue self, JsValue effects, JsValue 
 
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, afterWhitespace, tWhitespace, undef()), undef(), code);
+      return call1(factorySpace(effects, afterWhitespace, tWhitespace, 0), undef(), code);
     }
     return call1(afterWhitespace, undef(), code);
   });
@@ -69,7 +65,7 @@ JsValue tokenizeDefinition = JS.method3((JsValue self, JsValue effects, JsValue 
   });
 
   JsValue destinationBefore = JS.method1((JsValue _s, JsValue code) => {
-    return call1(factoryDestination(effects, destinationAfter, nok, tDefinitionDestination, tDefinitionDestinationLiteral, tDefinitionDestinationLiteralMarker, tDefinitionDestinationRaw, tDefinitionDestinationString, undef()), undef(), code);
+    return call1(factoryDestination(effects, destinationAfter, nok, tDefinitionDestination, tDefinitionDestinationLiteral, tDefinitionDestinationLiteralMarker, tDefinitionDestinationRaw, tDefinitionDestinationString, 0), undef(), code);
   });
 
   JsValue markerAfter = JS.method1((JsValue _s, JsValue code) => {
@@ -82,7 +78,7 @@ JsValue tokenizeDefinition = JS.method3((JsValue self, JsValue effects, JsValue 
   JsValue labelAfter = JS.method1((JsValue _s, JsValue code) => {
     JsValue events = objGet(self, "events");
     string raw = jsString(call1(objGet(self, "sliceSerialize"), self, events[arrLen(events) - 1][1]));
-    JS.set(st, "identifier", normalizeIdentifier(jsString(JS.call(JS.get(raw, "slice"), raw, 1, -1))));
+    identifier = normalizeIdentifier(jsString(JS.call(JS.get(raw, "slice"), raw, 1, -1)));
     if (codeEq(code, cColon)) {
       call1(objGet(effects, "enter"), effects, tDefinitionMarker);
       call1(objGet(effects, "consume"), effects, code);

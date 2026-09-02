@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, it } from "node:test"
+import { fromMarkdown as upstreamFromMarkdown } from "mdast-util-from-markdown"
 import { fromMarkdown } from "../dist/from-markdown.esm.js"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
@@ -84,6 +85,34 @@ describe("fromMarkdown", () => {
     assert.equal(tree.children[0].children[0].type, "link")
     assert.equal(tree.children[0].children[0].url, "javascript:alert(1)")
   })
+
+  it("matches upstream property insertion order", () => {
+    const tree = fromMarkdown("# heading\n\n[link](url)\n\n- item")
+
+    assert.deepEqual(Object.keys(tree.children[0]), ["type", "depth", "children", "position"])
+    assert.deepEqual(Object.keys(tree.children[1].children[0]), [
+      "type",
+      "title",
+      "url",
+      "children",
+      "position",
+    ])
+    assert.deepEqual(Object.keys(tree.children[2]), [
+      "type",
+      "ordered",
+      "start",
+      "spread",
+      "children",
+      "position",
+    ])
+    assert.deepEqual(Object.keys(tree.children[2].children[0]), [
+      "type",
+      "spread",
+      "checked",
+      "children",
+      "position",
+    ])
+  })
 })
 
 describe("closed", () => {
@@ -100,5 +129,26 @@ describe("pins", () => {
     assert.match(src, /mdastExtensions/)
     assert.match(src, /extensions/)
     assert.match(src, / as fromMarkdown/)
+  })
+})
+
+describe("large lists", () => {
+  it("parses a wide list", () => {
+    const wideCount = 1000
+    const tree = fromMarkdown("- a\n".repeat(wideCount))
+
+    assert.equal(tree.children[0].type, "list")
+    assert.equal(tree.children[0].children.length, wideCount)
+    assert.equal(tree.children[0].children[wideCount - 1].position.start.line, wideCount)
+  })
+
+  it("matches upstream for wide tight lists", () => {
+    const markdown = "- a\n".repeat(1000)
+    assert.deepEqual(fromMarkdown(markdown), upstreamFromMarkdown(markdown))
+  })
+
+  it("matches upstream for wide loose lists", () => {
+    const markdown = "- a\n\n".repeat(1000)
+    assert.deepEqual(fromMarkdown(markdown), upstreamFromMarkdown(markdown))
   })
 })

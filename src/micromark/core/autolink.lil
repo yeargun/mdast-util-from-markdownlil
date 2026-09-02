@@ -5,14 +5,14 @@ import { kAutolinkDomainSizeMax, kAutolinkSchemeSizeMax } from "../symbol/consta
 import { tAutolink, tAutolinkEmail, tAutolinkMarker, tAutolinkProtocol } from "../symbol/types.lil";
 
 JsValue tokenizeAutolink = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "size", 0);
+  int size = 0;
+  JsValue emailLabel = undef();
+  JsValue emailAtSignOrDot = undef();
 
   JsValue emailValue = JS.method1((JsValue _s, JsValue code) => {
-    int size = JS.number(objGet(st, "size")).toInt();
     if ((codeEq(code, cDash) || asciiAlphanumeric(code)) && size < kAutolinkDomainSizeMax) {
-      JS.set(st, "size", size + 1);
-      JsValue next = objGet(st, "emailLabel");
+      size = size + 1;
+      JsValue next = emailLabel;
       if (codeEq(code, cDash)) {
         next = emailValue;
       }
@@ -22,11 +22,11 @@ JsValue tokenizeAutolink = JS.method3((JsValue _self, JsValue effects, JsValue o
     return call1(nok, undef(), code);
   });
 
-  JsValue emailLabel = JS.method1((JsValue _s, JsValue code) => {
+  emailLabel = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cDot)) {
       call1(objGet(effects, "consume"), effects, code);
-      JS.set(st, "size", 0);
-      return objGet(st, "emailAtSignOrDot");
+      size = 0;
+      return emailAtSignOrDot;
     }
     if (codeEq(code, cGreaterThan)) {
       JS.set(call1(objGet(effects, "exit"), effects, tAutolinkProtocol), "type", tAutolinkEmail);
@@ -39,7 +39,7 @@ JsValue tokenizeAutolink = JS.method3((JsValue _self, JsValue effects, JsValue o
     return call1(emailValue, undef(), code);
   });
 
-  JsValue emailAtSignOrDot = JS.method1((JsValue _s, JsValue code) => {
+  emailAtSignOrDot = JS.method1((JsValue _s, JsValue code) => {
     if (asciiAlphanumeric(code)) {
       return call1(emailLabel, undef(), code);
     }
@@ -77,22 +77,21 @@ JsValue tokenizeAutolink = JS.method3((JsValue _self, JsValue effects, JsValue o
   JsValue schemeInsideOrEmailAtext = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cColon)) {
       call1(objGet(effects, "consume"), effects, code);
-      JS.set(st, "size", 0);
+      size = 0;
       return urlInside;
     }
-    int size = JS.number(objGet(st, "size")).toInt();
     if ((codeEq(code, cPlusSign) || codeEq(code, cDash) || codeEq(code, cDot) || asciiAlphanumeric(code)) && size < kAutolinkSchemeSizeMax) {
-      JS.set(st, "size", size + 1);
+      size = size + 1;
       call1(objGet(effects, "consume"), effects, code);
       return schemeInsideOrEmailAtext;
     }
-    JS.set(st, "size", 0);
+    size = 0;
     return call1(emailAtext, undef(), code);
   });
 
   JsValue schemeOrEmailAtext = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cPlusSign) || codeEq(code, cDash) || codeEq(code, cDot) || asciiAlphanumeric(code)) {
-      JS.set(st, "size", 1);
+      size = 1;
       return call1(schemeInsideOrEmailAtext, undef(), code);
     }
     return call1(emailAtext, undef(), code);
@@ -118,8 +117,6 @@ JsValue tokenizeAutolink = JS.method3((JsValue _self, JsValue effects, JsValue o
     return open;
   });
 
-  JS.set(st, "emailLabel", emailLabel);
-  JS.set(st, "emailAtSignOrDot", emailAtSignOrDot);
   return start;
 });
 

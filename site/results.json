@@ -10,8 +10,8 @@
   "warmupDiscard": 3,
   "comparison": "Official rows are an esbuild bundle of mdast-util-from-markdown@2.0.3 plus its runtime graph, then Terser or esbuild. LilScript is the compiled npm file. Closed is extern_fields=false.",
   "spec": {
-    "total": 740,
-    "pass": 740,
+    "total": 724,
+    "pass": 724,
     "label": "official suite"
   },
   "play": {
@@ -62,18 +62,18 @@
     {
       "id": "itslil",
       "name": "@itslil/mdast-util-from-markdown · library",
-      "raw": 94640,
-      "gzip9": 31706,
-      "brotli11": 26977,
+      "raw": 88325,
+      "gzip9": 31225,
+      "brotli11": 26103,
       "note": "LilScript js-module, extern_fields true. The npm ESM.",
       "primary": true
     },
     {
       "id": "itslil-closed",
       "name": "@itslil/mdast-util-from-markdown · closed",
-      "raw": 95425,
-      "gzip9": 32153,
-      "brotli11": 27383,
+      "raw": 88215,
+      "gzip9": 31133,
+      "brotli11": 26114,
       "note": "Same source, extern_fields false"
     }
   ],

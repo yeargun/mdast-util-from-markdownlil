@@ -134,7 +134,6 @@ JsValue initializeFactory(string field, JsValue extraResolver) {
   JS.set(construct, "tokenize", JS.method1((JsValue self, JsValue effects) => {
     JsValue constructs = objGet(objGet(self, "parser"), "constructs")[field];
     JsValue text = JS.undefined();
-    JsValue st = JS.object();
 
     JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
       if (isEof(code)) {
@@ -187,7 +186,6 @@ JsValue initializeFactory(string field, JsValue extraResolver) {
     });
 
     text = call3(JS.get(effects, "attempt"), effects, constructs, start, notText);
-    JS.set(st, "start", start);
     return start;
   }));
   return construct;

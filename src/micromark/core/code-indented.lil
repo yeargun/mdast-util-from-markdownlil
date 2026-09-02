@@ -5,7 +5,7 @@ import { kTabSize } from "../symbol/constants.lil";
 import { tCodeFlowValue, tCodeIndented, tLineEnding, tLinePrefix } from "../symbol/types.lil";
 
 JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
+  JsValue furtherStart = undef();
 
   JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
     JsValue events = objGet(self, "events");
@@ -14,12 +14,12 @@ JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValu
       return call1(ok, undef(), code);
     }
     if (markdownLineEnding(code)) {
-      return call1(objGet(st, "furtherStart"), undef(), code);
+      return call1(furtherStart, undef(), code);
     }
     return call1(nok, undef(), code);
   });
 
-  JsValue furtherStart = JS.method1((JsValue _s, JsValue code) => {
+  furtherStart = JS.method1((JsValue _s, JsValue code) => {
     if (objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")].truthy()) {
       return call1(nok, undef(), code);
     }
@@ -32,7 +32,6 @@ JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValu
     return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
   });
 
-  JS.set(st, "furtherStart", furtherStart);
   return furtherStart;
 });
 
@@ -40,12 +39,12 @@ JsValue furtherStartConstruct = makeConstruct(tokenizeFurtherStart);
 JS.set(furtherStartConstruct, "partial", true);
 
 JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
+  JsValue atBreak = undef();
 
   JsValue inside = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
       call1(objGet(effects, "exit"), effects, tCodeFlowValue);
-      return call1(objGet(st, "atBreak"), undef(), code);
+      return call1(atBreak, undef(), code);
     }
     call1(objGet(effects, "consume"), effects, code);
     return inside;
@@ -56,7 +55,7 @@ JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValu
     return call1(ok, undef(), code);
   });
 
-  JsValue atBreak = JS.method1((JsValue _s, JsValue code) => {
+  atBreak = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code)) {
       return call1(after, undef(), code);
     }
@@ -81,7 +80,6 @@ JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValu
     return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
   });
 
-  JS.set(st, "atBreak", atBreak);
   return start;
 });
 

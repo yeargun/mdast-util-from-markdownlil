@@ -1,53 +1,110 @@
-import type {Root} from 'mdast'
-import type {Encoding, Value} from 'micromark-util-types'
+import type {Nodes, Parent, PhrasingContent, Root} from 'mdast'
+import type {
+  Encoding,
+  ParseOptions,
+  Token,
+  Value
+} from 'micromark-util-types'
+
+export type {Encoding, Token, Value} from 'micromark-util-types'
 
 export interface CompileContext {
   config: Config
   data: CompileData
-  stack: unknown[]
-  tokenStack: unknown[]
+  stack: Array<Fragment | Nodes>
+  tokenStack: Array<TokenTuple>
   buffer(this: CompileContext): undefined
-  enter(this: CompileContext, node: unknown, token: unknown, onError?: unknown): undefined
-  exit(this: CompileContext, token: unknown, onError?: unknown): undefined
+  enter(
+    this: CompileContext,
+    node: Nodes,
+    token: Token,
+    onError?: OnEnterError | null | undefined
+  ): undefined
+  exit(
+    this: CompileContext,
+    token: Token,
+    onError?: OnExitError | null | undefined
+  ): undefined
   resume(this: CompileContext): string
-  sliceSerialize(token: unknown, expandTabs?: boolean): string
+  sliceSerialize(
+    token: Pick<Token, 'end' | 'start'>,
+    expandTabs?: boolean | undefined
+  ): string
 }
 
 export interface CompileData {
-  atHardBreak?: boolean
-  characterReferenceType?: string
-  expectingFirstListItemValue?: boolean
-  flowCodeInside?: boolean
-  inReference?: boolean
-  setextHeadingSlurpLineEnding?: boolean
-  referenceType?: 'collapsed' | 'full'
+  atHardBreak?: boolean | undefined
+  characterReferenceType?:
+    | 'characterReferenceMarkerHexadecimal'
+    | 'characterReferenceMarkerNumeric'
+    | undefined
+  expectingFirstListItemValue?: boolean | undefined
+  flowCodeInside?: boolean | undefined
+  inReference?: boolean | undefined
+  setextHeadingSlurpLineEnding?: boolean | undefined
+  referenceType?: 'collapsed' | 'full' | undefined
 }
 
 export interface Config {
-  canContainEols: string[]
-  enter: Record<string, Handle>
-  exit: Record<string, Handle>
-  transforms: Transform[]
+  canContainEols: Array<string>
+  enter: Handles
+  exit: Handles
+  transforms: Array<Transform>
 }
 
 export interface Extension {
-  canContainEols?: string[] | null
-  enter?: Record<string, Handle> | null
-  exit?: Record<string, Handle> | null
-  transforms?: Transform[] | null
+  canContainEols?: Array<string> | null | undefined
+  enter?: Handles | null | undefined
+  exit?: Handles | null | undefined
+  transforms?: Array<Transform> | null | undefined
 }
 
-export type Handle = (this: CompileContext, token: unknown) => void
-
-export interface Options {
-  extensions?: unknown[] | null
-  mdastExtensions?: Array<Extension | Extension[]> | null
+interface Fragment extends Parent {
+  type: 'fragment'
+  children: Array<PhrasingContent>
 }
+
+export type Handles = Record<string, Handle>
+
+export type Handle = (this: CompileContext, token: Token) => undefined | void
+
+export type OnEnterError = (
+  this: Omit<CompileContext, 'sliceSerialize'>,
+  left: Token | undefined,
+  right: Token
+) => undefined
+
+export type OnExitError = (
+  this: Omit<CompileContext, 'sliceSerialize'>,
+  left: Token,
+  right: Token
+) => undefined
+
+export interface Options extends ParseOptions {
+  mdastExtensions?: Array<Extension | Array<Extension>> | null | undefined
+}
+
+type TokenTuple = [token: Token, onError: OnEnterError | undefined]
 
 export type Transform = (tree: Root) => Root | null | undefined | void
 
 export function fromMarkdown(
   value: Value,
-  encoding?: Encoding | Options | null,
-  options?: Options | null
+  encoding?: Encoding | null | undefined,
+  options?: Options | null | undefined
 ): Root
+
+export function fromMarkdown(
+  value: Value,
+  options?: Options | null | undefined
+): Root
+
+declare module 'micromark-util-types' {
+  interface TokenTypeMap {
+    listItem: 'listItem'
+  }
+
+  interface Token {
+    _spread?: boolean
+  }
+}

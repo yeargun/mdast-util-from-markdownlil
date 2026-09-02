@@ -48,9 +48,9 @@ JsValue tokenizeBlockQuoteContinuation = JS.method3((JsValue self, JsValue effec
 
   JsValue contStart = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      JsValue max = kTabSize;
+      float max = kTabSize;
       if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-        max = undef();
+        max = 0;
       }
       return call1(factorySpace(effects, contBefore, tLinePrefix, max), undef(), code);
     }

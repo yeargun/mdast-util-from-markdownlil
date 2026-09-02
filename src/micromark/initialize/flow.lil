@@ -1,4 +1,4 @@
-import { call1, call2, call3, objGet, undef } from "../host.lil";
+import { call1, call2, call3, makeConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding } from "../util-character.lil";
 import { isEof } from "../host.lil";
@@ -7,8 +7,8 @@ import { blankLine } from "../core/blank-line.lil";
 import { content } from "../core/content.lil";
 
 JsValue initializeFlow = JS.method1((JsValue self, JsValue effects) => {
-  JsValue st = JS.object();
   JsValue constructs = objGet(self, "parser")["constructs"];
+  JsValue initial = JS.undefined();
 
   JsValue afterConstruct = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code)) {
@@ -19,7 +19,7 @@ JsValue initializeFlow = JS.method1((JsValue self, JsValue effects) => {
     call1(objGet(effects, "consume"), effects, code);
     call1(objGet(effects, "exit"), effects, tLineEnding);
     JS.set(self, "currentConstruct", undef());
-    return objGet(st, "initial");
+    return initial;
   });
 
   JsValue atBlankEnding = JS.method1((JsValue _s, JsValue code) => {
@@ -31,7 +31,7 @@ JsValue initializeFlow = JS.method1((JsValue self, JsValue effects) => {
     call1(objGet(effects, "consume"), effects, code);
     call1(objGet(effects, "exit"), effects, tLineEndingBlank);
     JS.set(self, "currentConstruct", undef());
-    return objGet(st, "initial");
+    return initial;
   });
 
   JsValue flowAttempt = call3(
@@ -41,12 +41,10 @@ JsValue initializeFlow = JS.method1((JsValue self, JsValue effects) => {
     afterConstruct,
     call3(objGet(effects, "attempt"), effects, content, afterConstruct, undef())
   );
-  JsValue spaced = factorySpace(effects, flowAttempt, tLinePrefix, undef());
+  JsValue spaced = factorySpace(effects, flowAttempt, tLinePrefix, 0);
   JsValue flowInitial = call3(objGet(effects, "attempt"), effects, objGet(constructs, "flowInitial"), afterConstruct, spaced);
-  JsValue initial = call3(objGet(effects, "attempt"), effects, blankLine, atBlankEnding, flowInitial);
-  JS.set(st, "initial", initial);
+  initial = call3(objGet(effects, "attempt"), effects, blankLine, atBlankEnding, flowInitial);
   return initial;
 });
 
-export JsValue flowConstruct = JS.object();
-JS.set(flowConstruct, "tokenize", initializeFlow);
+export JsValue flowConstruct = makeConstruct(initializeFlow);

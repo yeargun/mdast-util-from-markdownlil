@@ -5,27 +5,29 @@ import { cLowercaseX, cNumberSign, cSemicolon, cUppercaseX, codeEq } from "../sy
 import { kCharacterReferenceDecimalSizeMax, kCharacterReferenceHexadecimalSizeMax, kCharacterReferenceNamedSizeMax } from "../symbol/constants.lil";
 import { tCharacterReference, tCharacterReferenceMarker, tCharacterReferenceMarkerHexadecimal, tCharacterReferenceMarkerNumeric, tCharacterReferenceValue } from "../symbol/types.lil";
 
-bool testCode(string kind, JsValue code) {
-  if (kind == "alnum") {
+class CharacterReferenceState {
+  int size;
+  int max;
+  int kind;
+}
+
+bool testCode(int kind, JsValue code) {
+  if (kind == 0) {
     return asciiAlphanumeric(code);
   }
-  if (kind == "hex") {
+  if (kind == 1) {
     return asciiHexDigit(code);
   }
   return asciiDigit(code);
 }
 
 JsValue tokenizeCharacterReference = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-  JS.set(st, "size", 0);
-  JS.set(st, "max", 0);
-  JS.set(st, "kind", "alnum");
+  CharacterReferenceState st = new CharacterReferenceState();
 
   JsValue value = JS.method1((JsValue _s, JsValue code) => {
-    int size = JS.number(objGet(st, "size")).toInt();
-    if (codeEq(code, cSemicolon) && size > 0) {
+    if (codeEq(code, cSemicolon) && st.size > 0) {
       JsValue token = call1(objGet(effects, "exit"), effects, tCharacterReferenceValue);
-      if (objGet(st, "kind") == "alnum") {
+      if (st.kind == 0) {
         string serialized = jsString(call1(objGet(self, "sliceSerialize"), self, token));
         if (!decodeNamedCharacterReference(serialized).truthy()) {
           return call1(nok, undef(), code);
@@ -37,9 +39,8 @@ JsValue tokenizeCharacterReference = JS.method3((JsValue self, JsValue effects, 
       call1(objGet(effects, "exit"), effects, tCharacterReference);
       return ok;
     }
-    int max = JS.number(objGet(st, "max")).toInt();
-    if (testCode(jsString(objGet(st, "kind")), code) && size < max) {
-      JS.set(st, "size", size + 1);
+    if (testCode(st.kind, code) && st.size < st.max) {
+      st.size = st.size + 1;
       call1(objGet(effects, "consume"), effects, code);
       return value;
     }
@@ -52,13 +53,13 @@ JsValue tokenizeCharacterReference = JS.method3((JsValue self, JsValue effects, 
       call1(objGet(effects, "consume"), effects, code);
       call1(objGet(effects, "exit"), effects, tCharacterReferenceMarkerHexadecimal);
       call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-      JS.set(st, "max", kCharacterReferenceHexadecimalSizeMax);
-      JS.set(st, "kind", "hex");
+      st.max = kCharacterReferenceHexadecimalSizeMax;
+      st.kind = 1;
       return value;
     }
     call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-    JS.set(st, "max", kCharacterReferenceDecimalSizeMax);
-    JS.set(st, "kind", "digit");
+    st.max = kCharacterReferenceDecimalSizeMax;
+    st.kind = 2;
     return call1(value, undef(), code);
   });
 
@@ -70,8 +71,8 @@ JsValue tokenizeCharacterReference = JS.method3((JsValue self, JsValue effects, 
       return numeric;
     }
     call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-    JS.set(st, "max", kCharacterReferenceNamedSizeMax);
-    JS.set(st, "kind", "alnum");
+    st.max = kCharacterReferenceNamedSizeMax;
+    st.kind = 0;
     return call1(value, undef(), code);
   });
 

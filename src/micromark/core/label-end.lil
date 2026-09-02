@@ -12,11 +12,7 @@ import { kLinkResourceDestinationBalanceMax } from "../symbol/constants.lil";
 import { tData, tImage, tLabel, tLabelEnd, tLabelImage, tLabelLink, tLabelMarker, tLabelText, tLink, tReference, tReferenceMarker, tReferenceString, tResource, tResourceDestination, tResourceDestinationLiteral, tResourceDestinationLiteralMarker, tResourceDestinationRaw, tResourceDestinationString, tResourceMarker, tResourceTitle, tResourceTitleMarker, tResourceTitleString } from "../symbol/types.lil";
 
 JsValue ev(string kind, JsValue token, JsValue context) {
-  JsValue row = JS.array();
-  row[0] = kind;
-  row[1] = token;
-  row[2] = context;
-  return row;
+  return JS.array(kind, token, context);
 }
 
 JsValue resolveAllLabelEnd = JS.method2((JsValue _self, JsValue events, JsValue _context) => {
@@ -118,8 +114,6 @@ JsValue resolveToLabelEnd = JS.method2((JsValue _self, JsValue events, JsValue c
 });
 
 JsValue tokenizeResource = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
-
   JsValue resourceEnd = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cRightParenthesis)) {
       call1(objGet(effects, "enter"), effects, tResourceMarker);
@@ -178,7 +172,6 @@ JsValue tokenizeResource = JS.method3((JsValue _self, JsValue effects, JsValue o
     return resourceBefore;
   });
 
-  JS.set(st, "resourceEnd", resourceEnd);
   return resourceStart;
 });
 
@@ -254,8 +247,7 @@ JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok
     }
   }
 
-  JsValue st = JS.object();
-  JS.set(st, "defined", false);
+  bool defined = false;
 
   JsValue labelEndOk = JS.method1((JsValue _s, JsValue code) => {
     return call1(ok, undef(), code);
@@ -275,19 +267,19 @@ JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cLeftParenthesis)) {
       JsValue fallback = labelEndNok;
-      if (objGet(st, "defined").truthy()) {
+      if (defined) {
         fallback = labelEndOk;
       }
       return call1(call3(objGet(effects, "attempt"), effects, resourceConstruct, labelEndOk, fallback), undef(), code);
     }
     if (codeEq(code, cLeftSquareBracket)) {
       JsValue fallback = labelEndNok;
-      if (objGet(st, "defined").truthy()) {
+      if (defined) {
         fallback = referenceNotFull;
       }
       return call1(call3(objGet(effects, "attempt"), effects, referenceFullConstruct, labelEndOk, fallback), undef(), code);
     }
-    if (objGet(st, "defined").truthy()) {
+    if (defined) {
       return call1(labelEndOk, undef(), code);
     }
     return call1(labelEndNok, undef(), code);
@@ -304,7 +296,7 @@ JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok
     JS.set(range, "start", objGet(labelStart, "end"));
     JS.set(range, "end", call0(objGet(self, "now"), self));
     string id = normalizeIdentifier(jsString(call1(objGet(self, "sliceSerialize"), self, range)));
-    JS.set(st, "defined", includesVal(objGet(objGet(self, "parser"), "defined"), id));
+    defined = includesVal(objGet(objGet(self, "parser"), "defined"), id);
     call1(objGet(effects, "enter"), effects, tLabelEnd);
     call1(objGet(effects, "enter"), effects, tLabelMarker);
     call1(objGet(effects, "consume"), effects, code);
@@ -316,6 +308,4 @@ JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok
   return start;
 });
 
-export JsValue labelEnd = makeNamedConstruct("labelEnd", tokenizeLabelEnd);
-JS.set(labelEnd, "resolveAll", resolveAllLabelEnd);
-JS.set(labelEnd, "resolveTo", resolveToLabelEnd);
+export JsValue labelEnd = JS.object("name", "labelEnd", "tokenize", tokenizeLabelEnd, "resolveAll", resolveAllLabelEnd, "resolveTo", resolveToLabelEnd);

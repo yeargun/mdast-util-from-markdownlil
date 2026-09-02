@@ -1,6 +1,5 @@
 import {
   arrLen,
-  arrSet,
   ErrorRef,
   eventContext,
   eventKind,
@@ -55,9 +54,6 @@ import { mdastToString } from "./to-string.lil";
 Regex trimFenceEdges = new Regex("^(\\r?\\n|\\r)|(\\r?\\n|\\r)$", "g");
 Regex trimTrailingBreak = new Regex("(\\r?\\n|\\r)$", "g");
 
-int SMALL_LIST_LIMIT = 8;
-int SAFE_SPREAD = 10000;
-
 JsValue emptyPoint() {
   return JS.object("line", 1, "column", 1, "offset", 0);
 }
@@ -71,11 +67,7 @@ JsValue copyPointValue(JsValue d) {
 }
 
 JsValue makeEvent(string kind, JsValue token, JsValue context) {
-  JsValue ev = JS.array();
-  push(ev, kind);
-  push(ev, token);
-  push(ev, context);
-  return ev;
+  return JS.array(kind, token, context);
 }
 
 JsValue positionOf(JsValue token) {
@@ -130,33 +122,21 @@ void applyExtension(JsValue combined, JsValue ext) {
   }
 }
 
-JsValue configureFn = JS.undefined();
-
-JsValue initConfigure() {
-  configureFn = JS.method2((JsValue _self, JsValue combined, JsValue extensions) => {
-    int index = -1;
-    int n = arrLen(extensions);
-    while (true) {
-      index = index + 1;
-      if (index >= n) {
-        break;
-      }
-      JsValue value = extensions[index];
-      if (value.isArray()) {
-        JS.call(configureFn, undef(), combined, value);
-      } else {
-        applyExtension(combined, value);
-      }
-    }
-    return undef();
-  });
-  return configureFn;
-}
-
-JsValue configureAll = initConfigure();
-
 void configure(JsValue combined, JsValue extensions) {
-  JS.call(configureAll, undef(), combined, extensions);
+  int index = -1;
+  int n = arrLen(extensions);
+  while (true) {
+    index = index + 1;
+    if (index >= n) {
+      break;
+    }
+    JsValue value = extensions[index];
+    if (value.isArray()) {
+      configure(combined, value);
+    } else {
+      applyExtension(combined, value);
+    }
+  }
 }
 
 JsValue makeFragment() {
@@ -164,11 +144,7 @@ JsValue makeFragment() {
 }
 
 JsValue nodeWithChildren(string typ) {
-  JsValue node = JS.object();
-  objSet(node, "type", typ);
-  objSet(node, "children", JS.array());
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", typ, "children", JS.array(), "position", undef());
 }
 
 JsValue createBlockQuote = JS.method1((JsValue _self, JsValue _token) => {
@@ -176,29 +152,17 @@ JsValue createBlockQuote = JS.method1((JsValue _self, JsValue _token) => {
 });
 
 JsValue createCodeFlow = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "code");
-  objSet(node, "lang", null);
-  objSet(node, "meta", null);
-  objSet(node, "value", "");
+  JsValue node = JS.object("type", "code", "lang", null, "meta", null, "value", "");
   objSet(node, "position", undef());
   return node;
 });
 
 JsValue createCodeText = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "inlineCode");
-  objSet(node, "value", "");
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "inlineCode", "value", "", "position", undef());
 });
 
 JsValue createDefinition = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "definition");
-  objSet(node, "identifier", "");
-  objSet(node, "label", null);
-  objSet(node, "title", null);
+  JsValue node = JS.object("type", "definition", "identifier", "", "label", null, "title", null);
   objSet(node, "url", "");
   objSet(node, "position", undef());
   return node;
@@ -209,55 +173,37 @@ JsValue createEmphasis = JS.method1((JsValue _self, JsValue _token) => {
 });
 
 JsValue createHeading = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = nodeWithChildren("heading");
-  objSet(node, "depth", 0);
-  return node;
+  return JS.object("type", "heading", "depth", 0, "children", JS.array(), "position", undef());
 });
 
 JsValue createHardBreak = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "break");
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "break", "position", undef());
 });
 
 JsValue createHtml = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "html");
-  objSet(node, "value", "");
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "html", "value", "", "position", undef());
 });
 
 JsValue createImage = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "image");
-  objSet(node, "title", null);
-  objSet(node, "url", "");
-  objSet(node, "alt", null);
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "image", "title", null, "url", "", "alt", null, "position", undef());
 });
 
 JsValue createLink = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = nodeWithChildren("link");
-  objSet(node, "title", null);
-  objSet(node, "url", "");
+  JsValue node = JS.object("type", "link", "title", null, "url", "", "children", JS.array());
+  objSet(node, "position", undef());
   return node;
 });
 
 JsValue createList = JS.method1((JsValue _self, JsValue token) => {
-  JsValue node = nodeWithChildren("list");
-  objSet(node, "ordered", tokenType(token) == tListOrdered);
-  objSet(node, "start", null);
-  objSet(node, "spread", objGet(token, "_spread"));
+  JsValue node = JS.object("type", "list", "ordered", tokenType(token) == tListOrdered, "start", null, "spread", objGet(token, "_spread"));
+  objSet(node, "children", JS.array());
+  objSet(node, "position", undef());
   return node;
 });
 
 JsValue createListItem = JS.method1((JsValue _self, JsValue token) => {
-  JsValue node = nodeWithChildren("listItem");
-  objSet(node, "spread", objGet(token, "_spread"));
-  objSet(node, "checked", null);
+  JsValue node = JS.object("type", "listItem", "spread", objGet(token, "_spread"), "checked", null, "children", JS.array());
+  objSet(node, "position", undef());
   return node;
 });
 
@@ -270,18 +216,11 @@ JsValue createStrong = JS.method1((JsValue _self, JsValue _token) => {
 });
 
 JsValue createText() {
-  JsValue node = JS.object();
-  objSet(node, "type", "text");
-  objSet(node, "value", "");
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "text", "value", "", "position", undef());
 }
 
 JsValue createThematicBreak = JS.method1((JsValue _self, JsValue _token) => {
-  JsValue node = JS.object();
-  objSet(node, "type", "thematicBreak");
-  objSet(node, "position", undef());
-  return node;
+  return JS.object("type", "thematicBreak", "position", undef());
 });
 
 JsValue opener(JsValue enterFn, JsValue create, JsValue and) {
@@ -371,10 +310,9 @@ int prepareList(JsValue events, int start, int length) {
   int containerBalance = -1;
   bool listSpread = false;
   JsValue listItem = undef();
-  JsValue lineIndex = undef();
-  JsValue firstBlankLineIndex = undef();
-  JsValue atMarker = undef();
-  JsValue insertions = JS.array();
+  int lineIndex = 0;
+  int firstBlankLineIndex = 0;
+  bool atMarker = false;
 
   while (true) {
     index = index + 1;
@@ -391,16 +329,16 @@ int prepareList(JsValue events, int start, int length) {
       } else {
         containerBalance = containerBalance - 1;
       }
-      atMarker = undef();
+      atMarker = false;
     } else if (typ == tLineEndingBlank) {
       if (kind == "enter") {
-        if (listItem.truthy() && !atMarker.truthy() && containerBalance == 0 && !firstBlankLineIndex.truthy()) {
+        if (listItem.truthy() && !atMarker && containerBalance == 0 && firstBlankLineIndex == 0) {
           firstBlankLineIndex = index;
         }
-        atMarker = undef();
+        atMarker = false;
       }
     } else if (!isListPrefixNoise(typ)) {
-      atMarker = undef();
+      atMarker = false;
     }
 
     bool atItemPrefix = containerBalance == 0 && kind == "enter" && typ == tListItemPrefix;
@@ -408,7 +346,7 @@ int prepareList(JsValue events, int start, int length) {
     if (atItemPrefix || atListClose) {
       if (listItem.truthy()) {
         int tailIndex = index;
-        lineIndex = undef();
+        lineIndex = 0;
         while (true) {
           tailIndex = tailIndex - 1;
           if (tailIndex < 0) {
@@ -420,8 +358,8 @@ int prepareList(JsValue events, int start, int length) {
             if (eventKind(tailEvent) == "exit") {
               continue;
             }
-            if (lineIndex.truthy()) {
-              objSet(eventToken(events[jsInt(lineIndex)]), "type", tLineEndingBlank);
+            if (lineIndex != 0) {
+              objSet(eventToken(events[lineIndex]), "type", tLineEndingBlank);
               listSpread = true;
             }
             objSet(eventToken(tailEvent), "type", tLineEnding);
@@ -432,10 +370,10 @@ int prepareList(JsValue events, int start, int length) {
           }
         }
 
-        if (firstBlankLineIndex.truthy()) {
+        if (firstBlankLineIndex != 0) {
           bool beforeSlurp = true;
-          if (lineIndex.truthy()) {
-            if (jsInt(firstBlankLineIndex) >= jsInt(lineIndex)) {
+          if (lineIndex != 0) {
+            if (firstBlankLineIndex >= lineIndex) {
               beforeSlurp = false;
             }
           }
@@ -446,15 +384,15 @@ int prepareList(JsValue events, int start, int length) {
 
         JsValue endPoint = objGet(eventToken(ev), "end");
         int insertAt = index;
-        if (lineIndex.truthy()) {
-          endPoint = objGet(eventToken(events[jsInt(lineIndex)]), "start");
-          insertAt = jsInt(lineIndex);
+        if (lineIndex != 0) {
+          endPoint = objGet(eventToken(events[lineIndex]), "start");
+          insertAt = lineIndex;
         }
         objSet(listItem, "end", copyPointValue(endPoint));
-        JsValue exitIns = JS.object();
-        objSet(exitIns, "at", insertAt);
-        objSet(exitIns, "event", makeEvent("exit", listItem, eventContext(ev)));
-        push(insertions, exitIns);
+        JsValue[] exitEvent = [makeEvent("exit", listItem, eventContext(ev))];
+        splice(events, insertAt, 0, exitEvent);
+        index = index + 1;
+        length = length + 1;
       }
 
       if (typ == tListItemPrefix) {
@@ -464,65 +402,18 @@ int prepareList(JsValue events, int start, int length) {
         objSet(item, "start", copyPointValue(objGet(eventToken(ev), "start")));
         objSet(item, "end", undef());
         listItem = item;
-        JsValue enterIns = JS.object();
-        objSet(enterIns, "at", index);
-        objSet(enterIns, "event", makeEvent("enter", item, eventContext(ev)));
-        push(insertions, enterIns);
-        firstBlankLineIndex = undef();
+        JsValue[] enterEvent = [makeEvent("enter", item, eventContext(ev))];
+        splice(events, index, 0, enterEvent);
+        index = index + 1;
+        length = length + 1;
+        firstBlankLineIndex = 0;
         atMarker = true;
       }
     }
   }
 
-  int insertCount = arrLen(insertions);
-  if (insertCount > 0) {
-    if (insertCount <= SMALL_LIST_LIMIT) {
-      int insertion = insertCount;
-      while (insertion > 0) {
-        insertion = insertion - 1;
-        JsValue item = insertions[insertion];
-        JsValue one = JS.array();
-        push(one, objGet(item, "event"));
-        splice(events, objGet(item, "at"), 0, one);
-      }
-    } else {
-      int rangeLength = length - start + 1;
-      JsValue replacement = JS.array();
-      int insertionIndex = 0;
-      int sourceIndex = start;
-      while (sourceIndex <= length) {
-        while (insertionIndex < insertCount && jsInt(objGet(insertions[insertionIndex], "at")) == sourceIndex) {
-          push(replacement, objGet(insertions[insertionIndex], "event"));
-          insertionIndex = insertionIndex + 1;
-        }
-        push(replacement, events[sourceIndex]);
-        sourceIndex = sourceIndex + 1;
-      }
-      int replacementLen = arrLen(replacement);
-      if (replacementLen <= SAFE_SPREAD) {
-        splice(events, start, rangeLength, replacement);
-      } else {
-        int oldEnd = start + rangeLength;
-        int newEnd = start + replacementLen;
-        int delta = newEnd - oldEnd;
-        int oldEventsLength = arrLen(events);
-        objSet(events, "length", oldEventsLength + delta);
-        int shiftIndex = arrLen(events);
-        while (shiftIndex > newEnd) {
-          shiftIndex = shiftIndex - 1;
-          arrSet(events, shiftIndex, events[shiftIndex - delta]);
-        }
-        int writeIndex = 0;
-        while (writeIndex < replacementLen) {
-          arrSet(events, start + writeIndex, replacement[writeIndex]);
-          writeIndex = writeIndex + 1;
-        }
-      }
-    }
-  }
-
   objSet(eventToken(events[start]), "_spread", listSpread);
-  return length + insertCount;
+  return length;
 }
 
 JsValue compiler(JsValue options) {
@@ -978,7 +869,7 @@ JsValue compiler(JsValue options) {
     objSet(context, "resume", resumeFn);
     objSet(context, "data", data);
 
-    JsValue listStack = JS.array();
+    int[] listStack = [];
     int index = -1;
     while (true) {
       index = index + 1;
@@ -988,10 +879,10 @@ JsValue compiler(JsValue options) {
       string typ = tokenType(eventToken(events[index]));
       if (isListType(typ)) {
         if (eventKind(events[index]) == "enter") {
-          push(listStack, index);
+          listStack.push(index);
         } else {
-          JsValue tail = pop(listStack);
-          index = prepareList(events, jsInt(tail), index);
+          int tail = listStack.pop();
+          index = prepareList(events, tail, index);
         }
       }
     }

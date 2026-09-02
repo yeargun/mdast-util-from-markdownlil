@@ -7,7 +7,7 @@ JsValue tokenizeLineEnding = JS.method3((JsValue _self, JsValue effects, JsValue
     call1(objGet(effects, "enter"), effects, tLineEnding);
     call1(objGet(effects, "consume"), effects, code);
     call1(objGet(effects, "exit"), effects, tLineEnding);
-    return factorySpace(effects, ok, tLinePrefix, undef());
+    return factorySpace(effects, ok, tLinePrefix, 0);
   });
 
   return start;

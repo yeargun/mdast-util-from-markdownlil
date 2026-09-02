@@ -1,13 +1,13 @@
-import { arrLen, call0, call1, copyPoint, isEof, makeNamedConstruct, objGet, push, undef } from "../host.lil";
+import { arrLen, call0, call1, copyPoint, eventEnter, eventExit, isEof, makeNamedConstruct, objGet, push, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { tContent, tDefinition, tLineEnding, tLinePrefix, tLineSuffix, tParagraph, tSetextHeading, tSetextHeadingLine, tSetextHeadingLineSequence, tSetextHeadingText } from "../symbol/types.lil";
 
 JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, JsValue context) => {
   int index = arrLen(events);
-  JsValue content = undef();
-  JsValue text = undef();
-  JsValue definition = undef();
+  int content = -1;
+  int text = -1;
+  int definition = -1;
   while (true) {
     index = index - 1;
     if (index < 0) {
@@ -25,7 +25,7 @@ JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, Js
       if (objGet(events[index][1], "type") == tContent) {
         JS.call(JS.get(events, "splice"), events, index, 1);
       }
-      if (!definition.truthy() && objGet(events[index][1], "type") == tDefinition) {
+      if (definition < 0 && objGet(events[index][1], "type") == tDefinition) {
         definition = index;
       }
     }
@@ -35,31 +35,22 @@ JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, Js
   JS.set(heading, "start", copyPoint(objGet(events[content][1], "start")));
   JS.set(heading, "end", copyPoint(objGet(events[arrLen(events) - 1][1], "end")));
   JS.set(events[text][1], "type", tSetextHeadingText);
-  if (definition.truthy()) {
-    JsValue enterH = JS.array();
-    enterH[0] = "enter";
-    enterH[1] = heading;
-    enterH[2] = context;
+  if (definition > 0) {
+    JsValue enterH = eventEnter(heading, context);
     JS.call(JS.get(events, "splice"), events, text, 0, enterH);
-    JsValue exitC = JS.array();
-    exitC[0] = "exit";
-    exitC[1] = events[content][1];
-    exitC[2] = context;
-    JS.call(JS.get(events, "splice"), events, JS.number(definition) + 1.0, 0, exitC);
+    JsValue exitC = eventExit(events[content][1], context);
+    JS.call(JS.get(events, "splice"), events, definition + 1, 0, exitC);
     JS.set(events[content][1], "end", copyPoint(objGet(events[definition][1], "end")));
   } else {
     events[content][1] = heading;
   }
-  JsValue exitH = JS.array();
-  exitH[0] = "exit";
-  exitH[1] = heading;
-  exitH[2] = context;
+  JsValue exitH = eventExit(heading, context);
   push(events, exitH);
   return events;
 });
 
 JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue st = JS.object();
+  int marker = 0;
 
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     if (isEof(code) || markdownLineEnding(code)) {
@@ -70,13 +61,13 @@ JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsV
   });
 
   JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+    if (code == marker) {
       call1(objGet(effects, "consume"), effects, code);
       return inside;
     }
     call1(objGet(effects, "exit"), effects, tSetextHeadingLineSequence);
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, after, tLineSuffix, undef()), undef(), code);
+      return call1(factorySpace(effects, after, tLineSuffix, 0), undef(), code);
     }
     return call1(after, undef(), code);
   });
@@ -103,7 +94,7 @@ JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsV
     JsValue lazy = objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")];
     if (!lazy.truthy() && (objGet(self, "interrupt").truthy() || paragraph)) {
       call1(objGet(effects, "enter"), effects, tSetextHeadingLine);
-      JS.set(st, "marker", code);
+      marker = JS.number(code).toInt();
       return call1(before, undef(), code);
     }
     return call1(nok, undef(), code);
@@ -112,5 +103,4 @@ JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsV
   return start;
 });
 
-export JsValue setextUnderline = makeNamedConstruct("setextUnderline", tokenizeSetextUnderline);
-JS.set(setextUnderline, "resolveTo", resolveToSetextUnderline);
+export JsValue setextUnderline = JS.object("name", "setextUnderline", "tokenize", tokenizeSetextUnderline, "resolveTo", resolveToSetextUnderline);

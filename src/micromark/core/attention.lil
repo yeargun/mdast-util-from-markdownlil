@@ -1,4 +1,4 @@
-import { arrLen, call1, copyPoint, includesVal, jsInt, jsString, makeNamedConstruct, objGet, slice2, undef } from "../host.lil";
+import { arrLen, call1, copyPoint, includesVal, objGet, slice2, undef } from "../host.lil";
 import { pushAll, splice } from "../util-chunked.lil";
 import { classifyCharacter } from "../util-classify-character.lil";
 import { resolveAll } from "../util-resolve-all.lil";
@@ -6,18 +6,36 @@ import { cAsterisk, codeEq } from "../symbol/codes.lil";
 import { kCharacterGroupPunctuation } from "../symbol/constants.lil";
 import { tAttentionSequence, tEmphasis, tEmphasisSequence, tEmphasisText, tStrong, tStrongSequence, tStrongText } from "../symbol/types.lil";
 
-void movePoint(JsValue point, int offset) {
-  JS.set(point, "column", jsInt(objGet(point, "column")) + offset);
-  JS.set(point, "offset", jsInt(objGet(point, "offset")) + offset);
-  JS.set(point, "_bufferIndex", jsInt(objGet(point, "_bufferIndex")) + offset);
+struct PointView {
+  float _bufferIndex;
+  float _index;
+  float line;
+  float column;
+  float offset;
+}
+
+struct TokenView {
+  string type;
+  PointView start;
+  PointView end;
+}
+
+struct AttentionTokenView {
+  string type;
+  PointView start;
+  PointView end;
+  bool _open;
+  bool _close;
+}
+
+void movePoint(PointView point, int offset) {
+  point.column = point.column + offset;
+  point.offset = point.offset + offset;
+  point._bufferIndex = point._bufferIndex + offset;
 }
 
 JsValue ev(string kind, JsValue token, JsValue context) {
-  JsValue row = JS.array();
-  row[0] = kind;
-  row[1] = token;
-  row[2] = context;
-  return row;
+  return JS.array(kind, token, context);
 }
 
 JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue context) => {
@@ -28,21 +46,23 @@ JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue
     if (index >= n) {
       break;
     }
-    if (events[index][0] == "enter" && objGet(events[index][1], "type") == tAttentionSequence && objGet(events[index][1], "_close").truthy()) {
+    AttentionTokenView closeToken = JS.assume(events[index][1]);
+    if (events[index][0] == "enter" && closeToken.type == tAttentionSequence && closeToken._close) {
       int open = index;
       while (true) {
         open = open - 1;
         if (open < 0) {
           break;
         }
-        if (events[open][0] == "exit" && objGet(events[open][1], "type") == tAttentionSequence && objGet(events[open][1], "_open").truthy()) {
-          string openSer = jsString(call1(objGet(context, "sliceSerialize"), context, events[open][1]));
-          string closeSer = jsString(call1(objGet(context, "sliceSerialize"), context, events[index][1]));
+        AttentionTokenView openToken = JS.assume(events[open][1]);
+        if (events[open][0] == "exit" && openToken.type == tAttentionSequence && openToken._open) {
+          string openSer = JS.assume(call1(objGet(context, "sliceSerialize"), context, openToken));
+          string closeSer = JS.assume(call1(objGet(context, "sliceSerialize"), context, closeToken));
           if (openSer.charCodeAt(0) == closeSer.charCodeAt(0)) {
-            int openSize = jsInt(objGet(objGet(events[open][1], "end"), "offset")) - jsInt(objGet(objGet(events[open][1], "start"), "offset"));
-            int closeSize = jsInt(objGet(objGet(events[index][1], "end"), "offset")) - jsInt(objGet(objGet(events[index][1], "start"), "offset"));
+            int openSize = openToken.end.offset.toInt() - openToken.start.offset.toInt();
+            int closeSize = closeToken.end.offset.toInt() - closeToken.start.offset.toInt();
             bool skip = false;
-            if ((objGet(events[open][1], "_close").truthy() || objGet(events[index][1], "_open").truthy()) && (closeSize % 3 != 0) && ((openSize + closeSize) % 3 == 0)) {
+            if ((openToken._close || closeToken._open) && (closeSize % 3 != 0) && ((openSize + closeSize) % 3 == 0)) {
               skip = true;
             }
             if (!skip) {
@@ -50,8 +70,8 @@ JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue
               if (openSize > 1 && closeSize > 1) {
                 use = 2;
               }
-              JsValue start = copyPoint(objGet(events[open][1], "end"));
-              JsValue end = copyPoint(objGet(events[index][1], "start"));
+              PointView start = JS.assume(copyPoint(openToken.end));
+              PointView end = JS.assume(copyPoint(closeToken.start));
               movePoint(start, 0 - use);
               movePoint(end, use);
               string seqType = tEmphasisSequence;
@@ -62,50 +82,36 @@ JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue
                 textType = tStrongText;
                 groupType = tStrong;
               }
-              JsValue openingSequence = JS.object();
-              JS.set(openingSequence, "type", seqType);
-              JS.set(openingSequence, "start", start);
-              JS.set(openingSequence, "end", copyPoint(objGet(events[open][1], "end")));
-              JsValue closingSequence = JS.object();
-              JS.set(closingSequence, "type", seqType);
-              JS.set(closingSequence, "start", copyPoint(objGet(events[index][1], "start")));
-              JS.set(closingSequence, "end", end);
-              JsValue text = JS.object();
-              JS.set(text, "type", textType);
-              JS.set(text, "start", copyPoint(objGet(events[open][1], "end")));
-              JS.set(text, "end", copyPoint(objGet(events[index][1], "start")));
-              JsValue group = JS.object();
-              JS.set(group, "type", groupType);
-              JS.set(group, "start", copyPoint(objGet(openingSequence, "start")));
-              JS.set(group, "end", copyPoint(objGet(closingSequence, "end")));
-              JS.set(events[open][1], "end", copyPoint(objGet(openingSequence, "start")));
-              JS.set(events[index][1], "start", copyPoint(objGet(closingSequence, "end")));
+               TokenView openingSequence = JS.assume(JS.object("type", seqType, "start", start, "end", copyPoint(openToken.end)));
+               TokenView closingSequence = JS.assume(JS.object("type", seqType, "start", copyPoint(closeToken.start), "end", end));
+               TokenView text = JS.assume(JS.object("type", textType, "start", copyPoint(openToken.end), "end", copyPoint(closeToken.start)));
+               TokenView group = JS.assume(JS.object("type", groupType, "start", copyPoint(openingSequence.start), "end", copyPoint(closingSequence.end)));
+              openToken.end = JS.assume(copyPoint(openingSequence.start));
+              closeToken.start = JS.assume(copyPoint(closingSequence.end));
               JsValue nextEvents = JS.array();
-              if (jsInt(objGet(objGet(events[open][1], "end"), "offset")) - jsInt(objGet(objGet(events[open][1], "start"), "offset")) != 0) {
-                JsValue extraOpen = JS.array();
-                JS.call(JS.get(extraOpen, "push"), extraOpen, ev("enter", events[open][1], context));
-                JS.call(JS.get(extraOpen, "push"), extraOpen, ev("exit", events[open][1], context));
-                nextEvents = pushAll(nextEvents, extraOpen);
-              }
-              JsValue opening = JS.array();
-              JS.call(JS.get(opening, "push"), opening, ev("enter", group, context));
-              JS.call(JS.get(opening, "push"), opening, ev("enter", openingSequence, context));
-              JS.call(JS.get(opening, "push"), opening, ev("exit", openingSequence, context));
-              JS.call(JS.get(opening, "push"), opening, ev("enter", text, context));
+              if (openToken.end.offset - openToken.start.offset != 0) {
+                 JsValue extraOpen = JS.array(ev("enter", openToken, context), ev("exit", openToken, context));
+                 nextEvents = pushAll(nextEvents, extraOpen);
+               }
+               JsValue opening = JS.array(
+                 ev("enter", group, context),
+                 ev("enter", openingSequence, context),
+                 ev("exit", openingSequence, context),
+                 ev("enter", text, context)
+               );
               nextEvents = pushAll(nextEvents, opening);
               nextEvents = pushAll(nextEvents, resolveAll(objGet(objGet(objGet(context, "parser"), "constructs"), "insideSpan")["null"], slice2(events, open + 1, index), context));
-              JsValue closing = JS.array();
-              JS.call(JS.get(closing, "push"), closing, ev("exit", text, context));
-              JS.call(JS.get(closing, "push"), closing, ev("enter", closingSequence, context));
-              JS.call(JS.get(closing, "push"), closing, ev("exit", closingSequence, context));
-              JS.call(JS.get(closing, "push"), closing, ev("exit", group, context));
+               JsValue closing = JS.array(
+                 ev("exit", text, context),
+                 ev("enter", closingSequence, context),
+                 ev("exit", closingSequence, context),
+                 ev("exit", group, context)
+               );
               nextEvents = pushAll(nextEvents, closing);
               int extraOffset = 0;
-              if (jsInt(objGet(objGet(events[index][1], "end"), "offset")) - jsInt(objGet(objGet(events[index][1], "start"), "offset")) != 0) {
+              if (closeToken.end.offset - closeToken.start.offset != 0) {
                 extraOffset = 2;
-                JsValue extraClose = JS.array();
-                JS.call(JS.get(extraClose, "push"), extraClose, ev("enter", events[index][1], context));
-                JS.call(JS.get(extraClose, "push"), extraClose, ev("exit", events[index][1], context));
+                 JsValue extraClose = JS.array(ev("enter", closeToken, context), ev("exit", closeToken, context));
                 nextEvents = pushAll(nextEvents, extraClose);
               }
               splice(events, open - 1, index - open + 3, nextEvents);
@@ -125,7 +131,8 @@ JsValue resolveAllAttention = JS.method2((JsValue _self, JsValue events, JsValue
     if (index >= n) {
       break;
     }
-    if (objGet(events[index][1], "type") == tAttentionSequence) {
+    TokenView token = JS.assume(events[index][1]);
+    if (token.type == tAttentionSequence) {
       JS.set(events[index][1], "type", "data");
     }
   }
@@ -136,30 +143,30 @@ JsValue tokenizeAttention = JS.method3((JsValue self, JsValue effects, JsValue o
   JsValue attentionMarkers = objGet(objGet(objGet(self, "parser"), "constructs"), "attentionMarkers")["null"];
   JsValue previous = objGet(self, "previous");
   JsValue before = classifyCharacter(previous);
-  JsValue st = JS.object();
+  int marker = 0;
 
   JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (code == objGet(st, "marker")) {
+    if (code == marker) {
       call1(objGet(effects, "consume"), effects, code);
       return inside;
     }
-    JsValue token = call1(objGet(effects, "exit"), effects, tAttentionSequence);
+    AttentionTokenView token = JS.assume(call1(objGet(effects, "exit"), effects, tAttentionSequence));
     JsValue after = classifyCharacter(code);
     bool openAfter = !after.truthy() || (after == kCharacterGroupPunctuation && before.truthy()) || includesVal(attentionMarkers, code);
     bool closeBefore = !before.truthy() || (before == kCharacterGroupPunctuation && after.truthy()) || includesVal(attentionMarkers, previous);
-    bool isStar = objGet(st, "marker") == cAsterisk || codeEq(objGet(st, "marker"), cAsterisk);
+    bool isStar = marker == cAsterisk;
     if (isStar) {
-      JS.set(token, "_open", openAfter);
-      JS.set(token, "_close", closeBefore);
+      token._open = openAfter;
+      token._close = closeBefore;
     } else {
-      JS.set(token, "_open", openAfter && (before.truthy() || !closeBefore));
-      JS.set(token, "_close", closeBefore && (after.truthy() || !openAfter));
+      token._open = openAfter && (before.truthy() || !closeBefore);
+      token._close = closeBefore && (after.truthy() || !openAfter);
     }
     return call1(ok, undef(), code);
   });
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(st, "marker", code);
+    marker = JS.number(code).toInt();
     call1(objGet(effects, "enter"), effects, tAttentionSequence);
     return call1(inside, undef(), code);
   });
@@ -167,5 +174,4 @@ JsValue tokenizeAttention = JS.method3((JsValue self, JsValue effects, JsValue o
   return start;
 });
 
-export JsValue attention = makeNamedConstruct("attention", tokenizeAttention);
-JS.set(attention, "resolveAll", resolveAllAttention);
+export JsValue attention = JS.object("name", "attention", "tokenize", tokenizeAttention, "resolveAll", resolveAllAttention);
