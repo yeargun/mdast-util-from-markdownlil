@@ -17,6 +17,6 @@ describe("site", () => {
     assert.match(html, /scoreboard/)
     assert.match(html, /#evidence/)
     assert.match(html, /#lab/)
-    assert.equal(library.raw, readFileSync(resolve(root, "dist/from-markdown.esm.js")).byteLength)
+    assert.equal(library.raw, readFileSync(resolve(root, "site/esm-comparison/lilscript.js")).byteLength)
   })
 })

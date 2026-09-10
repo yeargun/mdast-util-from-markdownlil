@@ -10,9 +10,9 @@
   "warmupDiscard": 3,
   "comparison": "Official rows are an esbuild bundle of mdast-util-from-markdown@2.0.3 plus its runtime graph, then Terser or esbuild. LilScript is the compiled npm file. Closed is extern_fields=false.",
   "spec": {
-    "total": 724,
-    "pass": 724,
-    "label": "official suite"
+    "total": 744,
+    "pass": 618,
+    "label": "repository checks"
   },
   "play": {
     "kind": "md-json",
@@ -28,53 +28,65 @@
     {
       "id": "official",
       "name": "Official mdast-util-from-markdown@2.0.3 graph",
-      "raw": 182161,
-      "gzip9": 36822,
-      "brotli11": 30953,
+      "raw": 138086,
+      "gzip9": 24510,
+      "brotli11": 20916,
       "note": "esbuild bundle of the published package plus runtime deps",
-      "diagnostic": false
+      "diagnostic": false,
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "3b4efd49303c7d6894fa81d847343330030fad98dcee707ff965899c88fb80a9"
     },
     {
       "id": "official-terser-mangle",
-      "name": "Official · Terser mangle on",
-      "raw": 84154,
-      "gzip9": 26849,
-      "brotli11": 23151,
+      "name": "Official \u00b7 Terser mangle on",
+      "raw": 55520,
+      "gzip9": 14986,
+      "brotli11": 13336,
       "note": "Terser compress of that graph, mangle: true",
-      "baseline": true
+      "baseline": true,
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
     },
     {
       "id": "official-terser-nomangle",
-      "name": "Official · Terser mangle off",
-      "raw": 118623,
-      "gzip9": 30282,
-      "brotli11": 26196,
-      "note": "Terser compress of that graph, mangle: false"
+      "name": "Official \u00b7 Terser mangle off",
+      "raw": 90054,
+      "gzip9": 18398,
+      "brotli11": 16398,
+      "note": "Terser compress of that graph, mangle: false",
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
     },
     {
       "id": "official-esbuild",
-      "name": "Official · esbuild minify",
-      "raw": 92538,
-      "gzip9": 28038,
-      "brotli11": 24220,
-      "note": "esbuild minify of that graph"
+      "name": "Official \u00b7 esbuild minify",
+      "raw": 56894,
+      "gzip9": 16075,
+      "brotli11": 14331,
+      "note": "esbuild minify of that graph",
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
     },
     {
       "id": "itslil",
-      "name": "@itslil/mdast-util-from-markdown · library",
-      "raw": 88325,
-      "gzip9": 31225,
-      "brotli11": 26103,
-      "note": "LilScript js-module, extern_fields true. The npm ESM.",
-      "primary": true
+      "name": "@itslil/mdast-util-from-markdown \u00b7 library",
+      "raw": 87437,
+      "gzip9": 29992,
+      "brotli11": 25488,
+      "note": "ESM output from LilScript 63c2896.",
+      "primary": true,
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "ade46c9a46773caec7cb7bd4930ef763f324c7aa262e4f15ccbd1d36c65bb39b"
     },
     {
       "id": "itslil-closed",
-      "name": "@itslil/mdast-util-from-markdown · closed",
-      "raw": 88215,
-      "gzip9": 31133,
-      "brotli11": 26114,
-      "note": "Same source, extern_fields false"
+      "name": "@itslil/mdast-util-from-markdown \u00b7 closed",
+      "raw": 88790,
+      "gzip9": 30416,
+      "brotli11": 25853,
+      "note": "ESM output from LilScript 63c2896.",
+      "measuredAt": "2026-09-10T13:55:39Z",
+      "artifactSha256": "0fdce07e5d58c1c32d6b2a7eae8b027104a6213b6cd0d43ed83ded21b6eadabe"
     }
   ],
   "throughput": [
@@ -88,5 +100,6 @@
       "name": "@itslil/mdast-util-from-markdown",
       "documentMs": 2.6662089999999807
     }
-  ]
+  ],
+  "sizeMeasuredAt": "2026-09-10T13:55:39Z"
 }
