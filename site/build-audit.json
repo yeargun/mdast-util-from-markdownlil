@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "name": "mdast-util-from-markdownlil",
+  "measuredAt": "2026-09-10T13:55:39Z",
+  "status": "blocked",
+  "buildPassed": true,
+  "summary": "The newly measured artifact remains diagnostic until its behavior gate is satisfied; the previously published runtime is retained.",
+  "sourceCommit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c",
+  "previousPublicCommit": "6635a35345d4204a912c352f5eddfd850355f9d6",
+  "compiler": {
+    "commit": "63c2896a71e60cbcca7870fe979f9d6ecaff3452",
+    "sha256": "2319462ef7d858c8e2a5a767260aa4f80d325e0045afa0cc86cc122d1299b059",
+    "profile": "release",
+    "dirty": false
+  },
+  "machine": {
+    "cpu": "AMD EPYC 9V45 96-Core Processor",
+    "logicalCpus": 16,
+    "affinityCpus": 16,
+    "memoryBytes": 33648431104,
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1022-azure",
+    "architecture": "x86_64",
+    "node": "v22.23.2",
+    "rayonThreads": 16,
+    "provider": "Azure",
+    "instanceClass": "Standard_D16als_v7",
+    "parallelPortBuildsOnMachine": 1,
+    "loadAtStart": [
+      0.38134765625,
+      0.45361328125,
+      0.54150390625
+    ],
+    "loadAtEnd": [
+      4.07763671875,
+      2.69091796875,
+      1.439453125
+    ],
+    "concurrencyNote": "The audit scheduled one port per worker, but this is a shared pool. Outside compiler jobs were observed during the run; timings are contextual wall times, not controlled speedup benchmarks."
+  },
+  "upstream": {
+    "name": "mdast-util-from-markdownlil",
+    "package": "mdast-util-from-markdown",
+    "pinned": "2.0.3",
+    "latest": "2.0.3",
+    "source": "https://www.npmjs.com/package/mdast-util-from-markdown"
+  },
+  "comparisonScope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline Sizes use canonical zlib 1.3.1 gzip-9 and Google Brotli 1.1.0 quality 11.",
+  "sizes": {
+    "previous": {
+      "id": "itslil",
+      "name": "@itslil/mdast-util-from-markdown \u00b7 library",
+      "raw": 88325,
+      "gzip9": 31225,
+      "brotli11": 26103,
+      "note": "LilScript js-module, extern_fields true. The npm ESM.",
+      "primary": true
+    },
+    "current": {
+      "path": "dist/from-markdown.esm.js",
+      "raw": 87437,
+      "gzip9": 29992,
+      "brotli11": 25488,
+      "sha256": "ade46c9a46773caec7cb7bd4930ef763f324c7aa262e4f15ccbd1d36c65bb39b"
+    },
+    "upstream": {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 55520,
+      "gzip9": 14986,
+      "brotli11": 13336,
+      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+    }
+  },
+  "officialArtifacts": [
+    {
+      "path": ".page-audit/upstream/official.terser-nomangle.js",
+      "raw": 90054,
+      "gzip9": 18398,
+      "brotli11": 16398,
+      "sha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
+    },
+    {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 55520,
+      "gzip9": 14986,
+      "brotli11": 13336,
+      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+    },
+    {
+      "path": ".page-audit/upstream/official.unminified.js",
+      "raw": 138086,
+      "gzip9": 24510,
+      "brotli11": 20916,
+      "sha256": "3b4efd49303c7d6894fa81d847343330030fad98dcee707ff965899c88fb80a9"
+    },
+    {
+      "path": ".page-audit/upstream/official.esbuild.js",
+      "raw": 56894,
+      "gzip9": 16075,
+      "brotli11": 14331,
+      "sha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
+    }
+  ],
+  "candidateArtifacts": [
+    {
+      "path": "dist/from-markdown.esm.js",
+      "raw": 87437,
+      "gzip9": 29992,
+      "brotli11": 25488,
+      "sha256": "ade46c9a46773caec7cb7bd4930ef763f324c7aa262e4f15ccbd1d36c65bb39b"
+    },
+    {
+      "path": "dist/from-markdown.raw.js",
+      "raw": 87327,
+      "gzip9": 29914,
+      "brotli11": 25362,
+      "sha256": "c379ff8b82480b1bc6479716b27fb5ddcfaa1231fc148681f32a629f760ad398"
+    },
+    {
+      "path": "dist/from-markdown.closed.js",
+      "raw": 88790,
+      "gzip9": 30416,
+      "brotli11": 25853,
+      "sha256": "0fdce07e5d58c1c32d6b2a7eae8b027104a6213b6cd0d43ed83ded21b6eadabe"
+    },
+    {
+      "path": "dist/from-markdown.umd.js",
+      "raw": 102220,
+      "gzip9": 32099,
+      "brotli11": 27108,
+      "sha256": "6af364f525910294a6a10cf5650f35b14f73560d0a16815ca8ac6765e90e9638"
+    },
+    {
+      "path": "dist/from-markdown.cjs",
+      "raw": 102113,
+      "gzip9": 32038,
+      "brotli11": 27055,
+      "sha256": "2d45c8497703996c3a346eb03a387d1476cbedb533e6ebc33d8538fe6926c080"
+    },
+    {
+      "path": ".page-audit/upstream/official.esbuild.js",
+      "raw": 56894,
+      "gzip9": 16075,
+      "brotli11": 14331,
+      "sha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
+    },
+    {
+      "path": ".page-audit/upstream/official.terser-nomangle.js",
+      "raw": 90054,
+      "gzip9": 18398,
+      "brotli11": 16398,
+      "sha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
+    },
+    {
+      "path": ".page-audit/upstream/official.unminified.js",
+      "raw": 138086,
+      "gzip9": 24510,
+      "brotli11": 20916,
+      "sha256": "3b4efd49303c7d6894fa81d847343330030fad98dcee707ff965899c88fb80a9"
+    },
+    {
+      "path": ".page-audit/upstream/official.esm.js",
+      "raw": 55520,
+      "gzip9": 14986,
+      "brotli11": 13336,
+      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+    }
+  ],
+  "timing": {
+    "primaryCompilerSeconds": 92.83144879341125,
+    "primaryScope": "One real compiler process, including code generation and codec-guided search; excludes subsequent package wrapping.",
+    "packageSeconds": 172.53548456399994,
+    "packageScope": "node scripts/build.mjs --compile --force; 2 successful compiler invocations plus package generation.",
+    "upstreamSeconds": 0.280127451,
+    "upstreamScope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline",
+    "protocol": "Same shared worker for both lanes; one fresh LilScript package build; median of three sequential upstream ESM builds (PlayCanvas records one native reference build). Outside compiler jobs were observed in the pool, so contention is not excluded. Dependencies, tests and compression measurement are outside these build times.",
+    "upstreamSamples": [
+      {
+        "bundleSeconds": 0.010167704000000008,
+        "wallSeconds": 0.447620114
+      },
+      {
+        "bundleSeconds": 0.009905213999999943,
+        "wallSeconds": 0.280127451
+      },
+      {
+        "bundleSeconds": 0.010833204000000023,
+        "wallSeconds": 0.23812827800000003
+      }
+    ]
+  },
+  "behavior": {
+    "command": "npm run check:types && node --test test/*.test.mjs test/official/index.js",
+    "summary": "Repository test command failed (exit 1). # tests 744 \u00b7 # pass 618 \u00b7 # fail 126",
+    "before": {
+      "exitCode": 0,
+      "failures": [],
+      "logSha256": "ee45fd7dcef48c40f492f120c6d1bb160b75166893cbcb3fd02ddedfa21df514"
+    },
+    "after": {
+      "exitCode": 1,
+      "tail": "ed\n        \n        + '<p>&#x3C;a href=\"foo<br>\\nbar\"></p>'\n        - '<p><a href=\"foo  \\nbar\"></a></p>'\n              ^\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: |-\n        <p><a href=\"foo  \n        bar\"></a></p>\n      actual: |-\n        <p>&#x3C;a href=\"foo<br>\n        bar\"></p>\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (file://<snapshot>/test/official/index.js:1148:14)\n        Test.runInAsyncScope (node:async_hooks:214:14)\n        Test.run (node:internal/test_runner/test:1047:25)\n        Test.start (node:internal/test_runner/test:944:17)\n        TestContext.test (node:internal/test_runner/test:373:20)\n        TestContext.<anonymous> (file://<snapshot>/test/official/index.js:1139:13)\n        async Test.run (node:internal/test_runner/test:1054:7)\n        async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n      ...\n    # Subtest: Hard line breaks (642)\n    not ok 643 - Hard line breaks (642)\n      ---\n      duration_ms: 0.24193\n      type: 'test'\n      location: '<snapshot>/test/official/index.js:1139:13'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        + actual - expected\n        \n        + '<p>&#x3C;a href=\"foo\\\\\\nbar\"></p>'\n        - '<p><a href=\"foo\\\\\\nbar\"></a></p>'\n              ^\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: |-\n        <p><a href=\"foo\\\n        bar\"></a></p>\n      actual: |-\n        <p>&#x3C;a href=\"foo\\\n        bar\"></p>\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (file://<snapshot>/test/official/index.js:1148:14)\n        Test.runInAsyncScope (node:async_hooks:214:14)\n        Test.run (node:internal/test_runner/test:1047:25)\n        Test.start (node:internal/test_runner/test:944:17)\n        TestContext.test (node:internal/test_runner/test:373:20)\n        TestContext.<anonymous> (file://<snapshot>/test/official/index.js:1139:13)\n        async Test.run (node:internal/test_runner/test:1054:7)\n        async Test.processPendingSubtests (node:internal/test_runner/test:744:7)\n      ...\n    # Subtest: Hard line breaks (643)\n    ok 644 - Hard line breaks (643)\n      ---\n      duration_ms: 0.155591\n      type: 'test'\n      ...\n    # Subtest: Hard line breaks (644)\n    ok 645 - Hard line breaks (644)\n      ---\n      duration_ms: 0.137624\n      type: 'test'\n      ...\n    # Subtest: Hard line breaks (645)\n    ok 646 - Hard line breaks (645)\n      ---\n      duration_ms: 0.138836\n      type: 'test'\n      ...\n    # Subtest: Hard line breaks (646)\n    ok 647 - Hard line breaks (646)\n      ---\n      duration_ms: 0.133449\n      type: 'test'\n      ...\n    # Subtest: Soft line breaks (647)\n    ok 648 - Soft line breaks (647)\n      ---\n      duration_ms: 0.1341\n      type: 'test'\n      ...\n    # Subtest: Soft line breaks (648)\n    ok 649 - Soft line breaks (648)\n      ---\n      duration_ms: 0.125967\n      type: 'test'\n      ...\n    # Subtest: Textual content (649)\n    ok 650 - Textual content (649)\n      ---\n      duration_ms: 0.125797\n      type: 'test'\n      ...\n    # Subtest: Textual content (650)\n    ok 651 - Textual content (650)\n      ---\n      duration_ms: 0.117365\n      type: 'test'\n      ...\n    # Subtest: Textual content (651)\n    ok 652 - Textual content (651)\n      ---\n      duration_ms: 0.106308\n      type: 'test'\n      ...\n    1..652\nnot ok 7 - commonmark\n  ---\n  duration_ms: 235.440827\n  type: 'test'\n  location: '<snapshot>/test/official/index.js:1133:1'\n  failureType: 'subtestsFailed'\n  error: '107 subtests failed'\n  code: 'ERR_TEST_FAILURE'\n  ...\n# Subtest: package artifacts\n    # Subtest: loads the ESM and CommonJS exports\n    ok 1 - loads the ESM and CommonJS exports\n      ---\n      duration_ms: 8.48067\n      type: 'test'\n      ...\n    # Subtest: loads the closed export\n    ok 2 - loads the closed export\n      ---\n      duration_ms: 5.092803\n      type: 'test'\n      ...\n    # Subtest: exposes a callable UMD global\n    ok 3 - exposes a callable UMD global\n      ---\n      duration_ms: 4.957272\n      type: 'test'\n      ...\n    1..3\nok 8 - package artifacts\n  ---\n  duration_ms: 19.057708\n  type: 'suite'\n  ...\n# Subtest: site\n    # Subtest: has a markedlil-style lab with receipts\n    ok 1 - has a markedlil-style lab with receipts\n      ---\n      duration_ms: 0.669756\n      type: 'test'\n      ...\n    1..1\nok 9 - site\n  ---\n  duration_ms: 1.198062\n  type: 'suite'\n  ...\n1..9\n# tests 744\n# suites 6\n# pass 618\n# fail 126\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 482.601325\n",
+      "failures": [
+        "ATX headings (64)",
+        "ATX headings (65)",
+        "ATX headings (75)",
+        "Autolinks (593)",
+        "Autolinks (594)",
+        "Autolinks (595)",
+        "Autolinks (596)",
+        "Autolinks (597)",
+        "Autolinks (598)",
+        "Autolinks (599)",
+        "Autolinks (600)",
+        "Autolinks (602)",
+        "Autolinks (603)",
+        "Autolinks (604)",
+        "Autolinks (605)",
+        "Backslash escapes (11)",
+        "Backslash escapes (13)",
+        "Backslash escapes (14)",
+        "Backslash escapes (15)",
+        "Backslash escapes (19)",
+        "Block quotes (233)",
+        "Code spans (343)",
+        "Code spans (345)",
+        "Emphasis and strong emphasis (436)",
+        "Emphasis and strong emphasis (439)",
+        "Emphasis and strong emphasis (448)",
+        "Emphasis and strong emphasis (451)",
+        "Emphasis and strong emphasis (468)",
+        "Emphasis and strong emphasis (469)",
+        "Emphasis and strong emphasis (472)",
+        "Emphasis and strong emphasis (473)",
+        "Emphasis and strong emphasis (474)",
+        "Emphasis and strong emphasis (475)",
+        "Emphasis and strong emphasis (476)",
+        "Emphasis and strong emphasis (479)",
+        "Emphasis and strong emphasis (480)",
+        "Fenced code blocks (140)",
+        "HTML blocks (147)",
+        "HTML blocks (167)",
+        "HTML blocks (186)",
+        "Hard line breaks (633)",
+        "Hard line breaks (636)",
+        "Hard line breaks (638)",
+        "Hard line breaks (641)",
+        "Hard line breaks (642)",
+        "Images (591)",
+        "Images (592)",
+        "Indented code blocks (114)",
+        "Link reference definitions (193)",
+        "Link reference definitions (200)",
+        "Links (490)",
+        "Links (492)",
+        "Links (493)",
+        "Links (514)",
+        "Links (520)",
+        "Links (523)",
+        "Links (525)",
+        "Links (528)",
+        "Links (533)",
+        "Links (534)",
+        "Links (535)",
+        "Links (537)",
+        "Links (544)",
+        "Links (549)",
+        "Links (562)",
+        "Links (563)",
+        "List items (299)",
+        "Raw HTML (612)",
+        "Raw HTML (613)",
+        "Raw HTML (614)",
+        "Raw HTML (615)",
+        "Raw HTML (616)",
+        "Raw HTML (622)",
+        "Raw HTML (624)",
+        "Raw HTML (625)",
+        "Raw HTML (626)",
+        "Raw HTML (627)",
+        "Raw HTML (628)",
+        "Raw HTML (629)",
+        "Raw HTML (630)",
+        "Raw HTML (631)",
+        "Setext headings (100)",
+        "Setext headings (101)",
+        "Setext headings (102)",
+        "Setext headings (103)",
+        "Setext headings (105)",
+        "Setext headings (79)",
+        "Setext headings (82)",
+        "Setext headings (83)",
+        "Setext headings (84)",
+        "Setext headings (85)",
+        "Setext headings (87)",
+        "Setext headings (88)",
+        "Setext headings (89)",
+        "Setext headings (90)",
+        "Setext headings (91)",
+        "Setext headings (93)",
+        "Setext headings (94)",
+        "Setext headings (95)",
+        "Setext headings (97)",
+        "Setext headings (98)",
+        "Setext headings (99)",
+        "Thematic breaks (42)",
+        "Thematic breaks (50)",
+        "Thematic breaks (52)",
+        "Thematic breaks (53)",
+        "Thematic breaks (58)",
+        "autolink",
+        "character-escape",
+        "character-references-everywhere",
+        "commonmark",
+        "fixtures",
+        "fromMarkdown",
+        "hard-break-escape",
+        "heading-setext",
+        "html-text",
+        "image-resource",
+        "link-reference-with-phrasing",
+        "link-resource",
+        "should parse a character escape",
+        "should parse a hard break (escape)",
+        "should parse an autolink (email)",
+        "should parse an autolink (protocol)",
+        "should parse html (text)",
+        "should support types arrays",
+        "thematic-break"
+      ],
+      "logSha256": "6a19021b30e8019d58196560ac2a36f030b4702978bc270695d36a4ddae4bd6e"
+    }
+  },
+  "findings": [
+    "1 committed port changes were absent from GitHub at the start of the audit.",
+    "Published-to-fresh Brotli drift: -615 bytes (-2.36%). This includes port source/config changes and compiler changes.",
+    "The root checkout compiler (54e1948) rejects config field wide_single_use_collapse; today's migration/target-tree compiler is required.",
+    "Added the pinned official reference package as an explicit devDependency; tests imported it but npm ci did not install it.",
+    "Repository test command failed (exit 1). # tests 744 \u00b7 # pass 618 \u00b7 # fail 126"
+  ],
+  "primaryArtifact": "dist/from-markdown.esm.js",
+  "beforePage": {
+    "url": "https://yeargun.github.io/mdast-util-from-markdownlil/",
+    "status": 200,
+    "sha256": "4da64684952046eca719b30ddebd4c2c00801cffa7f0ce77f348b9e84d604da9",
+    "lastModified": "Wed, 02 Sep 2026 15:24:48 GMT"
+  },
+  "codecSha256": "9257fd055728895c11b9c4b0d882895d7d11bb3dd3495f560123879ca2bc3cd6",
+  "publicationArtifacts": [
+    {
+      "path": "dist/from-markdown.cjs",
+      "sha256": "fe2d0ff1f2cbff055c32e673cf12481da6a6f7e28b31be0715fbee91ea30693d"
+    },
+    {
+      "path": "dist/from-markdown.closed.js",
+      "sha256": "36989c1df67c6ad8d03fc37474dd8a8e371a734cc8364e0600496b0096cc9505"
+    },
+    {
+      "path": "dist/from-markdown.esm.js",
+      "sha256": "a0530171badcace4d8b480051d5cc5e4a8ddc5fcc62a2bca19e867c3fbcae238"
+    },
+    {
+      "path": "dist/from-markdown.umd.js",
+      "sha256": "0466edf8fc4d6efa880f2ccb70842a26db3aa379a046ee89533850c6542d4638"
+    }
+  ],
+  "publicationPolicy": "Retain previous public distribution; publish the diagnostic audit",
+  "publicationBase": "6635a35345d4204a912c352f5eddfd850355f9d6",
+  "publicationSourceFingerprint": "e60c6e7f60761b89557b4df4eb1cf8f1be3e6d5cbdc01b8300145f9c46cee1cc"
+}
