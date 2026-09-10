@@ -1,0 +1,33 @@
+{
+  "source": {
+    "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
+    "commit": "f9ef1b396227466c4d54ffbd581dfc702dac0cf6",
+    "package": "mdast-util-from-markdown",
+    "version": "2.0.3",
+    "directory": "."
+  },
+  "portSource": {
+    "commit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c"
+  },
+  "compilerCommit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+  "install": [
+    "npm",
+    "install",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund"
+  ],
+  "setup": [],
+  "build": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "clean": [],
+  "entry": "index.js",
+  "defaultExport": false,
+  "external": [],
+  "esmScope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline",
+  "lilscriptBuild": "node scripts/build.mjs --compile --force",
+  "test": "npm run check:types && node --test test/*.test.mjs test/official/index.js"
+}

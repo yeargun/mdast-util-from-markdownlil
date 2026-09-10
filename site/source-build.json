@@ -1,0 +1,778 @@
+{
+  "schemaVersion": 1,
+  "name": "mdast-util-from-markdownlil",
+  "startedAt": "2026-09-10T20:41:24Z",
+  "machine": {
+    "provider": "Azure",
+    "instanceClass": "Standard_D16als_v7",
+    "cpu": "AMD EPYC 9V45 96-Core Processor",
+    "logicalCpus": 16,
+    "memoryBytes": 33648431104,
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1022-azure",
+    "node": "v24.11.1",
+    "rayonThreads": 8,
+    "loadAtStart": [
+      3.4345703125,
+      2.51220703125,
+      2.1787109375
+    ],
+    "loadAtEnd": [
+      2.39013671875,
+      4.65087890625,
+      3.646484375
+    ]
+  },
+  "compiler": {
+    "commit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+    "sha256": "0616048498eb9eb2e4bd75b39e8e6a083733ada647e16108edfee30ad183beeb"
+  },
+  "source": {
+    "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
+    "commit": "f9ef1b396227466c4d54ffbd581dfc702dac0cf6",
+    "package": "mdast-util-from-markdown",
+    "version": "2.0.3",
+    "directory": "."
+  },
+  "portSource": {
+    "commit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c"
+  },
+  "steps": {
+    "original-install": {
+      "command": [
+        "npm",
+        "install",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 6.224688074999904,
+      "cpuSeconds": 7.489866,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-install.log",
+      "logSha256": "f6e36e83224e48d1daa31a046b8935dac47d3e90265b9cc891b1779e983ebde4",
+      "tail": "npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\nnpm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n\nadded 855 packages in 6s\n"
+    },
+    "lilscript-install": {
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "cwd": "port",
+      "wallSeconds": 0.46447321199957514,
+      "cpuSeconds": 0.6290890000000005,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-install.log",
+      "logSha256": "d7737d0c586de2a2e8476b56dd5bd6380ff0bae3c1e9fa5d671a6249b0c1155f",
+      "tail": "\nadded 67 packages in 379ms\n"
+    },
+    "original-build-1": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.172270572000343,
+      "cpuSeconds": 7.472278999999999,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-1.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    },
+    "lilscript-build-1": {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 162.5782534330001,
+      "cpuSeconds": 294.686902,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-1.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789072895.2691853,
+          "wallSeconds": 81.02375650405884,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789072976.3167496,
+          "wallSeconds": 81.39211702346802,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    },
+    "lilscript-build-2": {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 187.7489388139993,
+      "cpuSeconds": 347.795208,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-2.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789073057.8723645,
+          "wallSeconds": 104.70309853553772,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789073162.6049032,
+          "wallSeconds": 82.88351964950562,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    },
+    "original-build-2": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.975597206000202,
+      "cpuSeconds": 9.208415000000088,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-2.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    },
+    "original-build-3": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.522569471000679,
+      "cpuSeconds": 8.391326000000099,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-3.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    },
+    "lilscript-build-3": {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 161.086118231,
+      "cpuSeconds": 293.86639800000006,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-3.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789073255.1042576,
+          "wallSeconds": 84.77222466468811,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789073339.9043036,
+          "wallSeconds": 76.1864128112793,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    },
+    "original-esm": {
+      "command": [
+        "node",
+        "/home/lilfarm/source-perf-20260910/tools/source-esm.mjs",
+        "/home/lilfarm/source-perf-20260910",
+        "mdast-util-from-markdownlil"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 1.5167257510001946,
+      "cpuSeconds": 2.635242999999872,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-esm.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": ""
+    },
+    "lilscript-tests": {
+      "command": [
+        "bash",
+        "-c",
+        "npm run check:types && node --test test/*.test.mjs test/official/index.js"
+      ],
+      "cwd": "port",
+      "wallSeconds": 1.0660404170002948,
+      "cpuSeconds": 2.7130929999999545,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-tests.log",
+      "logSha256": "53fe3153d7b5d91575eedf3384a39a6a8a2f986af57c2c5d0b40cfe32105838c",
+      "tail": " \u2714 Links (558) (0.39884ms)\n  \u2714 Links (559) (0.235815ms)\n  \u2714 Links (560) (0.22586ms)\n  \u2714 Links (561) (0.234483ms)\n  \u2714 Links (562) (0.204939ms)\n  \u2714 Links (563) (0.230838ms)\n  \u2714 Links (564) (0.263828ms)\n  \u2714 Links (565) (0.208093ms)\n  \u2714 Links (566) (0.282455ms)\n  \u2714 Links (567) (0.22616ms)\n  \u2714 Links (568) (0.265289ms)\n  \u2714 Links (569) (0.314063ms)\n  \u2714 Links (570) (0.293662ms)\n  \u2714 Images (571) (0.210147ms)\n  \u2714 Images (572) (0.406963ms)\n  \u2714 Images (573) (0.251188ms)\n  \u2714 Images (574) (0.292671ms)\n  \u2714 Images (575) (0.286372ms)\n  \u2714 Images (576) (0.330968ms)\n  \u2714 Images (577) (0.180892ms)\n  \u2714 Images (578) (0.238239ms)\n  \u2714 Images (579) (0.2724ms)\n  \u2714 Images (580) (0.199601ms)\n  \u2714 Images (581) (0.252981ms)\n  \u2714 Images (582) (0.216206ms)\n  \u2714 Images (583) (0.249065ms)\n  \u2714 Images (584) (0.246721ms)\n  \u2714 Images (585) (0.213692ms)\n  \u2714 Images (586) (0.260553ms)\n  \u2714 Images (587) (0.259441ms)\n  \u2714 Images (588) (0.254874ms)\n  \u2714 Images (589) (0.219741ms)\n  \u2714 Images (590) (0.230567ms)\n  \u2714 Images (591) (0.237738ms)\n  \u2714 Images (592) (0.229195ms)\n  \u2714 Autolinks (593) (3.329506ms)\n  \u2714 Autolinks (594) (0.246241ms)\n  \u2714 Autolinks (595) (0.115674ms)\n  \u2714 Autolinks (596) (0.087101ms)\n  \u2714 Autolinks (597) (0.077306ms)\n  \u2714 Autolinks (598) (0.087532ms)\n  \u2714 Autolinks (599) (0.071467ms)\n  \u2714 Autolinks (600) (0.072659ms)\n  \u2714 Autolinks (601) (0.085659ms)\n  \u2714 Autolinks (602) (0.083566ms)\n  \u2714 Autolinks (603) (0.088584ms)\n  \u2714 Autolinks (604) (0.100492ms)\n  \u2714 Autolinks (605) (0.108364ms)\n  \u2714 Autolinks (606) (0.074412ms)\n  \u2714 Autolinks (607) (0.089495ms)\n  \u2714 Autolinks (608) (0.067612ms)\n  \u2714 Autolinks (609) (0.069215ms)\n  \u2714 Autolinks (610) (0.058849ms)\n  \u2714 Autolinks (611) (0.060371ms)\n  \u2714 Raw HTML (612) (0.155644ms)\n  \u2714 Raw HTML (613) (0.15229ms)\n  \u2714 Raw HTML (614) (0.145399ms)\n  \u2714 Raw HTML (615) (0.397659ms)\n  \u2714 Raw HTML (616) (0.162335ms)\n  \u2714 Raw HTML (617) (0.131629ms)\n  \u2714 Raw HTML (618) (0.130808ms)\n  \u2714 Raw HTML (619) (0.108754ms)\n  \u2714 Raw HTML (620) (0.186501ms)\n  \u2714 Raw HTML (621) (0.098278ms)\n  \u2714 Raw HTML (622) (0.134312ms)\n  \u2714 Raw HTML (623) (0.093531ms)\n  \u2714 Raw HTML (624) (0.189986ms)\n  \u2714 Raw HTML (625) (0.207192ms)\n  \u2714 Raw HTML (626) (0.103846ms)\n  \u2714 Raw HTML (627) (0.107241ms)\n  \u2714 Raw HTML (628) (0.1659ms)\n  \u2714 Raw HTML (629) (0.114924ms)\n  \u2714 Raw HTML (630) (0.122044ms)\n  \u2714 Raw HTML (631) (0.13285ms)\n  \u2714 Hard line breaks (632) (0.110747ms)\n  \u2714 Hard line breaks (633) (0.084247ms)\n  \u2714 Hard line breaks (634) (0.079109ms)\n  \u2714 Hard line breaks (635) (0.103506ms)\n  \u2714 Hard line breaks (636) (0.084478ms)\n  \u2714 Hard line breaks (637) (0.136425ms)\n  \u2714 Hard line breaks (638) (0.110446ms)\n  \u2714 Hard line breaks (639) (0.142214ms)\n  \u2714 Hard line breaks (640) (0.144087ms)\n  \u2714 Hard line breaks (641) (0.120882ms)\n  \u2714 Hard line breaks (642) (0.100792ms)\n  \u2714 Hard line breaks (643) (0.085459ms)\n  \u2714 Hard line breaks (644) (0.061783ms)\n  \u2714 Hard line breaks (645) (0.077046ms)\n  \u2714 Hard line breaks (646) (0.075834ms)\n  \u2714 Soft line breaks (647) (0.076305ms)\n  \u2714 Soft line breaks (648) (0.065729ms)\n  \u2714 Textual content (649) (0.076385ms)\n  \u2714 Textual content (650) (0.067141ms)\n  \u2714 Textual content (651) (0.084558ms)\n\u2714 commonmark (185.828074ms)\n\u25b6 package artifacts\n  \u2714 loads the ESM and CommonJS exports (8.442978ms)\n  \u2714 loads the closed export (4.482172ms)\n  \u2714 exposes a callable UMD global (5.143568ms)\n\u2714 package artifacts (18.605077ms)\n\u25b6 site\n  \u2714 has a markedlil-style lab with receipts (0.586694ms)\n\u2714 site (1.019746ms)\n\u2139 tests 744\n\u2139 suites 6\n\u2139 pass 744\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 403.205859\n"
+    }
+  },
+  "nativeBuilds": [
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.172270572000343,
+      "cpuSeconds": 7.472278999999999,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-1.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.975597206000202,
+      "cpuSeconds": 9.208415000000088,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-2.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "upstream",
+      "wallSeconds": 4.522569471000679,
+      "cpuSeconds": 8.391326000000099,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "original-build-3.log",
+      "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80",
+      "tail": "\n> mdast-util-from-markdown@2.0.3 build\n> tsc --build --clean && tsc --build && type-coverage && micromark-build && esbuild . --bundle --minify | terser | gzip-size --raw\n\n(3265 / 3265) 100.00%\ntype-coverage success.\nmdast-util-from-markdownlil/index.js (from `mdast-util-from-markdownlil/dev/index.js`)\nmdast-util-from-markdownlil/index.d.ts (from `mdast-util-from-markdownlil/dev/index.d.ts`)\nmdast-util-from-markdownlil/lib/types.js (from `mdast-util-from-markdownlil/dev/lib/types.js`)\nmdast-util-from-markdownlil/lib/types.d.ts (from `mdast-util-from-markdownlil/dev/lib/types.d.ts`)\nmdast-util-from-markdownlil/lib/index.js (from `mdast-util-from-markdownlil/dev/lib/index.js`)\nmdast-util-from-markdownlil/lib/index.d.ts.map (from `mdast-util-from-markdownlil/dev/lib/index.d.ts.map`)\nmdast-util-from-markdownlil/lib/index.d.ts (from `mdast-util-from-markdownlil/dev/lib/index.d.ts`)\n16041\n"
+    }
+  ],
+  "lilscriptBuilds": [
+    {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 162.5782534330001,
+      "cpuSeconds": 294.686902,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-1.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789072895.2691853,
+          "wallSeconds": 81.02375650405884,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789072976.3167496,
+          "wallSeconds": 81.39211702346802,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    },
+    {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 187.7489388139993,
+      "cpuSeconds": 347.795208,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-2.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789073057.8723645,
+          "wallSeconds": 104.70309853553772,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789073162.6049032,
+          "wallSeconds": 82.88351964950562,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    },
+    {
+      "command": [
+        "bash",
+        "-c",
+        "node scripts/build.mjs --compile --force"
+      ],
+      "cwd": "port",
+      "wallSeconds": 161.086118231,
+      "cpuSeconds": 293.86639800000006,
+      "exitCode": 0,
+      "timedOut": false,
+      "log": "lilscript-build-3.log",
+      "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf",
+      "tail": "wrote dist/from-markdown.esm.js, dist/from-markdown.cjs, dist/from-markdown.umd.js, dist/from-markdown.closed.js\n",
+      "invocations": [
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+          ],
+          "startedAt": 1789073255.1042576,
+          "wallSeconds": 84.77222466468811,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+        },
+        {
+          "args": [
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "--target",
+            "js-module",
+            "--config",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "-o",
+            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+          ],
+          "startedAt": 1789073339.9043036,
+          "wallSeconds": 76.1864128112793,
+          "exitCode": 0,
+          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+        }
+      ]
+    }
+  ],
+  "protocol": {
+    "repetitions": 3,
+    "cleanOutputs": true,
+    "dependencyInstallationTimedSeparately": true,
+    "sourceArchives": "Pinned Git checkouts; original repository package build commands, followed by production ESM assembly.",
+    "workerUse": "Both implementations use the same machine and Node version. This shared build pool also runs unrelated jobs; timings are contextual wall times, with CPU time recorded separately."
+  },
+  "esm": {
+    "source": {
+      "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
+      "commit": "f9ef1b396227466c4d54ffbd581dfc702dac0cf6",
+      "package": "mdast-util-from-markdown",
+      "version": "2.0.3",
+      "directory": "."
+    },
+    "entry": "index.js",
+    "scope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline",
+    "external": [],
+    "samples": [
+      {
+        "bundleSeconds": 0.016506496,
+        "wallSeconds": 0.37165344999999994
+      },
+      {
+        "bundleSeconds": 0.011899174999999956,
+        "wallSeconds": 0.2808560219999999
+      },
+      {
+        "bundleSeconds": 0.01166028499999993,
+        "wallSeconds": 0.267484839
+      }
+    ],
+    "medianSeconds": 0.2808560219999999,
+    "toolchain": {
+      "esbuild": "0.28.1",
+      "terser": "5.51.2"
+    },
+    "artifacts": [
+      {
+        "path": "original.esm.js",
+        "raw": 55520,
+        "gzip9": 14986,
+        "brotli11": 13336,
+        "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+      },
+      {
+        "path": "original.unminified.js",
+        "raw": 138048,
+        "gzip9": 24504,
+        "brotli11": 20876,
+        "sha256": "b51c1c4deae12a04e06b9423f4e006bd2858b8671090d8b2d064f5880bebe7ce"
+      },
+      {
+        "path": "original.terser-nomangle.js",
+        "raw": 90054,
+        "gzip9": 18398,
+        "brotli11": 16398,
+        "sha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
+      },
+      {
+        "path": "original.esbuild.js",
+        "raw": 56894,
+        "gzip9": 16075,
+        "brotli11": 14331,
+        "sha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
+      }
+    ],
+    "inputs": [
+      "node_modules/mdast-util-to-string/lib/index.js",
+      "node_modules/mdast-util-to-string/index.js",
+      "node_modules/decode-named-character-reference/index.dom.js",
+      "node_modules/micromark-util-chunked/index.js",
+      "node_modules/micromark-util-combine-extensions/index.js",
+      "node_modules/micromark-util-decode-numeric-character-reference/index.js",
+      "node_modules/micromark-util-encode/index.js",
+      "node_modules/micromark-util-normalize-identifier/index.js",
+      "node_modules/micromark-util-character/index.js",
+      "node_modules/micromark-util-sanitize-uri/index.js",
+      "node_modules/micromark/lib/compile.js",
+      "node_modules/micromark-factory-space/index.js",
+      "node_modules/micromark/lib/initialize/content.js",
+      "node_modules/micromark/lib/initialize/document.js",
+      "node_modules/micromark-util-classify-character/index.js",
+      "node_modules/micromark-util-resolve-all/index.js",
+      "node_modules/micromark-core-commonmark/lib/attention.js",
+      "node_modules/micromark-core-commonmark/lib/autolink.js",
+      "node_modules/micromark-core-commonmark/lib/blank-line.js",
+      "node_modules/micromark-core-commonmark/lib/block-quote.js",
+      "node_modules/micromark-core-commonmark/lib/character-escape.js",
+      "node_modules/micromark-core-commonmark/lib/character-reference.js",
+      "node_modules/micromark-core-commonmark/lib/code-fenced.js",
+      "node_modules/micromark-core-commonmark/lib/code-indented.js",
+      "node_modules/micromark-core-commonmark/lib/code-text.js",
+      "node_modules/micromark-util-subtokenize/lib/splice-buffer.js",
+      "node_modules/micromark-util-subtokenize/index.js",
+      "node_modules/micromark-core-commonmark/lib/content.js",
+      "node_modules/micromark-factory-destination/index.js",
+      "node_modules/micromark-factory-label/index.js",
+      "node_modules/micromark-factory-title/index.js",
+      "node_modules/micromark-factory-whitespace/index.js",
+      "node_modules/micromark-core-commonmark/lib/definition.js",
+      "node_modules/micromark-core-commonmark/lib/hard-break-escape.js",
+      "node_modules/micromark-core-commonmark/lib/heading-atx.js",
+      "node_modules/micromark-util-html-tag-name/index.js",
+      "node_modules/micromark-core-commonmark/lib/html-flow.js",
+      "node_modules/micromark-core-commonmark/lib/html-text.js",
+      "node_modules/micromark-core-commonmark/lib/label-end.js",
+      "node_modules/micromark-core-commonmark/lib/label-start-image.js",
+      "node_modules/micromark-core-commonmark/lib/label-start-link.js",
+      "node_modules/micromark-core-commonmark/lib/line-ending.js",
+      "node_modules/micromark-core-commonmark/lib/thematic-break.js",
+      "node_modules/micromark-core-commonmark/lib/list.js",
+      "node_modules/micromark-core-commonmark/lib/setext-underline.js",
+      "node_modules/micromark-core-commonmark/index.js",
+      "node_modules/micromark/lib/initialize/flow.js",
+      "node_modules/micromark/lib/initialize/text.js",
+      "node_modules/micromark/lib/constructs.js",
+      "node_modules/micromark/lib/create-tokenizer.js",
+      "node_modules/micromark/lib/parse.js",
+      "node_modules/micromark/lib/postprocess.js",
+      "node_modules/micromark/lib/preprocess.js",
+      "node_modules/micromark/index.js",
+      "node_modules/micromark-util-decode-string/index.js",
+      "node_modules/unist-util-stringify-position/lib/index.js",
+      "node_modules/unist-util-stringify-position/index.js",
+      "lib/index.js",
+      "index.js",
+      "public-esm-entry.mjs"
+    ]
+  },
+  "lilscriptArtifacts": [
+    {
+      "path": "dist/from-markdown.esm.js",
+      "raw": 87437,
+      "gzip9": 29993,
+      "brotli11": 25455,
+      "sha256": "c9271244938542f1285792688d7873f777903782e1fb9b5cf2db83e4e57a4104"
+    },
+    {
+      "path": "dist/from-markdown.raw.js",
+      "raw": 87327,
+      "gzip9": 29914,
+      "brotli11": 25365,
+      "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+    },
+    {
+      "path": "dist/from-markdown.closed.js",
+      "raw": 88790,
+      "gzip9": 30415,
+      "brotli11": 25806,
+      "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+    },
+    {
+      "path": "dist/from-markdown.umd.js",
+      "raw": 102220,
+      "gzip9": 32100,
+      "brotli11": 27151,
+      "sha256": "f9491b5c7750950f6aabd0f5e1604999895fa00c863a5d283cc3c544458c9c75"
+    },
+    {
+      "path": "dist/from-markdown.cjs",
+      "raw": 102113,
+      "gzip9": 32039,
+      "brotli11": 27094,
+      "sha256": "1c21c8f864a757b0a46e96c31807aef4c2e48a1bd9419323c6ed447e67ff14fb"
+    }
+  ],
+  "nativeBuildsSummary": {
+    "samples": 3,
+    "successful": 3,
+    "medianSeconds": 4.522569471000679,
+    "minimumSeconds": 4.172270572000343,
+    "maximumSeconds": 4.975597206000202
+  },
+  "lilscriptBuildsSummary": {
+    "samples": 3,
+    "successful": 3,
+    "medianSeconds": 162.5782534330001,
+    "minimumSeconds": 161.086118231,
+    "maximumSeconds": 187.7489388139993
+  },
+  "status": "complete",
+  "finishedAt": "2026-09-10T20:50:19Z",
+  "sourceBuild": {
+    "original": {
+      "complete": true,
+      "medianSeconds": 4.522569471000679,
+      "minimumSeconds": 4.172270572000343,
+      "maximumSeconds": 4.975597206000202,
+      "samples": [
+        {
+          "command": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "wallSeconds": 4.172270572000343,
+          "cpuSeconds": 7.472278999999999,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "original-build-1.log",
+          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+        },
+        {
+          "command": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "wallSeconds": 4.975597206000202,
+          "cpuSeconds": 9.208415000000088,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "original-build-2.log",
+          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+        },
+        {
+          "command": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "wallSeconds": 4.522569471000679,
+          "cpuSeconds": 8.391326000000099,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "original-build-3.log",
+          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+        }
+      ]
+    },
+    "lilscript": {
+      "complete": true,
+      "medianSeconds": 162.5782534330001,
+      "minimumSeconds": 161.086118231,
+      "maximumSeconds": 187.7489388139993,
+      "samples": [
+        {
+          "command": [
+            "bash",
+            "-c",
+            "node scripts/build.mjs --compile --force"
+          ],
+          "wallSeconds": 162.5782534330001,
+          "cpuSeconds": 294.686902,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "lilscript-build-1.log",
+          "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf"
+        },
+        {
+          "command": [
+            "bash",
+            "-c",
+            "node scripts/build.mjs --compile --force"
+          ],
+          "wallSeconds": 187.7489388139993,
+          "cpuSeconds": 347.795208,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "lilscript-build-2.log",
+          "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf"
+        },
+        {
+          "command": [
+            "bash",
+            "-c",
+            "node scripts/build.mjs --compile --force"
+          ],
+          "wallSeconds": 161.086118231,
+          "cpuSeconds": 293.86639800000006,
+          "exitCode": 0,
+          "timedOut": false,
+          "log": "lilscript-build-3.log",
+          "logSha256": "6991dd820c2b654629a7512b09051ab022ea4830349f91a0371ff394d2206cdf"
+        }
+      ]
+    },
+    "scopeNote": "Both timings cover each repository\u2019s package build command; their output formats and build checks can differ.",
+    "cleanOutputs": true,
+    "installationExcluded": true
+  },
+  "prerequisiteAdjustments": null,
+  "recordRepository": "https://github.com/yeargun/mdast-util-from-markdownlil/tree/main/comparison/source-build"
+}

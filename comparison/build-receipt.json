@@ -369,12 +369,38 @@
   "publicationSourceFingerprint": "e60c6e7f60761b89557b4df4eb1cf8f1be3e6d5cbdc01b8300145f9c46cee1cc",
   "comparisonArtifacts": [
     {
-      "path": "site/esm-comparison/lilscript.js",
-      "sha256": "ade46c9a46773caec7cb7bd4930ef763f324c7aa262e4f15ccbd1d36c65bb39b"
-    },
-    {
       "path": "site/esm-comparison/original.js",
       "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+    },
+    {
+      "path": "site/esm-comparison/lilscript.js",
+      "sha256": "c9271244938542f1285792688d7873f777903782e1fb9b5cf2db83e4e57a4104"
+    },
+    {
+      "path": "site/source-build.json",
+      "sha256": "955aa4f43f79afa3d5126dee67748f64002e01c6215cca386a08591928aefd8a"
+    },
+    {
+      "path": "site/comparison.json",
+      "sha256": "fb2b78bb1a802ae58e8b27d635f10f322a23a907d3e48d3ade6391fe8e6a6436"
     }
-  ]
+  ],
+  "sourceBuildReceipt": "comparison/source-build/result.json",
+  "currentMeasurement": {
+    "compiler": {
+      "commit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+      "sha256": "0616048498eb9eb2e4bd75b39e8e6a083733ada647e16108edfee30ad183beeb"
+    },
+    "source": {
+      "commit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c"
+    },
+    "upstream": {
+      "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
+      "commit": "f9ef1b396227466c4d54ffbd581dfc702dac0cf6",
+      "package": "mdast-util-from-markdown",
+      "version": "2.0.3",
+      "directory": "."
+    },
+    "compatibility": "Runtime checks: 744/744 pass."
+  }
 }
