@@ -1,7 +1,7 @@
 # reusable ESM — host-visible names stay
 [javascript]
 priority = "size-first"
-optimization_level = 13
+optimization_level = 15
 cost_model = "brotli"
 assume_pristine_builtins = true
 strip_console = true
@@ -9,6 +9,16 @@ local_name_reserve = 20
 candidate_search = "production"
 public_aggregate_abi = "named"
 
+# 8.69: this port sat at level 13 with none of the options its winning
+# sibling remark-gfmlil carries. Transplanted and measured on the pool:
+# level 15 alone is worth little (-101 / -12), the options carry the rest.
+function_spelling = "arrow"
+idiom_directed_naming = true
+wide_single_use_collapse = true
+rematerialize_member_reads = true
+assume_pure_property_reads = true
+candidate_beam_width = 20
+candidate_byte_budget = 2097152
 [mangle]
 identifiers = true
 properties = true
