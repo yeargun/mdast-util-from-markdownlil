@@ -22,3 +22,6 @@ await cp(join(root, "site"), output, { recursive: true })
 await cp(join(root, "dist", `${file}.esm.js`), join(output, `${file}.js`))
 await writeFile(join(output, ".nojekyll"), "")
 console.log(`Built GitHub Pages site at ${output}`)
+
+// Publish current build facts using the existing page typography.
+await import("./build-comparison.mjs").then(({writeComparison}) => writeComparison({root, output}));
