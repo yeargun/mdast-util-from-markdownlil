@@ -1,4 +1,3 @@
-import { arrLen, call1, call2, call3, includesStr, jsInt, jsString, makeConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { asciiDigit, markdownSpace } from "../util-character.lil";
 import { cAsterisk, cDash, cDigit1, cDot, cPlusSign, cRightParenthesis, codeEq } from "../symbol/codes.lil";
@@ -9,188 +8,152 @@ import { thematicBreak } from "./thematic-break.lil";
 
 JsValue tokenizeListItemPrefixWhitespace = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    JsValue tail = events[arrLen(events) - 1];
-    if (!markdownSpace(code) && tail.truthy() && objGet(tail[1], "type") == tListItemPrefixWhitespace) {
-      return call1(ok, undef(), code);
+    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+    if (!markdownSpace(code) && tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tListItemPrefixWhitespace)) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
-  int max = kTabSize + 1;
-  if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-    max = 0;
-  }
+  JsValue max = if (JS.invoke(JS.get(JS.get(JS.get(self, "parser"), "constructs"), "disable")["null"], "includes", "codeIndented").truthy()) { JS.undefined() } else { kTabSize + 1 };
   return factorySpace(effects, afterPrefix, tListItemPrefixWhitespace, max);
 });
 
-JsValue listItemPrefixWhitespaceConstruct = makeConstruct(tokenizeListItemPrefixWhitespace);
-JS.set(listItemPrefixWhitespaceConstruct, "partial", true);
+JsValue listItemPrefixWhitespaceConstruct = JS.object("partial", true, "tokenize", tokenizeListItemPrefixWhitespace);
 
 JsValue tokenizeIndent = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    JsValue tail = events[arrLen(events) - 1];
-    if (tail.truthy() && objGet(tail[1], "type") == tListItemIndent && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length == jsInt(objGet(objGet(self, "containerState"), "size"))) {
-      return call1(ok, undef(), code);
+    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+    if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tListItemIndent) && JS.strictEqual(JS.get(JS.invoke(tail[2], "sliceSerialize", tail[1], true), "length"), JS.get(JS.get(self, "containerState"), "size"))) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
-  return factorySpace(effects, afterPrefix, tListItemIndent, JS.number(objGet(objGet(self, "containerState"), "size")) + 1.0);
+  return factorySpace(effects, afterPrefix, tListItemIndent, JS.add(JS.get(JS.get(self, "containerState"), "size"), 1));
 });
 
-JsValue indentConstruct = makeConstruct(tokenizeIndent);
-JS.set(indentConstruct, "partial", true);
-
-export JsValue list = JS.object();
-JS.set(list, "name", "list");
+JsValue indentConstruct = JS.object("partial", true, "tokenize", tokenizeIndent);
 
 JsValue tokenizeListStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue events = objGet(self, "events");
-  JsValue tail = events[arrLen(events) - 1];
-  float initialSize = 0.0;
-  if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix) {
-    initialSize = JS.number(jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length);
-  }
-  int size = 0;
-
-  JsValue endOfPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue prefix = call1(objGet(effects, "exit"), effects, tListItemPrefix);
-    JS.set(objGet(self, "containerState"), "size", initialSize + JS.number(jsString(call2(objGet(self, "sliceSerialize"), self, prefix, true)).length));
-    return call1(ok, undef(), code);
-  });
-
-  JsValue otherPrefix = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownSpace(code)) {
-      call1(objGet(effects, "enter"), effects, tListItemPrefixWhitespace);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tListItemPrefixWhitespace);
-      return endOfPrefix;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue onBlank = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(objGet(self, "containerState"), "initialBlankLine", true);
-    initialSize = initialSize + 1.0;
-    return call1(endOfPrefix, undef(), code);
-  });
-
-  JsValue atMarker = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tListItemMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tListItemMarker);
-    if (!objGet(objGet(self, "containerState"), "marker").truthy()) {
-      JS.set(objGet(self, "containerState"), "marker", code);
-    }
-    JsValue blankOk = onBlank;
-    if (objGet(self, "interrupt").truthy()) {
-      blankOk = nok;
-    }
-    return call3(objGet(effects, "check"), effects, blankLine, blankOk, call3(objGet(effects, "attempt"), effects, listItemPrefixWhitespaceConstruct, endOfPrefix, otherPrefix));
-  });
-
-  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (asciiDigit(code) && size + 1 < kListItemValueSizeMax) {
-      size = size + 1;
-      call1(objGet(effects, "consume"), effects, code);
-      return inside;
-    }
-    bool sizeOk = !objGet(self, "interrupt").truthy() || size < 2;
-    JsValue marker = objGet(objGet(self, "containerState"), "marker");
-    bool markerOk = false;
-    if (marker.truthy()) {
-      markerOk = code == marker;
-    } else {
-      markerOk = codeEq(code, cRightParenthesis) || codeEq(code, cDot);
-    }
-    if (sizeOk && markerOk) {
-      call1(objGet(effects, "exit"), effects, tListItemValue);
-      return call1(atMarker, undef(), code);
-    }
-    return call1(nok, undef(), code);
-  });
+  JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+  float initialSize = if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix)) { JS.invoke(tail[2], "sliceSerialize", tail[1], true).length } else { 0.0 };
+  float size = 0.0;
+  JsValue inside = JS.undefined();
+  JsValue atMarker = JS.undefined();
+  JsValue onBlank = JS.undefined();
+  JsValue otherPrefix = JS.undefined();
+  JsValue endOfPrefix = JS.undefined();
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    JsValue state = objGet(self, "containerState");
-    string kind = tListOrdered;
-    if (objGet(state, "type").truthy()) {
-      kind = jsString(objGet(state, "type"));
-    } else if (codeEq(code, cAsterisk) || codeEq(code, cPlusSign) || codeEq(code, cDash)) {
-      kind = tListUnordered;
-    }
-    bool allowed = false;
-    if (kind == tListUnordered) {
-      allowed = !objGet(state, "marker").truthy() || code == objGet(state, "marker");
-    } else {
-      allowed = asciiDigit(code);
-    }
-    if (allowed) {
-      if (!objGet(state, "type").truthy()) {
+    JsValue state = JS.get(self, "containerState");
+    JsValue kind = JS.or(JS.get(state, "type"), if (codeEq(code, cAsterisk) || codeEq(code, cPlusSign) || codeEq(code, cDash)) { tListUnordered } else { tListOrdered });
+    bool unordered = JS.strictEqual(kind, tListUnordered);
+    if (if (unordered) { !JS.get(state, "marker").truthy() || JS.strictEqual(code, JS.get(state, "marker")) } else { asciiDigit(code) }) {
+      if (!JS.get(state, "type").truthy()) {
         JS.set(state, "type", kind);
-        JsValue fields = JS.object();
-        JS.set(fields, "_container", true);
-        call2(objGet(effects, "enter"), effects, kind, fields);
+        JS.invoke(effects, "enter", kind, JS.object("_container", true));
       }
-      if (kind == tListUnordered) {
-        call1(objGet(effects, "enter"), effects, tListItemPrefix);
+      if (unordered) {
+        JS.invoke(effects, "enter", tListItemPrefix);
         if (codeEq(code, cAsterisk) || codeEq(code, cDash)) {
-          return call1(call3(objGet(effects, "check"), effects, thematicBreak, nok, atMarker), undef(), code);
+          return JS.call(JS.invoke(effects, "check", thematicBreak, nok, atMarker), JS.undefined(), code);
         }
-        return call1(atMarker, undef(), code);
+        return JS.call(atMarker, JS.undefined(), code);
       }
-      if (!objGet(self, "interrupt").truthy() || codeEq(code, cDigit1)) {
-        call1(objGet(effects, "enter"), effects, tListItemPrefix);
-        call1(objGet(effects, "enter"), effects, tListItemValue);
-        return call1(inside, undef(), code);
+      if (!JS.get(self, "interrupt").truthy() || codeEq(code, cDigit1)) {
+        JS.invoke(effects, "enter", tListItemPrefix);
+        JS.invoke(effects, "enter", tListItemValue);
+        return JS.call(inside, JS.undefined(), code);
       }
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  inside = JS.method1((JsValue _s, JsValue code) => {
+    if (asciiDigit(code) && size + 1.0 < kListItemValueSizeMax) {
+      size++;
+      JS.invoke(effects, "consume", code);
+      return inside;
+    }
+    JsValue marker = JS.get(JS.get(self, "containerState"), "marker");
+    if ((!JS.get(self, "interrupt").truthy() || size < 2.0) && (if (marker.truthy()) { JS.strictEqual(code, marker) } else { codeEq(code, cRightParenthesis) || codeEq(code, cDot) })) {
+      JS.invoke(effects, "exit", tListItemValue);
+      return JS.call(atMarker, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  atMarker = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tListItemMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tListItemMarker);
+    JsValue state = JS.get(self, "containerState");
+    JS.set(state, "marker", JS.or(JS.get(state, "marker"), code));
+    return JS.invoke(effects, "check", blankLine, if (JS.get(self, "interrupt").truthy()) { nok } else { onBlank }, JS.invoke(effects, "attempt", listItemPrefixWhitespaceConstruct, endOfPrefix, otherPrefix));
+  });
+
+  onBlank = JS.method1((JsValue _s, JsValue code) => {
+    JS.set(JS.get(self, "containerState"), "initialBlankLine", true);
+    initialSize++;
+    return JS.call(endOfPrefix, JS.undefined(), code);
+  });
+
+  otherPrefix = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      JS.invoke(effects, "enter", tListItemPrefixWhitespace);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tListItemPrefixWhitespace);
+      return endOfPrefix;
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  endOfPrefix = JS.method1((JsValue _s, JsValue code) => {
+    JS.set(JS.get(self, "containerState"), "size", initialSize + JS.invoke(self, "sliceSerialize", JS.invoke(effects, "exit", tListItemPrefix), true).length);
+    return JS.call(ok, JS.undefined(), code);
   });
 
   return start;
 });
 
-JsValue tokenizeListContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JS.set(objGet(self, "containerState"), "_closeFlow", undef());
-
-  JsValue notInCurrentItem = JS.method1((JsValue _s, JsValue code) => {
-    JS.set(objGet(self, "containerState"), "_closeFlow", true);
-    JS.set(self, "interrupt", undef());
-    int max = kTabSize;
-    if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-      max = 0;
-    }
-    return call1(factorySpace(effects, call3(objGet(effects, "attempt"), effects, list, ok, nok), tLinePrefix, max), undef(), code);
-  });
-
-  JsValue notBlank = JS.method1((JsValue _s, JsValue code) => {
-    if (objGet(objGet(self, "containerState"), "furtherBlankLines").truthy() || !markdownSpace(code)) {
-      JS.set(objGet(self, "containerState"), "furtherBlankLines", undef());
-      JS.set(objGet(self, "containerState"), "initialBlankLine", undef());
-      return call1(notInCurrentItem, undef(), code);
-    }
-    JS.set(objGet(self, "containerState"), "furtherBlankLines", undef());
-    JS.set(objGet(self, "containerState"), "initialBlankLine", undef());
-    return call1(call3(objGet(effects, "attempt"), effects, indentConstruct, ok, notInCurrentItem), undef(), code);
-  });
-
-  JsValue onBlank = JS.method1((JsValue _s, JsValue code) => {
-    if (!objGet(objGet(self, "containerState"), "furtherBlankLines").truthy()) {
-      JS.set(objGet(self, "containerState"), "furtherBlankLines", objGet(objGet(self, "containerState"), "initialBlankLine"));
-    }
-    return call1(factorySpace(effects, ok, tListItemIndent, JS.number(objGet(objGet(self, "containerState"), "size")) + 1.0), undef(), code);
-  });
-
-  return call3(objGet(effects, "check"), effects, blankLine, onBlank, notBlank);
-});
-
 JsValue tokenizeListEnd = JS.method1((JsValue self, JsValue effects) => {
-  call1(objGet(effects, "exit"), effects, objGet(objGet(self, "containerState"), "type"));
-  return undef();
+  JS.invoke(effects, "exit", JS.get(JS.get(self, "containerState"), "type"));
+  return JS.undefined();
 });
 
-JS.set(list, "tokenize", tokenizeListStart);
-JsValue continuation = JS.object();
-JS.set(continuation, "tokenize", tokenizeListContinuation);
-JS.set(list, "continuation", continuation);
-JS.set(list, "exit", tokenizeListEnd);
+// The continuation tokenizer attempts `list` itself, so it is written inside the
+// construct's own initializer.
+export JsValue list = JS.object(
+  "continuation", JS.object("tokenize", JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+    JS.set(JS.get(self, "containerState"), "_closeFlow", JS.undefined());
+
+    JsValue notInCurrentItem = JS.method1((JsValue _s, JsValue code) => {
+      JS.set(JS.get(self, "containerState"), "_closeFlow", true);
+      JS.set(self, "interrupt", JS.undefined());
+      JsValue max = if (JS.invoke(JS.get(JS.get(JS.get(self, "parser"), "constructs"), "disable")["null"], "includes", "codeIndented").truthy()) { JS.undefined() } else { kTabSize };
+      return JS.call(factorySpace(effects, JS.invoke(effects, "attempt", list, ok, nok), tLinePrefix, max), JS.undefined(), code);
+    });
+
+    JsValue onBlank = JS.method1((JsValue _s, JsValue code) => {
+      JsValue state = JS.get(self, "containerState");
+      JS.set(state, "furtherBlankLines", JS.or(JS.get(state, "furtherBlankLines"), JS.get(state, "initialBlankLine")));
+      return JS.call(factorySpace(effects, ok, tListItemIndent, JS.add(JS.get(state, "size"), 1)), JS.undefined(), code);
+    });
+
+    JsValue notBlank = JS.method1((JsValue _s, JsValue code) => {
+      JsValue state = JS.get(self, "containerState");
+      if (JS.get(state, "furtherBlankLines").truthy() || !markdownSpace(code)) {
+        JS.set(state, "furtherBlankLines", JS.undefined());
+        JS.set(state, "initialBlankLine", JS.undefined());
+        return JS.call(notInCurrentItem, JS.undefined(), code);
+      }
+      JS.set(state, "furtherBlankLines", JS.undefined());
+      JS.set(state, "initialBlankLine", JS.undefined());
+      return JS.call(JS.invoke(effects, "attempt", indentConstruct, ok, notInCurrentItem), JS.undefined(), code);
+    });
+
+    return JS.invoke(effects, "check", blankLine, onBlank, notBlank);
+  })),
+  "exit", tokenizeListEnd,
+  "name", "list",
+  "tokenize", tokenizeListStart
+);

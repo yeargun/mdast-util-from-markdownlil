@@ -1,27 +1,23 @@
-import { call1, hasOwn, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { cCaret, codeEq } from "../symbol/codes.lil";
 import { tLabelLink, tLabelMarker } from "../symbol/types.lil";
 import { labelEnd } from "./label-end.lil";
 
 JsValue tokenizeLabelStartLink = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cCaret) && hasOwn(objGet(objGet(self, "parser"), "constructs"), "_hiddenFootnoteSupport")) {
-      return call1(nok, undef(), code);
+    if (codeEq(code, cCaret) && JS.in("_hiddenFootnoteSupport", JS.get(JS.get(self, "parser"), "constructs"))) {
+      return JS.call(nok, JS.undefined(), code);
     }
-    return call1(ok, undef(), code);
+    return JS.call(ok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tLabelLink);
-    call1(objGet(effects, "enter"), effects, tLabelMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tLabelMarker);
-    call1(objGet(effects, "exit"), effects, tLabelLink);
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tLabelLink);
+    JS.invoke(effects, "enter", tLabelMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tLabelMarker);
+    JS.invoke(effects, "exit", tLabelLink);
     return after;
   });
-
-  return start;
 });
 
-export JsValue labelStartLink = makeNamedConstruct("labelStartLink", tokenizeLabelStartLink);
-JS.set(labelStartLink, "resolveAll", objGet(labelEnd, "resolveAll"));
+export JsValue labelStartLink = JS.object("name", "labelStartLink", "resolveAll", JS.get(labelEnd, "resolveAll"), "tokenize", tokenizeLabelStartLink);

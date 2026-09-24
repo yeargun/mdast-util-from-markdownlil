@@ -1,111 +1,50 @@
-import { arrLen, hasOwn, isNullish, objGet, objSet, push } from "./host.lil";
+import { asList, hasOwn } from "./host.lil";
 import { splice } from "./util-chunked.lil";
 
-void mergeConstructs(JsValue existing, JsValue list) {
-  JsValue before = JS.array();
-  int index = -1;
-  int n = arrLen(list);
-  while (true) {
-    index = index + 1;
-    if (index >= n) {
-      break;
-    }
-    JsValue item = list[index];
-    if (JS.get(item, "add") == "after") {
-      push(existing, item);
-    } else {
-      push(before, item);
-    }
-  }
-  splice(existing, 0, 0, before);
-}
-
-void syntaxExtension(JsValue all, JsValue extension) {
-  for (string hook in extension) {
-    if (!hasOwn(extension, hook)) {
-      continue;
-    }
-    JsValue maybe = JS.undefined();
-    if (hasOwn(all, hook)) {
-      maybe = objGet(all, hook);
-    }
-    JsValue left = maybe;
-    if (isNullish(left)) {
-      left = JS.object();
-      objSet(all, hook, left);
-    }
-    JsValue right = objGet(extension, hook);
-    if (right.truthy()) {
-      for (string code in right) {
-        if (!hasOwn(right, code)) {
-          continue;
-        }
-        if (!hasOwn(left, code)) {
-          objSet(left, code, JS.array());
-        }
-        JsValue value = objGet(right, code);
-        JsValue asList = JS.array();
-        if (value.isArray()) {
-          asList = value;
-        } else if (value.truthy()) {
-          push(asList, value);
-        }
-        mergeConstructs(objGet(left, code), asList);
-      }
-    }
-  }
-}
-
-void htmlExtension(JsValue all, JsValue extension) {
-  for (string hook in extension) {
-    if (!hasOwn(extension, hook)) {
-      continue;
-    }
-    JsValue maybe = JS.undefined();
-    if (hasOwn(all, hook)) {
-      maybe = objGet(all, hook);
-    }
-    JsValue left = maybe;
-    if (isNullish(left)) {
-      left = JS.object();
-      objSet(all, hook, left);
-    }
-    JsValue right = objGet(extension, hook);
-    if (right.truthy()) {
-      for (string typ in right) {
-        if (!hasOwn(right, typ)) {
-          continue;
-        }
-        objSet(left, typ, objGet(right, typ));
-      }
-    }
-  }
-}
-
-export JsValue combineExtensions(JsValue extensions) {
+// Syntax and HTML extensions merge the same way per hook; only what happens per key differs.
+JsValue combine(JsValue extensions, bool html) {
   JsValue all = JS.object();
-  int index = -1;
-  int n = arrLen(extensions);
-  while (true) {
-    index = index + 1;
-    if (index >= n) {
-      break;
+  for (float index = 0.0; index < extensions.length; index++) {
+    JsValue extension = extensions[index];
+    for (string hook in extension) {
+      JsValue left = JS.get(all, hook);
+      if (!hasOwn(all, hook) || !left.truthy()) {
+        left = JS.object();
+        JS.set(all, hook, left);
+      }
+      JsValue right = JS.get(extension, hook);
+      if (right.truthy()) {
+        for (string key in right) {
+          JsValue value = JS.get(right, key);
+          if (html) {
+            JS.set(left, key, value);
+          } else {
+            if (!hasOwn(left, key)) {
+              JS.set(left, key, JS.array());
+            }
+            JsValue list = asList(value);
+            JsValue existing = JS.get(left, key);
+            JsValue[] before = [];
+            for (float item = 0.0; item < list.length; item++) {
+              if (JS.strictEqual(JS.get(list[item], "add"), "after")) {
+                JS.invoke(existing, "push", list[item]);
+              } else {
+                before.push(list[item]);
+              }
+            }
+            splice(existing, 0, 0, before);
+          }
+        }
+      }
     }
-    syntaxExtension(all, extensions[index]);
   }
   return all;
 }
 
+export JsValue combineExtensions(JsValue extensions) {
+  return combine(extensions, false);
+}
+
 export JsValue combineHtmlExtensions(JsValue htmlExtensions) {
-  JsValue handlers = JS.object();
-  int index = -1;
-  int n = arrLen(htmlExtensions);
-  while (true) {
-    index = index + 1;
-    if (index >= n) {
-      break;
-    }
-    htmlExtension(handlers, htmlExtensions[index]);
-  }
-  return handlers;
+  return combine(htmlExtensions, true);
 }

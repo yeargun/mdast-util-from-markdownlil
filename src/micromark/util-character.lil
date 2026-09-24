@@ -1,62 +1,34 @@
-import { fromCharCode1 } from "./host.lil";
+extern JsValue String;
 
-Regex asciiAlphaRe = new Regex("[A-Za-z]", "");
-Regex asciiAlphanumericRe = new Regex("[\\dA-Za-z]", "");
-Regex asciiAtextRe = new Regex("[#-'*+\\--9=?A-Z^-~]", "");
-Regex asciiDigitRe = new Regex("\\d", "");
-Regex asciiHexDigitRe = new Regex("[\\dA-Fa-f]", "");
-Regex asciiPunctuationRe = new Regex("[!-/:-@[-`{-~]", "");
-Regex unicodePunctuationRe = new Regex("\\p{P}|\\p{S}", "u");
-Regex unicodeWhitespaceRe = new Regex("\\s", "");
-
-bool regexCode(Regex pattern, JsValue code) {
-  return JS.strictNotEqual(code, null) && JS.number(code) > -1.0 && pattern.test(fromCharCode1(code));
+// A code is a character code (number), a negative virtual code, or `null` at the
+// end of input. Each check is a closure over its expression, as upstream's.
+func(JsValue)->bool regexCheck(Regex regex) {
+  return (JsValue code) => JS.strictNotEqual(code, null) && JS.greaterThan(code, -1) && regex.test(JS.assume(JS.invoke(String, "fromCharCode", code)));
 }
 
-export bool asciiAlpha(JsValue code) {
-  return regexCode(asciiAlphaRe, code);
-}
-
-export bool asciiAlphanumeric(JsValue code) {
-  return regexCode(asciiAlphanumericRe, code);
-}
-
-export bool asciiAtext(JsValue code) {
-  return regexCode(asciiAtextRe, code);
-}
+export func(JsValue)->bool asciiAlpha = regexCheck(new Regex("[A-Za-z]", ""));
+export func(JsValue)->bool asciiAlphanumeric = regexCheck(new Regex("[\\dA-Za-z]", ""));
+export func(JsValue)->bool asciiAtext = regexCheck(new Regex("[#-'*+\\--9=?A-Z^-~]", ""));
 
 export bool asciiControl(JsValue code) {
-  return JS.strictNotEqual(code, null) && (JS.number(code) < 32.0 || JS.strictEqual(code, 127));
+  return JS.strictNotEqual(code, null) && (JS.lessThan(code, 32) || JS.strictEqual(code, 127));
 }
 
-export bool asciiDigit(JsValue code) {
-  return regexCode(asciiDigitRe, code);
-}
-
-export bool asciiHexDigit(JsValue code) {
-  return regexCode(asciiHexDigitRe, code);
-}
-
-export bool asciiPunctuation(JsValue code) {
-  return regexCode(asciiPunctuationRe, code);
-}
+export func(JsValue)->bool asciiDigit = regexCheck(new Regex("\\d", ""));
+export func(JsValue)->bool asciiHexDigit = regexCheck(new Regex("[\\dA-Fa-f]", ""));
+export func(JsValue)->bool asciiPunctuation = regexCheck(new Regex("[!-/:-@[-`{-~]", ""));
 
 export bool markdownLineEnding(JsValue code) {
-  return JS.strictNotEqual(code, null) && JS.number(code) < -2.0;
+  return JS.strictNotEqual(code, null) && JS.lessThan(code, -2);
 }
 
 export bool markdownLineEndingOrSpace(JsValue code) {
-  return JS.strictNotEqual(code, null) && (JS.number(code) < 0.0 || JS.strictEqual(code, 32));
+  return JS.strictNotEqual(code, null) && (JS.lessThan(code, 0) || JS.strictEqual(code, 32));
 }
 
 export bool markdownSpace(JsValue code) {
   return JS.strictEqual(code, -2) || JS.strictEqual(code, -1) || JS.strictEqual(code, 32);
 }
 
-export bool unicodePunctuation(JsValue code) {
-  return regexCode(unicodePunctuationRe, code);
-}
-
-export bool unicodeWhitespace(JsValue code) {
-  return regexCode(unicodeWhitespaceRe, code);
-}
+export func(JsValue)->bool unicodePunctuation = regexCheck(new Regex("\\p{P}|\\p{S}", "u"));
+export func(JsValue)->bool unicodeWhitespace = regexCheck(new Regex("\\s", ""));

@@ -1,3 +1,3 @@
-import { fromMarkdownImpl } from "./from-markdown.lil";
+import { fromMarkdown } from "./from-markdown.lil";
 
-export JsValue fromMarkdown = fromMarkdownImpl;
+export { fromMarkdown };

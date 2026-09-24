@@ -1,25 +1,21 @@
-import { call1, isEof, makeConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { tLinePrefix } from "../symbol/types.lil";
 
 JsValue tokenizeBlankLine = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      return call1(ok, undef(), code);
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+  return JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, after, tLinePrefix, 0), undef(), code);
+      return JS.call(factorySpace(effects, after, tLinePrefix, JS.undefined()), JS.undefined(), code);
     }
-    return call1(after, undef(), code);
+    return JS.call(after, JS.undefined(), code);
   });
-
-  return start;
 });
 
-export JsValue blankLine = makeConstruct(tokenizeBlankLine);
-JS.set(blankLine, "partial", true);
+export JsValue blankLine = JS.object("partial", true, "tokenize", tokenizeBlankLine);

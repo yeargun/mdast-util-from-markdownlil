@@ -1,111 +1,91 @@
-import { arrLen, call1, eventEnter, eventExit, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from "../util-character.lil";
 import { splice } from "../util-chunked.lil";
 import { cNumberSign, codeEq } from "../symbol/codes.lil";
 import { kAtxHeadingOpeningFenceSizeMax, kContentTypeText } from "../symbol/constants.lil";
 import { tAtxHeading, tAtxHeadingSequence, tAtxHeadingText, tChunkText, tWhitespace } from "../symbol/types.lil";
-import { isEof } from "../host.lil";
 
 JsValue resolveHeadingAtx = JS.method2((JsValue _self, JsValue events, JsValue context) => {
-  int contentEnd = arrLen(events) - 2;
-  int contentStart = 3;
-  if (objGet(events[contentStart][1], "type") == tWhitespace) {
-    contentStart = contentStart + 2;
+  float contentEnd = events.length - 2.0;
+  float contentStart = 3.0;
+  if (JS.strictEqual(JS.get(events[contentStart][1], "type"), tWhitespace)) {
+    contentStart += 2.0;
   }
-  if (contentEnd - 2 > contentStart && objGet(events[contentEnd][1], "type") == tWhitespace) {
-    contentEnd = contentEnd - 2;
+  if (contentEnd - 2.0 > contentStart && JS.strictEqual(JS.get(events[contentEnd][1], "type"), tWhitespace)) {
+    contentEnd -= 2.0;
   }
-  if (objGet(events[contentEnd][1], "type") == tAtxHeadingSequence && (contentStart == contentEnd - 1 || (contentEnd - 4 > contentStart && objGet(events[contentEnd - 2][1], "type") == tWhitespace))) {
-    if (contentStart + 1 == contentEnd) {
-      contentEnd = contentEnd - 2;
-    } else {
-      contentEnd = contentEnd - 4;
-    }
+  if (JS.strictEqual(JS.get(events[contentEnd][1], "type"), tAtxHeadingSequence) && (contentStart == contentEnd - 1.0 || (contentEnd - 4.0 > contentStart && JS.strictEqual(JS.get(events[contentEnd - 2.0][1], "type"), tWhitespace)))) {
+    contentEnd -= if (contentStart + 1.0 == contentEnd) { 2.0 } else { 4.0 };
   }
   if (contentEnd > contentStart) {
-    JsValue content = JS.object();
-    JS.set(content, "type", tAtxHeadingText);
-    JS.set(content, "start", objGet(events[contentStart][1], "start"));
-    JS.set(content, "end", objGet(events[contentEnd][1], "end"));
-    JsValue text = JS.object();
-    JS.set(text, "type", tChunkText);
-    JS.set(text, "start", objGet(events[contentStart][1], "start"));
-    JS.set(text, "end", objGet(events[contentEnd][1], "end"));
-    JS.set(text, "contentType", kContentTypeText);
-    JsValue replacement = JS.array(
-      eventEnter(content, context),
-      eventEnter(text, context),
-      eventExit(text, context),
-      eventExit(content, context)
-    );
-    splice(events, contentStart, contentEnd - contentStart + 1, replacement);
+    JsValue content = JS.object("type", tAtxHeadingText, "start", JS.get(events[contentStart][1], "start"), "end", JS.get(events[contentEnd][1], "end"));
+    JsValue text = JS.object("type", tChunkText, "start", JS.get(events[contentStart][1], "start"), "end", JS.get(events[contentEnd][1], "end"), "contentType", kContentTypeText);
+    splice(events, contentStart, contentEnd - contentStart + 1.0, JS.array(JS.array("enter", content, context), JS.array("enter", text, context), JS.array("exit", text, context), JS.array("exit", content, context)));
   }
   return events;
 });
 
 JsValue tokenizeHeadingAtx = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  int size = 0;
-  JsValue atBreak = undef();
+  float size = 0.0;
+  JsValue sequenceOpen = JS.undefined();
+  JsValue atBreak = JS.undefined();
+  JsValue sequenceFurther = JS.undefined();
+  JsValue data = JS.undefined();
 
-  JsValue data = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || codeEq(code, cNumberSign) || markdownLineEndingOrSpace(code)) {
-      call1(objGet(effects, "exit"), effects, tAtxHeadingText);
-      return call1(atBreak, undef(), code);
-    }
-    call1(objGet(effects, "consume"), effects, code);
-    return data;
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tAtxHeading);
+    JS.invoke(effects, "enter", tAtxHeadingSequence);
+    return JS.call(sequenceOpen, JS.undefined(), code);
   });
 
-  JsValue sequenceFurther = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cNumberSign)) {
-      call1(objGet(effects, "consume"), effects, code);
-      return sequenceFurther;
+  sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cNumberSign) && size < kAtxHeadingOpeningFenceSizeMax) {
+      size++;
+      JS.invoke(effects, "consume", code);
+      return sequenceOpen;
     }
-    call1(objGet(effects, "exit"), effects, tAtxHeadingSequence);
-    return call1(atBreak, undef(), code);
+    if (JS.strictEqual(code, null) || markdownLineEndingOrSpace(code)) {
+      JS.invoke(effects, "exit", tAtxHeadingSequence);
+      return JS.call(atBreak, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
   atBreak = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cNumberSign)) {
-      call1(objGet(effects, "enter"), effects, tAtxHeadingSequence);
-      return call1(sequenceFurther, undef(), code);
+      JS.invoke(effects, "enter", tAtxHeadingSequence);
+      return JS.call(sequenceFurther, JS.undefined(), code);
     }
-    if (isEof(code) || markdownLineEnding(code)) {
-      call1(objGet(effects, "exit"), effects, tAtxHeading);
-      return call1(ok, undef(), code);
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      JS.invoke(effects, "exit", tAtxHeading);
+      return JS.call(ok, JS.undefined(), code);
     }
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, atBreak, tWhitespace, 0), undef(), code);
+      return JS.call(factorySpace(effects, atBreak, tWhitespace, JS.undefined()), JS.undefined(), code);
     }
-    call1(objGet(effects, "enter"), effects, tAtxHeadingText);
-    return call1(data, undef(), code);
+    JS.invoke(effects, "enter", tAtxHeadingText);
+    return JS.call(data, JS.undefined(), code);
   });
 
-  JsValue sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cNumberSign) && size < kAtxHeadingOpeningFenceSizeMax) {
-      size = size + 1;
-      call1(objGet(effects, "consume"), effects, code);
-      return sequenceOpen;
+  sequenceFurther = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cNumberSign)) {
+      JS.invoke(effects, "consume", code);
+      return sequenceFurther;
     }
-    if (isEof(code) || markdownLineEndingOrSpace(code)) {
-      call1(objGet(effects, "exit"), effects, tAtxHeadingSequence);
-      return call1(atBreak, undef(), code);
-    }
-    return call1(nok, undef(), code);
+    JS.invoke(effects, "exit", tAtxHeadingSequence);
+    return JS.call(atBreak, JS.undefined(), code);
   });
 
-  JsValue before = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tAtxHeadingSequence);
-    return call1(sequenceOpen, undef(), code);
-  });
-
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tAtxHeading);
-    return call1(before, undef(), code);
+  data = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || codeEq(code, cNumberSign) || markdownLineEndingOrSpace(code)) {
+      JS.invoke(effects, "exit", tAtxHeadingText);
+      return JS.call(atBreak, JS.undefined(), code);
+    }
+    JS.invoke(effects, "consume", code);
+    return data;
   });
 
   return start;
 });
 
-export JsValue headingAtx = JS.object("name", "headingAtx", "tokenize", tokenizeHeadingAtx, "resolve", resolveHeadingAtx);
+export JsValue headingAtx = JS.object("name", "headingAtx", "resolve", resolveHeadingAtx, "tokenize", tokenizeHeadingAtx);

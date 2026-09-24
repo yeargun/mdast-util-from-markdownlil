@@ -1,31 +1,31 @@
 {
   "schemaVersion": 1,
   "name": "mdast-util-from-markdownlil",
-  "startedAt": "2026-09-10T20:41:24Z",
+  "startedAt": "2026-09-24T04:21:47Z",
   "machine": {
     "provider": "Azure",
-    "instanceClass": "Standard_D16als_v7",
-    "cpu": "AMD EPYC 9V45 96-Core Processor",
-    "logicalCpus": 16,
-    "memoryBytes": 33648431104,
-    "os": "Ubuntu 24.04.4 LTS",
-    "kernel": "6.17.0-1022-azure",
+    "instanceClass": "Standard_B8als_v2",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "logicalCpus": 8,
+    "memoryBytes": 16706420736,
+    "os": "Ubuntu 24.04.3 LTS",
+    "kernel": "7.0.0-1014-azure",
     "node": "v24.11.1",
     "rayonThreads": 8,
     "loadAtStart": [
-      3.4345703125,
-      2.51220703125,
-      2.1787109375
+      1.02490234375,
+      1.255859375,
+      2.55859375
     ],
     "loadAtEnd": [
-      2.39013671875,
-      4.65087890625,
-      3.646484375
+      1.896484375,
+      1.43408203125,
+      2.54248046875
     ]
   },
   "compiler": {
-    "commit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
-    "sha256": "0616048498eb9eb2e4bd75b39e8e6a083733ada647e16108edfee30ad183beeb"
+    "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
+    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
   },
   "source": {
     "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
@@ -35,8 +35,9 @@
     "directory": "."
   },
   "portSource": {
-    "commit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c"
+    "commit": "5c5cc8f plus the release working tree (committed together with these records)"
   },
+  "prerequisiteAdjustments": null,
   "steps": {
     "original-install": {
       "command": [
@@ -47,29 +48,13 @@
         "--no-fund"
       ],
       "cwd": "upstream",
-      "wallSeconds": 6.224688074999904,
-      "cpuSeconds": 7.489866,
+      "wallSeconds": 19.10554032100481,
+      "cpuSeconds": 17.282262,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-install.log",
-      "logSha256": "f6e36e83224e48d1daa31a046b8935dac47d3e90265b9cc891b1779e983ebde4",
-      "tail": "npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\nnpm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n\nadded 855 packages in 6s\n"
-    },
-    "lilscript-install": {
-      "command": [
-        "npm",
-        "ci",
-        "--no-audit",
-        "--no-fund"
-      ],
-      "cwd": "port",
-      "wallSeconds": 0.46447321199957514,
-      "cpuSeconds": 0.6290890000000005,
-      "exitCode": 0,
-      "timedOut": false,
-      "log": "lilscript-install.log",
-      "logSha256": "d7737d0c586de2a2e8476b56dd5bd6380ff0bae3c1e9fa5d671a6249b0c1155f",
-      "tail": "\nadded 67 packages in 379ms\n"
+      "logSha256": "8ef3967dea729d567679e4a5763721b4c50f5f04b58610051905cee449bcc706",
+      "tail": "npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\nnpm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n\nadded 855 packages in 19s\n"
     },
     "original-build-1": {
       "command": [
@@ -78,8 +63,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.172270572000343,
-      "cpuSeconds": 7.472278999999999,
+      "wallSeconds": 8.540216777997557,
+      "cpuSeconds": 14.955217999999999,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-1.log",
@@ -93,8 +78,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 162.5782534330001,
-      "cpuSeconds": 294.686902,
+      "wallSeconds": 1.366876267005864,
+      "cpuSeconds": 1.3509590000000022,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-1.log",
@@ -103,35 +88,35 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789072895.2691853,
-          "wallSeconds": 81.02375650405884,
+          "startedAt": 1790223735.492942,
+          "wallSeconds": 0.6214094161987305,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789072976.3167496,
-          "wallSeconds": 81.39211702346802,
+          "startedAt": 1790223736.1514266,
+          "wallSeconds": 0.609752893447876,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     },
@@ -142,8 +127,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 187.7489388139993,
-      "cpuSeconds": 347.795208,
+      "wallSeconds": 1.366703414998483,
+      "cpuSeconds": 1.3466679999999958,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-2.log",
@@ -152,35 +137,35 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789073057.8723645,
-          "wallSeconds": 104.70309853553772,
+          "startedAt": 1790223736.8590615,
+          "wallSeconds": 0.6125972270965576,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789073162.6049032,
-          "wallSeconds": 82.88351964950562,
+          "startedAt": 1790223737.5088513,
+          "wallSeconds": 0.6057300567626953,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     },
@@ -191,8 +176,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.975597206000202,
-      "cpuSeconds": 9.208415000000088,
+      "wallSeconds": 8.181539725999755,
+      "cpuSeconds": 13.942072,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-2.log",
@@ -206,8 +191,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.522569471000679,
-      "cpuSeconds": 8.391326000000099,
+      "wallSeconds": 8.63449308899726,
+      "cpuSeconds": 15.145434,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-3.log",
@@ -221,8 +206,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 161.086118231,
-      "cpuSeconds": 293.86639800000006,
+      "wallSeconds": 1.3669506250007544,
+      "cpuSeconds": 1.3524670000000025,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-3.log",
@@ -231,48 +216,48 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789073255.1042576,
-          "wallSeconds": 84.77222466468811,
+          "startedAt": 1790223755.0515716,
+          "wallSeconds": 0.6208934783935547,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789073339.9043036,
-          "wallSeconds": 76.1864128112793,
+          "startedAt": 1790223755.710315,
+          "wallSeconds": 0.6001296043395996,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     },
     "original-esm": {
       "command": [
         "node",
-        "/home/lilfarm/source-perf-20260910/tools/source-esm.mjs",
-        "/home/lilfarm/source-perf-20260910",
+        "/home/azureuser/lilscript-work/release-m2/mdast-util-from-markdownlil/source-build/tools/source-esm.mjs",
+        "/home/azureuser/lilscript-work/release-m2/mdast-util-from-markdownlil/source-build",
         "mdast-util-from-markdownlil"
       ],
       "cwd": "upstream",
-      "wallSeconds": 1.5167257510001946,
-      "cpuSeconds": 2.635242999999872,
+      "wallSeconds": 3.0712802350026323,
+      "cpuSeconds": 5.151648999999995,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-esm.log",
@@ -283,16 +268,16 @@
       "command": [
         "bash",
         "-c",
-        "npm run check:types && node --test test/*.test.mjs test/official/index.js"
+        "npm run check:types && node --test test/from-markdown.test.mjs test/package.test.mjs test/official/index.js"
       ],
       "cwd": "port",
-      "wallSeconds": 1.0660404170002948,
-      "cpuSeconds": 2.7130929999999545,
+      "wallSeconds": 3.7364868509976077,
+      "cpuSeconds": 6.164924000000006,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-tests.log",
-      "logSha256": "53fe3153d7b5d91575eedf3384a39a6a8a2f986af57c2c5d0b40cfe32105838c",
-      "tail": " \u2714 Links (558) (0.39884ms)\n  \u2714 Links (559) (0.235815ms)\n  \u2714 Links (560) (0.22586ms)\n  \u2714 Links (561) (0.234483ms)\n  \u2714 Links (562) (0.204939ms)\n  \u2714 Links (563) (0.230838ms)\n  \u2714 Links (564) (0.263828ms)\n  \u2714 Links (565) (0.208093ms)\n  \u2714 Links (566) (0.282455ms)\n  \u2714 Links (567) (0.22616ms)\n  \u2714 Links (568) (0.265289ms)\n  \u2714 Links (569) (0.314063ms)\n  \u2714 Links (570) (0.293662ms)\n  \u2714 Images (571) (0.210147ms)\n  \u2714 Images (572) (0.406963ms)\n  \u2714 Images (573) (0.251188ms)\n  \u2714 Images (574) (0.292671ms)\n  \u2714 Images (575) (0.286372ms)\n  \u2714 Images (576) (0.330968ms)\n  \u2714 Images (577) (0.180892ms)\n  \u2714 Images (578) (0.238239ms)\n  \u2714 Images (579) (0.2724ms)\n  \u2714 Images (580) (0.199601ms)\n  \u2714 Images (581) (0.252981ms)\n  \u2714 Images (582) (0.216206ms)\n  \u2714 Images (583) (0.249065ms)\n  \u2714 Images (584) (0.246721ms)\n  \u2714 Images (585) (0.213692ms)\n  \u2714 Images (586) (0.260553ms)\n  \u2714 Images (587) (0.259441ms)\n  \u2714 Images (588) (0.254874ms)\n  \u2714 Images (589) (0.219741ms)\n  \u2714 Images (590) (0.230567ms)\n  \u2714 Images (591) (0.237738ms)\n  \u2714 Images (592) (0.229195ms)\n  \u2714 Autolinks (593) (3.329506ms)\n  \u2714 Autolinks (594) (0.246241ms)\n  \u2714 Autolinks (595) (0.115674ms)\n  \u2714 Autolinks (596) (0.087101ms)\n  \u2714 Autolinks (597) (0.077306ms)\n  \u2714 Autolinks (598) (0.087532ms)\n  \u2714 Autolinks (599) (0.071467ms)\n  \u2714 Autolinks (600) (0.072659ms)\n  \u2714 Autolinks (601) (0.085659ms)\n  \u2714 Autolinks (602) (0.083566ms)\n  \u2714 Autolinks (603) (0.088584ms)\n  \u2714 Autolinks (604) (0.100492ms)\n  \u2714 Autolinks (605) (0.108364ms)\n  \u2714 Autolinks (606) (0.074412ms)\n  \u2714 Autolinks (607) (0.089495ms)\n  \u2714 Autolinks (608) (0.067612ms)\n  \u2714 Autolinks (609) (0.069215ms)\n  \u2714 Autolinks (610) (0.058849ms)\n  \u2714 Autolinks (611) (0.060371ms)\n  \u2714 Raw HTML (612) (0.155644ms)\n  \u2714 Raw HTML (613) (0.15229ms)\n  \u2714 Raw HTML (614) (0.145399ms)\n  \u2714 Raw HTML (615) (0.397659ms)\n  \u2714 Raw HTML (616) (0.162335ms)\n  \u2714 Raw HTML (617) (0.131629ms)\n  \u2714 Raw HTML (618) (0.130808ms)\n  \u2714 Raw HTML (619) (0.108754ms)\n  \u2714 Raw HTML (620) (0.186501ms)\n  \u2714 Raw HTML (621) (0.098278ms)\n  \u2714 Raw HTML (622) (0.134312ms)\n  \u2714 Raw HTML (623) (0.093531ms)\n  \u2714 Raw HTML (624) (0.189986ms)\n  \u2714 Raw HTML (625) (0.207192ms)\n  \u2714 Raw HTML (626) (0.103846ms)\n  \u2714 Raw HTML (627) (0.107241ms)\n  \u2714 Raw HTML (628) (0.1659ms)\n  \u2714 Raw HTML (629) (0.114924ms)\n  \u2714 Raw HTML (630) (0.122044ms)\n  \u2714 Raw HTML (631) (0.13285ms)\n  \u2714 Hard line breaks (632) (0.110747ms)\n  \u2714 Hard line breaks (633) (0.084247ms)\n  \u2714 Hard line breaks (634) (0.079109ms)\n  \u2714 Hard line breaks (635) (0.103506ms)\n  \u2714 Hard line breaks (636) (0.084478ms)\n  \u2714 Hard line breaks (637) (0.136425ms)\n  \u2714 Hard line breaks (638) (0.110446ms)\n  \u2714 Hard line breaks (639) (0.142214ms)\n  \u2714 Hard line breaks (640) (0.144087ms)\n  \u2714 Hard line breaks (641) (0.120882ms)\n  \u2714 Hard line breaks (642) (0.100792ms)\n  \u2714 Hard line breaks (643) (0.085459ms)\n  \u2714 Hard line breaks (644) (0.061783ms)\n  \u2714 Hard line breaks (645) (0.077046ms)\n  \u2714 Hard line breaks (646) (0.075834ms)\n  \u2714 Soft line breaks (647) (0.076305ms)\n  \u2714 Soft line breaks (648) (0.065729ms)\n  \u2714 Textual content (649) (0.076385ms)\n  \u2714 Textual content (650) (0.067141ms)\n  \u2714 Textual content (651) (0.084558ms)\n\u2714 commonmark (185.828074ms)\n\u25b6 package artifacts\n  \u2714 loads the ESM and CommonJS exports (8.442978ms)\n  \u2714 loads the closed export (4.482172ms)\n  \u2714 exposes a callable UMD global (5.143568ms)\n\u2714 package artifacts (18.605077ms)\n\u25b6 site\n  \u2714 has a markedlil-style lab with receipts (0.586694ms)\n\u2714 site (1.019746ms)\n\u2139 tests 744\n\u2139 suites 6\n\u2139 pass 744\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 403.205859\n"
+      "logSha256": "0987ca57ecef08f13b550dd34095a8dc93a39c879ccff1290d22edf85ba6747b",
+      "tail": "s (555) (0.703137ms)\n  ✔ Links (556) (0.590476ms)\n  ✔ Links (557) (0.603781ms)\n  ✔ Links (558) (3.684253ms)\n  ✔ Links (559) (0.533951ms)\n  ✔ Links (560) (0.523621ms)\n  ✔ Links (561) (0.567132ms)\n  ✔ Links (562) (0.368972ms)\n  ✔ Links (563) (3.62885ms)\n  ✔ Links (564) (0.648936ms)\n  ✔ Links (565) (0.561933ms)\n  ✔ Links (566) (0.513793ms)\n  ✔ Links (567) (4.172989ms)\n  ✔ Links (568) (0.641061ms)\n  ✔ Links (569) (0.785862ms)\n  ✔ Links (570) (0.534682ms)\n  ✔ Images (571) (0.469169ms)\n  ✔ Images (572) (0.928399ms)\n  ✔ Images (573) (0.62976ms)\n  ✔ Images (574) (0.586419ms)\n  ✔ Images (575) (0.706674ms)\n  ✔ Images (576) (0.776696ms)\n  ✔ Images (577) (0.495789ms)\n  ✔ Images (578) (0.564808ms)\n  ✔ Images (579) (0.545823ms)\n  ✔ Images (580) (0.410409ms)\n  ✔ Images (581) (0.56544ms)\n  ✔ Images (582) (0.587902ms)\n  ✔ Images (583) (0.571831ms)\n  ✔ Images (584) (0.585026ms)\n  ✔ Images (585) (0.600024ms)\n  ✔ Images (586) (0.823934ms)\n  ✔ Images (587) (0.585798ms)\n  ✔ Images (588) (0.664685ms)\n  ✔ Images (589) (0.523511ms)\n  ✔ Images (590) (0.531125ms)\n  ✔ Images (591) (2.037999ms)\n  ✔ Images (592) (0.573274ms)\n  ✔ Autolinks (593) (0.368861ms)\n  ✔ Autolinks (594) (0.424725ms)\n  ✔ Autolinks (595) (0.332102ms)\n  ✔ Autolinks (596) (0.348583ms)\n  ✔ Autolinks (597) (0.327804ms)\n  ✔ Autolinks (598) (0.348654ms)\n  ✔ Autolinks (599) (0.326943ms)\n  ✔ Autolinks (600) (0.35751ms)\n  ✔ Autolinks (601) (0.32033ms)\n  ✔ Autolinks (602) (0.361077ms)\n  ✔ Autolinks (603) (0.376315ms)\n  ✔ Autolinks (604) (0.360575ms)\n  ✔ Autolinks (605) (0.396693ms)\n  ✔ Autolinks (606) (0.320851ms)\n  ✔ Autolinks (607) (0.296977ms)\n  ✔ Autolinks (608) (0.324097ms)\n  ✔ Autolinks (609) (0.286888ms)\n  ✔ Autolinks (610) (0.237915ms)\n  ✔ Autolinks (611) (0.253986ms)\n  ✔ Raw HTML (612) (0.494206ms)\n  ✔ Raw HTML (613) (0.423724ms)\n  ✔ Raw HTML (614) (0.43746ms)\n  ✔ Raw HTML (615) (1.284717ms)\n  ✔ Raw HTML (616) (0.460533ms)\n  ✔ Raw HTML (617) (0.392896ms)\n  ✔ Raw HTML (618) (0.381204ms)\n  ✔ Raw HTML (619) (0.411862ms)\n  ✔ Raw HTML (620) (3.461867ms)\n  ✔ Raw HTML (621) (0.401291ms)\n  ✔ Raw HTML (622) (0.376856ms)\n  ✔ Raw HTML (623) (1.274719ms)\n  ✔ Raw HTML (624) (0.522419ms)\n  ✔ Raw HTML (625) (0.623048ms)\n  ✔ Raw HTML (626) (0.350216ms)\n  ✔ Raw HTML (627) (0.410589ms)\n  ✔ Raw HTML (628) (0.502722ms)\n  ✔ Raw HTML (629) (0.413054ms)\n  ✔ Raw HTML (630) (0.338685ms)\n  ✔ Raw HTML (631) (0.384701ms)\n  ✔ Hard line breaks (632) (0.340358ms)\n  ✔ Hard line breaks (633) (0.303219ms)\n  ✔ Hard line breaks (634) (0.33065ms)\n  ✔ Hard line breaks (635) (0.300222ms)\n  ✔ Hard line breaks (636) (0.273443ms)\n  ✔ Hard line breaks (637) (0.460973ms)\n  ✔ Hard line breaks (638) (0.324408ms)\n  ✔ Hard line breaks (639) (0.395341ms)\n  ✔ Hard line breaks (640) (0.412563ms)\n  ✔ Hard line breaks (641) (0.374763ms)\n  ✔ Hard line breaks (642) (0.35214ms)\n  ✔ Hard line breaks (643) (0.221114ms)\n  ✔ Hard line breaks (644) (0.241312ms)\n  ✔ Hard line breaks (645) (0.226584ms)\n  ✔ Hard line breaks (646) (0.265908ms)\n  ✔ Soft line breaks (647) (1.324651ms)\n  ✔ Soft line breaks (648) (0.301045ms)\n  ✔ Textual content (649) (0.233137ms)\n  ✔ Textual content (650) (2.183782ms)\n  ✔ Textual content (651) (0.22442ms)\n✔ commonmark (722.48872ms)\n▶ package artifacts\n  ✔ loads the ESM and CommonJS exports (50.140851ms)\n  ✔ loads the closed export (36.315133ms)\n  ✔ exposes a callable UMD global (22.472858ms)\n✔ package artifacts (115.531493ms)\nℹ tests 743\nℹ suites 5\nℹ pass 743\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1793.861137\n"
     }
   },
   "nativeBuilds": [
@@ -303,8 +288,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.172270572000343,
-      "cpuSeconds": 7.472278999999999,
+      "wallSeconds": 8.540216777997557,
+      "cpuSeconds": 14.955217999999999,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-1.log",
@@ -318,8 +303,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.975597206000202,
-      "cpuSeconds": 9.208415000000088,
+      "wallSeconds": 8.181539725999755,
+      "cpuSeconds": 13.942072,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-2.log",
@@ -333,8 +318,8 @@
         "build"
       ],
       "cwd": "upstream",
-      "wallSeconds": 4.522569471000679,
-      "cpuSeconds": 8.391326000000099,
+      "wallSeconds": 8.63449308899726,
+      "cpuSeconds": 15.145434,
       "exitCode": 0,
       "timedOut": false,
       "log": "original-build-3.log",
@@ -350,8 +335,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 162.5782534330001,
-      "cpuSeconds": 294.686902,
+      "wallSeconds": 1.366876267005864,
+      "cpuSeconds": 1.3509590000000022,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-1.log",
@@ -360,35 +345,35 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789072895.2691853,
-          "wallSeconds": 81.02375650405884,
+          "startedAt": 1790223735.492942,
+          "wallSeconds": 0.6214094161987305,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789072976.3167496,
-          "wallSeconds": 81.39211702346802,
+          "startedAt": 1790223736.1514266,
+          "wallSeconds": 0.609752893447876,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     },
@@ -399,8 +384,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 187.7489388139993,
-      "cpuSeconds": 347.795208,
+      "wallSeconds": 1.366703414998483,
+      "cpuSeconds": 1.3466679999999958,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-2.log",
@@ -409,35 +394,35 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789073057.8723645,
-          "wallSeconds": 104.70309853553772,
+          "startedAt": 1790223736.8590615,
+          "wallSeconds": 0.6125972270965576,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789073162.6049032,
-          "wallSeconds": 82.88351964950562,
+          "startedAt": 1790223737.5088513,
+          "wallSeconds": 0.6057300567626953,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     },
@@ -448,8 +433,8 @@
         "node scripts/build.mjs --compile --force"
       ],
       "cwd": "port",
-      "wallSeconds": 161.086118231,
-      "cpuSeconds": 293.86639800000006,
+      "wallSeconds": 1.3669506250007544,
+      "cpuSeconds": 1.3524670000000025,
       "exitCode": 0,
       "timedOut": false,
       "log": "lilscript-build-3.log",
@@ -458,35 +443,35 @@
       "invocations": [
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js"
           ],
-          "startedAt": 1789073255.1042576,
-          "wallSeconds": 84.77222466468811,
+          "startedAt": 1790223755.0515716,
+          "wallSeconds": 0.6208934783935547,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
-          "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.raw.js",
+          "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
         },
         {
           "args": [
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/src/entry.lil",
+            "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
             "--target",
             "js-module",
             "--config",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/lilscript.closed.toml",
+            "/home/azureuser/mdast-util-from-markdownlil/lilscript.closed.toml",
             "-o",
-            "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
+            "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js"
           ],
-          "startedAt": 1789073339.9043036,
-          "wallSeconds": 76.1864128112793,
+          "startedAt": 1790223755.710315,
+          "wallSeconds": 0.6001296043395996,
           "exitCode": 0,
-          "output": "/home/lilfarm/source-perf-20260910/ports/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
-          "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+          "output": "/home/azureuser/mdast-util-from-markdownlil/dist/from-markdown.closed.js",
+          "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
         }
       ]
     }
@@ -496,7 +481,7 @@
     "cleanOutputs": true,
     "dependencyInstallationTimedSeparately": true,
     "sourceArchives": "Pinned Git checkouts; original repository package build commands, followed by production ESM assembly.",
-    "workerUse": "Both implementations use the same machine and Node version. This shared build pool also runs unrelated jobs; timings are contextual wall times, with CPU time recorded separately."
+    "workerUse": "Both implementations use the same machine and Node version. The host is a burstable Azure VM and other sessions compiled on it during the run; timings are contextual wall times, with CPU time recorded separately."
   },
   "esm": {
     "source": {
@@ -511,19 +496,19 @@
     "external": [],
     "samples": [
       {
-        "bundleSeconds": 0.016506496,
-        "wallSeconds": 0.37165344999999994
+        "bundleSeconds": 0.030697058000000013,
+        "wallSeconds": 0.7769688499999999
       },
       {
-        "bundleSeconds": 0.011899174999999956,
-        "wallSeconds": 0.2808560219999999
+        "bundleSeconds": 0.021956436000000055,
+        "wallSeconds": 0.5548147030000001
       },
       {
-        "bundleSeconds": 0.01166028499999993,
-        "wallSeconds": 0.267484839
+        "bundleSeconds": 0.021324898000000075,
+        "wallSeconds": 0.6318341480000002
       }
     ],
-    "medianSeconds": 0.2808560219999999,
+    "medianSeconds": 0.6318341480000002,
     "toolchain": {
       "esbuild": "0.28.1",
       "terser": "5.51.2"
@@ -623,63 +608,63 @@
   },
   "lilscriptArtifacts": [
     {
-      "path": "dist/from-markdown.esm.js",
-      "raw": 87437,
-      "gzip9": 29993,
-      "brotli11": 25455,
-      "sha256": "c9271244938542f1285792688d7873f777903782e1fb9b5cf2db83e4e57a4104"
+      "path": "dist/from-markdown.umd.js",
+      "raw": 71847,
+      "gzip9": 26434,
+      "brotli11": 22353,
+      "sha256": "2189c5bbd37489a625f40d1ef5250a7254c4c56be31dfbeba0ed06b330b9011c"
     },
     {
       "path": "dist/from-markdown.raw.js",
-      "raw": 87327,
-      "gzip9": 29914,
-      "brotli11": 25365,
-      "sha256": "ac026dbe78561b9a46c599dde7123165a3c7e55e722578100b970f4ec10542bc"
+      "raw": 71692,
+      "gzip9": 26339,
+      "brotli11": 22287,
+      "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
     },
     {
       "path": "dist/from-markdown.closed.js",
-      "raw": 88790,
-      "gzip9": 30415,
-      "brotli11": 25806,
-      "sha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
-    },
-    {
-      "path": "dist/from-markdown.umd.js",
-      "raw": 102220,
-      "gzip9": 32100,
-      "brotli11": 27151,
-      "sha256": "f9491b5c7750950f6aabd0f5e1604999895fa00c863a5d283cc3c544458c9c75"
+      "raw": 74024,
+      "gzip9": 26504,
+      "brotli11": 22380,
+      "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
     },
     {
       "path": "dist/from-markdown.cjs",
-      "raw": 102113,
-      "gzip9": 32039,
-      "brotli11": 27094,
-      "sha256": "1c21c8f864a757b0a46e96c31807aef4c2e48a1bd9419323c6ed447e67ff14fb"
+      "raw": 71824,
+      "gzip9": 26428,
+      "brotli11": 22374,
+      "sha256": "c5a52501c434e209bc900708ef1947dbb0d5bf6c408df3d48599b23ca17c98e5"
+    },
+    {
+      "path": "dist/from-markdown.esm.js",
+      "raw": 71802,
+      "gzip9": 26411,
+      "brotli11": 22308,
+      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
     }
   ],
   "nativeBuildsSummary": {
     "samples": 3,
     "successful": 3,
-    "medianSeconds": 4.522569471000679,
-    "minimumSeconds": 4.172270572000343,
-    "maximumSeconds": 4.975597206000202
+    "medianSeconds": 8.540216777997557,
+    "minimumSeconds": 8.181539725999755,
+    "maximumSeconds": 8.63449308899726
   },
   "lilscriptBuildsSummary": {
     "samples": 3,
     "successful": 3,
-    "medianSeconds": 162.5782534330001,
-    "minimumSeconds": 161.086118231,
-    "maximumSeconds": 187.7489388139993
+    "medianSeconds": 1.366876267005864,
+    "minimumSeconds": 1.366703414998483,
+    "maximumSeconds": 1.3669506250007544
   },
   "status": "complete",
-  "finishedAt": "2026-09-10T20:50:19Z",
+  "finishedAt": "2026-09-24T04:22:43Z",
   "sourceBuild": {
     "original": {
       "complete": true,
-      "medianSeconds": 4.522569471000679,
-      "minimumSeconds": 4.172270572000343,
-      "maximumSeconds": 4.975597206000202,
+      "medianSeconds": 8.540216777997557,
+      "minimumSeconds": 8.181539725999755,
+      "maximumSeconds": 8.63449308899726,
       "samples": [
         {
           "command": [
@@ -687,8 +672,8 @@
             "run",
             "build"
           ],
-          "wallSeconds": 4.172270572000343,
-          "cpuSeconds": 7.472278999999999,
+          "wallSeconds": 8.540216777997557,
+          "cpuSeconds": 14.955217999999999,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-1.log",
@@ -700,8 +685,8 @@
             "run",
             "build"
           ],
-          "wallSeconds": 4.975597206000202,
-          "cpuSeconds": 9.208415000000088,
+          "wallSeconds": 8.181539725999755,
+          "cpuSeconds": 13.942072,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-2.log",
@@ -713,8 +698,8 @@
             "run",
             "build"
           ],
-          "wallSeconds": 4.522569471000679,
-          "cpuSeconds": 8.391326000000099,
+          "wallSeconds": 8.63449308899726,
+          "cpuSeconds": 15.145434,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-3.log",
@@ -724,9 +709,9 @@
     },
     "lilscript": {
       "complete": true,
-      "medianSeconds": 162.5782534330001,
-      "minimumSeconds": 161.086118231,
-      "maximumSeconds": 187.7489388139993,
+      "medianSeconds": 1.366876267005864,
+      "minimumSeconds": 1.366703414998483,
+      "maximumSeconds": 1.3669506250007544,
       "samples": [
         {
           "command": [
@@ -734,8 +719,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 162.5782534330001,
-          "cpuSeconds": 294.686902,
+          "wallSeconds": 1.366876267005864,
+          "cpuSeconds": 1.3509590000000022,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-1.log",
@@ -747,8 +732,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 187.7489388139993,
-          "cpuSeconds": 347.795208,
+          "wallSeconds": 1.366703414998483,
+          "cpuSeconds": 1.3466679999999958,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-2.log",
@@ -760,8 +745,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 161.086118231,
-          "cpuSeconds": 293.86639800000006,
+          "wallSeconds": 1.3669506250007544,
+          "cpuSeconds": 1.3524670000000025,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-3.log",
@@ -769,10 +754,9 @@
         }
       ]
     },
-    "scopeNote": "Both timings cover each repository\u2019s package build command; their output formats and build checks can differ.",
+    "scopeNote": "Both timings cover each repository’s package build command; their output formats and build checks can differ.",
     "cleanOutputs": true,
     "installationExcluded": true
   },
-  "prerequisiteAdjustments": null,
   "recordRepository": "https://github.com/yeargun/mdast-util-from-markdownlil/tree/main/comparison/source-build"
 }

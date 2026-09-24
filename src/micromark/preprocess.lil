@@ -1,6 +1,4 @@
-import { codeEof, decodeBytes, MathRef, push } from "./host.lil";
-import { cByteOrderMarker, cCarriageReturn, cCarriageReturnLineFeed, cCr, cHorizontalTab, cHt, cLf, cLineFeed, cNul, cReplacementCharacter, cVirtualSpace } from "./symbol/codes.lil";
-import { kTabSize } from "./symbol/constants.lil";
+extern JsValue TextDecoder;
 
 export JsValue preprocess() {
   float column = 1.0;
@@ -10,57 +8,56 @@ export JsValue preprocess() {
 
   return JS.method3((JsValue _self, JsValue value, JsValue encoding, JsValue end) => {
     JsValue[] chunks = [];
-    string text = buffer + decodeBytes(value, encoding);
+    string decoded = JS.assume(if (JS.typeOf(value) == "string") { value } else { JS.invoke(JS.construct(TextDecoder, JS.or(encoding, JS.undefined())), "decode", value) });
+    string text = buffer + decoded;
     int startPosition = 0;
     buffer = "";
     if (start) {
-      if (text.length > 0 && text.charCodeAt(0) == cByteOrderMarker) {
+      if (JS.strictEqual(JS.invoke(text, "charCodeAt", 0), 65279)) {
         startPosition = 1;
       }
       start = false;
     }
-    int n = text.length;
-    while (startPosition < n) {
+    while (startPosition < text.length) {
       int endPosition = startPosition;
-      int found = -1;
-      while (endPosition < n) {
+      int code = -1;
+      while (endPosition < text.length) {
         int ch = text.charCodeAt(endPosition);
-        if (ch == cNul || ch == cHt || ch == cLf || ch == cCr) {
-          found = ch;
+        if (ch == 0 || ch == 9 || ch == 10 || ch == 13) {
+          code = ch;
           break;
         }
-        endPosition = endPosition + 1;
+        endPosition++;
       }
-      if (found < 0) {
+      if (code < 0) {
         buffer = text.slice(startPosition);
         break;
       }
-      int code = found;
-      if (code == cLf && startPosition == endPosition && atCarriageReturn) {
-        push(chunks, cCarriageReturnLineFeed);
+      if (code == 10 && startPosition == endPosition && atCarriageReturn) {
+        chunks.push(-3);
         atCarriageReturn = false;
       } else {
         if (atCarriageReturn) {
-          push(chunks, cCarriageReturn);
+          chunks.push(-5);
           atCarriageReturn = false;
         }
         if (startPosition < endPosition) {
-          push(chunks, text.slice(startPosition, endPosition));
+          chunks.push(text.slice(startPosition, endPosition));
           column = column + (endPosition - startPosition);
         }
-        if (code == cNul) {
-          push(chunks, cReplacementCharacter);
-          column = column + 1.0;
-        } else if (code == cHt) {
-          float next = JS.number(JS.call(JS.get(MathRef, "ceil"), MathRef, column / JS.number(kTabSize))) * JS.number(kTabSize);
-          push(chunks, cHorizontalTab);
+        if (code == 0) {
+          chunks.push(65533);
+          column++;
+        } else if (code == 9) {
+          float next = (column / 4.0).ceil() * 4.0;
+          chunks.push(-2);
           while (column < next) {
-            push(chunks, cVirtualSpace);
-            column = column + 1.0;
+            chunks.push(-1);
+            column++;
           }
-          column = column + 1.0;
-        } else if (code == cLf) {
-          push(chunks, cLineFeed);
+          column++;
+        } else if (code == 10) {
+          chunks.push(-4);
           column = 1.0;
         } else {
           atCarriageReturn = true;
@@ -71,12 +68,12 @@ export JsValue preprocess() {
     }
     if (end.truthy()) {
       if (atCarriageReturn) {
-        push(chunks, cCarriageReturn);
+        chunks.push(-5);
       }
       if (buffer.length > 0) {
-        push(chunks, buffer);
+        chunks.push(buffer);
       }
-      push(chunks, codeEof);
+      chunks.push(null);
     }
     return chunks;
   });

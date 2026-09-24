@@ -128,7 +128,9 @@ describe("pins", () => {
     const src = readFileSync(resolve(root, "dist/from-markdown.esm.js"), "utf8")
     assert.match(src, /mdastExtensions/)
     assert.match(src, /extensions/)
-    assert.match(src, / as fromMarkdown/)
+    // The public export: `export{x as fromMarkdown}` or, when the compiler names
+    // the binding after it, `export{fromMarkdown}`.
+    assert.match(src, /export\{(?:[\w$]+ as )?fromMarkdown\}/)
   })
 })
 

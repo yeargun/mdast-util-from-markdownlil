@@ -1,4 +1,3 @@
-import { apply, arrLen, call0, call1, call2, call3, copyPoint, hasOwn, includesVal, isUndef, jsString, makeConstruct, makeNamedConstruct, objGet, push, slice2, undef } from "../host.lil";
 import { factoryDestination } from "../factory-destination.lil";
 import { factoryLabel } from "../factory-label.lil";
 import { factoryTitle } from "../factory-title.lil";
@@ -11,165 +10,151 @@ import { cApostrophe, cLeftParenthesis, cLeftSquareBracket, cQuotationMark, cRig
 import { kLinkResourceDestinationBalanceMax } from "../symbol/constants.lil";
 import { tData, tImage, tLabel, tLabelEnd, tLabelImage, tLabelLink, tLabelMarker, tLabelText, tLink, tReference, tReferenceMarker, tReferenceString, tResource, tResourceDestination, tResourceDestinationLiteral, tResourceDestinationLiteralMarker, tResourceDestinationRaw, tResourceDestinationString, tResourceMarker, tResourceTitle, tResourceTitleMarker, tResourceTitleString } from "../symbol/types.lil";
 
-JsValue ev(string kind, JsValue token, JsValue context) {
-  return JS.array(kind, token, context);
-}
+import { copyPoint } from "../host.lil";
 
-JsValue resolveAllLabelEnd = JS.method2((JsValue _self, JsValue events, JsValue _context) => {
-  int index = -1;
+JsValue resolveAllLabelEnd = JS.method1((JsValue _self, JsValue events) => {
+  float index = -1.0;
   JsValue newEvents = JS.array();
-  int n = arrLen(events);
   while (true) {
-    index = index + 1;
-    if (index >= n) {
+    index++;
+    if (index >= events.length) {
       break;
     }
     JsValue token = events[index][1];
-    JS.call(JS.get(newEvents, "push"), newEvents, events[index]);
-    string typ = jsString(objGet(token, "type"));
-    if (typ == tLabelImage || typ == tLabelLink || typ == tLabelEnd) {
-      int offset = 2;
-      if (typ == tLabelImage) {
-        offset = 4;
-      }
+    JS.invoke(newEvents, "push", events[index]);
+    if (JS.strictEqual(JS.get(token, "type"), tLabelImage) || JS.strictEqual(JS.get(token, "type"), tLabelLink) || JS.strictEqual(JS.get(token, "type"), tLabelEnd)) {
+      float offset = if (JS.strictEqual(JS.get(token, "type"), tLabelImage)) { 4.0 } else { 2.0 };
       JS.set(token, "type", tData);
-      index = index + offset;
+      index += offset;
     }
   }
-  if (arrLen(events) != arrLen(newEvents)) {
-    splice(events, 0, arrLen(events), newEvents);
+  if (events.length != newEvents.length) {
+    splice(events, 0, events.length, newEvents);
   }
   return events;
 });
 
 JsValue resolveToLabelEnd = JS.method2((JsValue _self, JsValue events, JsValue context) => {
-  int index = arrLen(events);
-  int offset = 0;
-  JsValue open = undef();
-  JsValue close = undef();
+  float index = events.length;
+  float offset = 0.0;
+  float open = 0.0;
+  float close = 0.0;
   while (true) {
-    index = index - 1;
-    if (index < 0) {
+    index--;
+    if (index < 0.0) {
       break;
     }
     JsValue token = events[index][1];
-    string typ = jsString(objGet(token, "type"));
-    if (open.truthy()) {
-      if (typ == tLink || (typ == tLabelLink && objGet(token, "_inactive").truthy())) {
+    if (open != 0.0) {
+      if (JS.strictEqual(JS.get(token, "type"), tLink) || (JS.strictEqual(JS.get(token, "type"), tLabelLink) && JS.get(token, "_inactive").truthy())) {
         break;
       }
-      if (events[index][0] == "enter" && typ == tLabelLink) {
+      if (JS.strictEqual(events[index][0], "enter") && JS.strictEqual(JS.get(token, "type"), tLabelLink)) {
         JS.set(token, "_inactive", true);
       }
-    } else if (close.truthy()) {
-      if (events[index][0] == "enter" && (typ == tLabelImage || typ == tLabelLink) && !objGet(token, "_balanced").truthy()) {
+    } else if (close != 0.0) {
+      if (JS.strictEqual(events[index][0], "enter") && (JS.strictEqual(JS.get(token, "type"), tLabelImage) || JS.strictEqual(JS.get(token, "type"), tLabelLink)) && !JS.get(token, "_balanced").truthy()) {
         open = index;
-        if (typ != tLabelLink) {
-          offset = 2;
+        if (JS.strictNotEqual(JS.get(token, "type"), tLabelLink)) {
+          offset = 2.0;
           break;
         }
       }
-    } else if (typ == tLabelEnd) {
+    } else if (JS.strictEqual(JS.get(token, "type"), tLabelEnd)) {
       close = index;
     }
   }
-  int openI = JS.number(open).toInt();
-  int closeI = JS.number(close).toInt();
-  string groupType = tImage;
-  if (objGet(events[openI][1], "type") == tLabelLink) {
-    groupType = tLink;
-  }
-  JsValue group = JS.object();
-  JS.set(group, "type", groupType);
-  JS.set(group, "start", copyPoint(objGet(events[openI][1], "start")));
-  JS.set(group, "end", copyPoint(objGet(events[arrLen(events) - 1][1], "end")));
-  JsValue label = JS.object();
-  JS.set(label, "type", tLabel);
-  JS.set(label, "start", copyPoint(objGet(events[openI][1], "start")));
-  JS.set(label, "end", copyPoint(objGet(events[closeI][1], "end")));
-  JsValue text = JS.object();
-  JS.set(text, "type", tLabelText);
-  JS.set(text, "start", copyPoint(objGet(events[openI + offset + 2][1], "end")));
-  JS.set(text, "end", copyPoint(objGet(events[closeI - 2][1], "start")));
-  JsValue media = JS.array();
-  JS.call(JS.get(media, "push"), media, ev("enter", group, context));
-  JS.call(JS.get(media, "push"), media, ev("enter", label, context));
-  media = pushAll(media, slice2(events, openI + 1, openI + offset + 3));
-  JsValue textEnter = JS.array();
-  JS.call(JS.get(textEnter, "push"), textEnter, ev("enter", text, context));
-  media = pushAll(media, textEnter);
-  media = pushAll(media, resolveAll(objGet(objGet(objGet(context, "parser"), "constructs"), "insideSpan")["null"], slice2(events, openI + offset + 4, closeI - 3), context));
-  JsValue mid = JS.array();
-  JS.call(JS.get(mid, "push"), mid, ev("exit", text, context));
-  JS.call(JS.get(mid, "push"), mid, events[closeI - 2]);
-  JS.call(JS.get(mid, "push"), mid, events[closeI - 1]);
-  JS.call(JS.get(mid, "push"), mid, ev("exit", label, context));
-  media = pushAll(media, mid);
-  media = pushAll(media, slice2(events, closeI + 1, arrLen(events)));
-  JsValue groupExit = JS.array();
-  JS.call(JS.get(groupExit, "push"), groupExit, ev("exit", group, context));
-  media = pushAll(media, groupExit);
-  splice(events, openI, arrLen(events), media);
+  JsValue group = JS.object(
+    "type", if (JS.strictEqual(JS.get(events[open][1], "type"), tLabelLink)) { tLink } else { tImage },
+    "start", copyPoint(JS.get(events[open][1], "start")),
+    "end", copyPoint(JS.get(events[events.length - 1.0][1], "end"))
+  );
+  JsValue label = JS.object(
+    "type", tLabel,
+    "start", copyPoint(JS.get(events[open][1], "start")),
+    "end", copyPoint(JS.get(events[close][1], "end"))
+  );
+  JsValue text = JS.object(
+    "type", tLabelText,
+    "start", copyPoint(JS.get(events[open + offset + 2.0][1], "end")),
+    "end", copyPoint(JS.get(events[close - 2.0][1], "start"))
+  );
+  JsValue media = JS.array(JS.array("enter", group, context), JS.array("enter", label, context));
+  media = pushAll(media, JS.invoke(events, "slice", open + 1.0, open + offset + 3.0));
+  media = pushAll(media, JS.array(JS.array("enter", text, context)));
+  media = pushAll(media, resolveAll(JS.get(JS.get(JS.get(JS.get(context, "parser"), "constructs"), "insideSpan"), "null"), JS.invoke(events, "slice", open + offset + 4.0, close - 3.0), context));
+  media = pushAll(media, JS.array(JS.array("exit", text, context), events[close - 2.0], events[close - 1.0], JS.array("exit", label, context)));
+  media = pushAll(media, JS.invoke(events, "slice", close + 1.0));
+  media = pushAll(media, JS.array(JS.array("exit", group, context)));
+  splice(events, open, events.length, media);
   return events;
 });
 
 JsValue tokenizeResource = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue resourceEnd = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cRightParenthesis)) {
-      call1(objGet(effects, "enter"), effects, tResourceMarker);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tResourceMarker);
-      call1(objGet(effects, "exit"), effects, tResource);
-      return ok;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue resourceTitleAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEndingOrSpace(code)) {
-      return call1(factoryWhitespace(effects, resourceEnd), undef(), code);
-    }
-    return call1(resourceEnd, undef(), code);
-  });
-
-  JsValue resourceBetween = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLeftParenthesis)) {
-      return call1(factoryTitle(effects, resourceTitleAfter, nok, tResourceTitle, tResourceTitleMarker, tResourceTitleString), undef(), code);
-    }
-    return call1(resourceEnd, undef(), code);
-  });
-
-  JsValue resourceDestinationMissing = JS.method1((JsValue _s, JsValue code) => {
-    return call1(nok, undef(), code);
-  });
-
-  JsValue resourceDestinationAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEndingOrSpace(code)) {
-      return call1(factoryWhitespace(effects, resourceBetween), undef(), code);
-    }
-    return call1(resourceEnd, undef(), code);
-  });
-
-  JsValue resourceOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cRightParenthesis)) {
-      return call1(resourceEnd, undef(), code);
-    }
-    return call1(factoryDestination(effects, resourceDestinationAfter, resourceDestinationMissing, tResourceDestination, tResourceDestinationLiteral, tResourceDestinationLiteralMarker, tResourceDestinationRaw, tResourceDestinationString, kLinkResourceDestinationBalanceMax), undef(), code);
-  });
-
-  JsValue resourceBefore = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEndingOrSpace(code)) {
-      return call1(factoryWhitespace(effects, resourceOpen), undef(), code);
-    }
-    return call1(resourceOpen, undef(), code);
-  });
+  JsValue resourceBefore = JS.undefined();
+  JsValue resourceOpen = JS.undefined();
+  JsValue resourceDestinationAfter = JS.undefined();
+  JsValue resourceDestinationMissing = JS.undefined();
+  JsValue resourceBetween = JS.undefined();
+  JsValue resourceTitleAfter = JS.undefined();
+  JsValue resourceEnd = JS.undefined();
 
   JsValue resourceStart = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tResource);
-    call1(objGet(effects, "enter"), effects, tResourceMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tResourceMarker);
+    JS.invoke(effects, "enter", tResource);
+    JS.invoke(effects, "enter", tResourceMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tResourceMarker);
     return resourceBefore;
+  });
+
+  resourceBefore = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEndingOrSpace(code)) {
+      return JS.call(factoryWhitespace(effects, resourceOpen), JS.undefined(), code);
+    }
+    return JS.call(resourceOpen, JS.undefined(), code);
+  });
+
+  resourceOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cRightParenthesis)) {
+      return JS.call(resourceEnd, JS.undefined(), code);
+    }
+    return JS.call(factoryDestination(effects, resourceDestinationAfter, resourceDestinationMissing, tResourceDestination, tResourceDestinationLiteral, tResourceDestinationLiteralMarker, tResourceDestinationRaw, tResourceDestinationString, kLinkResourceDestinationBalanceMax), JS.undefined(), code);
+  });
+
+  resourceDestinationAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEndingOrSpace(code)) {
+      return JS.call(factoryWhitespace(effects, resourceBetween), JS.undefined(), code);
+    }
+    return JS.call(resourceEnd, JS.undefined(), code);
+  });
+
+  resourceDestinationMissing = JS.method1((JsValue _s, JsValue code) => {
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  resourceBetween = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLeftParenthesis)) {
+      return JS.call(factoryTitle(effects, resourceTitleAfter, nok, tResourceTitle, tResourceTitleMarker, tResourceTitleString), JS.undefined(), code);
+    }
+    return JS.call(resourceEnd, JS.undefined(), code);
+  });
+
+  resourceTitleAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEndingOrSpace(code)) {
+      return JS.call(factoryWhitespace(effects, resourceEnd), JS.undefined(), code);
+    }
+    return JS.call(resourceEnd, JS.undefined(), code);
+  });
+
+  resourceEnd = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cRightParenthesis)) {
+      JS.invoke(effects, "enter", tResourceMarker);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tResourceMarker);
+      JS.invoke(effects, "exit", tResource);
+      return ok;
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
   return resourceStart;
@@ -177,135 +162,108 @@ JsValue tokenizeResource = JS.method3((JsValue _self, JsValue effects, JsValue o
 
 JsValue tokenizeReferenceFull = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue referenceFullAfter = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    string raw = jsString(call1(objGet(self, "sliceSerialize"), self, events[arrLen(events) - 1][1]));
-    string id = normalizeIdentifier(jsString(JS.call(JS.get(raw, "slice"), raw, 1, -1)));
-    if (includesVal(objGet(objGet(self, "parser"), "defined"), id)) {
-      return call1(ok, undef(), code);
+    string label = JS.assume(JS.invoke(self, "sliceSerialize", JS.get(self, "events")[JS.get(self, "events").length - 1.0][1]));
+    if (JS.invoke(JS.get(JS.get(self, "parser"), "defined"), "includes", normalizeIdentifier(label.slice(1, -1))).truthy()) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
   JsValue referenceFullMissing = JS.method1((JsValue _s, JsValue code) => {
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue referenceFull = JS.method1((JsValue _s, JsValue code) => {
-    JsValue labelArgs = JS.array();
-    push(labelArgs, effects);
-    push(labelArgs, referenceFullAfter);
-    push(labelArgs, referenceFullMissing);
-    push(labelArgs, tReference);
-    push(labelArgs, tReferenceMarker);
-    push(labelArgs, tReferenceString);
-    return call1(apply(factoryLabel, self, labelArgs), undef(), code);
+  return JS.method1((JsValue _s, JsValue code) => {
+    return JS.call(factoryLabel(self, effects, referenceFullAfter, referenceFullMissing, tReference, tReferenceMarker, tReferenceString), JS.undefined(), code);
   });
-
-  return referenceFull;
 });
 
 JsValue tokenizeReferenceCollapsed = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue referenceCollapsedOpen = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cRightSquareBracket)) {
-      call1(objGet(effects, "enter"), effects, tReferenceMarker);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tReferenceMarker);
-      call1(objGet(effects, "exit"), effects, tReference);
+      JS.invoke(effects, "enter", tReferenceMarker);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tReferenceMarker);
+      JS.invoke(effects, "exit", tReference);
       return ok;
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue referenceCollapsedStart = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tReference);
-    call1(objGet(effects, "enter"), effects, tReferenceMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tReferenceMarker);
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tReference);
+    JS.invoke(effects, "enter", tReferenceMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tReferenceMarker);
     return referenceCollapsedOpen;
   });
-
-  return referenceCollapsedStart;
 });
 
-JsValue resourceConstruct = makeConstruct(tokenizeResource);
-JsValue referenceFullConstruct = makeConstruct(tokenizeReferenceFull);
-JsValue referenceCollapsedConstruct = makeConstruct(tokenizeReferenceCollapsed);
+JsValue resourceConstruct = JS.object("tokenize", tokenizeResource);
+JsValue referenceFullConstruct = JS.object("tokenize", tokenizeReferenceFull);
+JsValue referenceCollapsedConstruct = JS.object("tokenize", tokenizeReferenceCollapsed);
 
 JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  int index = arrLen(objGet(self, "events"));
-  JsValue labelStart = undef();
+  float index = JS.get(self, "events").length;
+  JsValue labelStart = JS.undefined();
+  JsValue defined = JS.undefined();
   while (true) {
-    index = index - 1;
-    if (index < 0) {
+    index--;
+    if (index < 0.0) {
       break;
     }
-    JsValue token = objGet(self, "events")[index][1];
-    string typ = jsString(objGet(token, "type"));
-    if ((typ == tLabelImage || typ == tLabelLink) && !objGet(token, "_balanced").truthy()) {
+    JsValue token = JS.get(self, "events")[index][1];
+    if ((JS.strictEqual(JS.get(token, "type"), tLabelImage) || JS.strictEqual(JS.get(token, "type"), tLabelLink)) && !JS.get(token, "_balanced").truthy()) {
       labelStart = token;
       break;
     }
   }
-
-  bool defined = false;
+  JsValue after = JS.undefined();
+  JsValue referenceNotFull = JS.undefined();
 
   JsValue labelEndOk = JS.method1((JsValue _s, JsValue code) => {
-    return call1(ok, undef(), code);
+    return JS.call(ok, JS.undefined(), code);
   });
 
   JsValue labelEndNok = JS.method1((JsValue _s, JsValue code) => {
-    if (labelStart.truthy()) {
-      JS.set(labelStart, "_balanced", true);
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue referenceNotFull = JS.method1((JsValue _s, JsValue code) => {
-    return call1(call3(objGet(effects, "attempt"), effects, referenceCollapsedConstruct, labelEndOk, labelEndNok), undef(), code);
-  });
-
-  JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cLeftParenthesis)) {
-      JsValue fallback = labelEndNok;
-      if (defined) {
-        fallback = labelEndOk;
-      }
-      return call1(call3(objGet(effects, "attempt"), effects, resourceConstruct, labelEndOk, fallback), undef(), code);
-    }
-    if (codeEq(code, cLeftSquareBracket)) {
-      JsValue fallback = labelEndNok;
-      if (defined) {
-        fallback = referenceNotFull;
-      }
-      return call1(call3(objGet(effects, "attempt"), effects, referenceFullConstruct, labelEndOk, fallback), undef(), code);
-    }
-    if (defined) {
-      return call1(labelEndOk, undef(), code);
-    }
-    return call1(labelEndNok, undef(), code);
+    JS.set(labelStart, "_balanced", true);
+    return JS.call(nok, JS.undefined(), code);
   });
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
     if (!labelStart.truthy()) {
-      return call1(nok, undef(), code);
+      return JS.call(nok, JS.undefined(), code);
     }
-    if (objGet(labelStart, "_inactive").truthy()) {
-      return call1(labelEndNok, undef(), code);
+    if (JS.get(labelStart, "_inactive").truthy()) {
+      return JS.call(labelEndNok, JS.undefined(), code);
     }
-    JsValue range = JS.object();
-    JS.set(range, "start", objGet(labelStart, "end"));
-    JS.set(range, "end", call0(objGet(self, "now"), self));
-    string id = normalizeIdentifier(jsString(call1(objGet(self, "sliceSerialize"), self, range)));
-    defined = includesVal(objGet(objGet(self, "parser"), "defined"), id);
-    call1(objGet(effects, "enter"), effects, tLabelEnd);
-    call1(objGet(effects, "enter"), effects, tLabelMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tLabelMarker);
-    call1(objGet(effects, "exit"), effects, tLabelEnd);
+    defined = JS.invoke(JS.get(JS.get(self, "parser"), "defined"), "includes", normalizeIdentifier(JS.assume(JS.invoke(self, "sliceSerialize", JS.object("start", JS.get(labelStart, "end"), "end", JS.invoke(self, "now"))))));
+    JS.invoke(effects, "enter", tLabelEnd);
+    JS.invoke(effects, "enter", tLabelMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tLabelMarker);
+    JS.invoke(effects, "exit", tLabelEnd);
     return after;
+  });
+
+  after = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cLeftParenthesis)) {
+      return JS.call(JS.invoke(effects, "attempt", resourceConstruct, labelEndOk, if (defined.truthy()) { labelEndOk } else { labelEndNok }), JS.undefined(), code);
+    }
+    if (codeEq(code, cLeftSquareBracket)) {
+      return JS.call(JS.invoke(effects, "attempt", referenceFullConstruct, labelEndOk, if (defined.truthy()) { referenceNotFull } else { labelEndNok }), JS.undefined(), code);
+    }
+    if (defined.truthy()) {
+      return JS.call(labelEndOk, JS.undefined(), code);
+    }
+    return JS.call(labelEndNok, JS.undefined(), code);
+  });
+
+  referenceNotFull = JS.method1((JsValue _s, JsValue code) => {
+    return JS.call(JS.invoke(effects, "attempt", referenceCollapsedConstruct, labelEndOk, labelEndNok), JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue labelEnd = JS.object("name", "labelEnd", "tokenize", tokenizeLabelEnd, "resolveAll", resolveAllLabelEnd, "resolveTo", resolveToLabelEnd);
+export JsValue labelEnd = JS.object("name", "labelEnd", "resolveAll", resolveAllLabelEnd, "resolveTo", resolveToLabelEnd, "tokenize", tokenizeLabelEnd);

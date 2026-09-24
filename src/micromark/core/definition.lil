@@ -1,4 +1,3 @@
-import { apply, arrLen, call1, call2, call3, isEof, jsString, makeConstruct, makeNamedConstruct, objGet, push, undef } from "../host.lil";
 import { factoryDestination } from "../factory-destination.lil";
 import { factoryLabel } from "../factory-label.lil";
 import { factorySpace } from "../factory-space.lil";
@@ -11,100 +10,91 @@ import { tDefinition, tDefinitionDestination, tDefinitionDestinationLiteral, tDe
 
 JsValue tokenizeTitleBefore = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue titleAfterOptionalWhitespace = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      return call1(ok, undef(), code);
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
   JsValue titleAfter = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      return call1(factorySpace(effects, titleAfterOptionalWhitespace, tWhitespace, 0), undef(), code);
+      return JS.call(factorySpace(effects, titleAfterOptionalWhitespace, tWhitespace, JS.undefined()), JS.undefined(), code);
     }
-    return call1(titleAfterOptionalWhitespace, undef(), code);
+    return JS.call(titleAfterOptionalWhitespace, JS.undefined(), code);
   });
 
   JsValue beforeMarker = JS.method1((JsValue _s, JsValue code) => {
-    return call1(factoryTitle(effects, titleAfter, nok, tDefinitionTitle, tDefinitionTitleMarker, tDefinitionTitleString), undef(), code);
+    return JS.call(factoryTitle(effects, titleAfter, nok, tDefinitionTitle, tDefinitionTitleMarker, tDefinitionTitleString), JS.undefined(), code);
   });
 
-  JsValue titleBefore = JS.method1((JsValue _s, JsValue code) => {
+  return JS.method1((JsValue _s, JsValue code) => {
     if (markdownLineEndingOrSpace(code)) {
-      return call1(factoryWhitespace(effects, beforeMarker), undef(), code);
+      return JS.call(factoryWhitespace(effects, beforeMarker), JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
-
-  return titleBefore;
 });
 
-JsValue titleBeforeConstruct = makeConstruct(tokenizeTitleBefore);
-JS.set(titleBeforeConstruct, "partial", true);
+JsValue titleBefore = JS.object("partial", true, "tokenize", tokenizeTitleBefore);
 
 JsValue tokenizeDefinition = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   string identifier = "";
-
-  JsValue afterWhitespace = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      call1(objGet(effects, "exit"), effects, tDefinition);
-      push(objGet(objGet(self, "parser"), "defined"), identifier);
-      return call1(ok, undef(), code);
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownSpace(code)) {
-      return call1(factorySpace(effects, afterWhitespace, tWhitespace, 0), undef(), code);
-    }
-    return call1(afterWhitespace, undef(), code);
-  });
-
-  JsValue destinationAfter = JS.method1((JsValue _s, JsValue code) => {
-    return call1(call3(objGet(effects, "attempt"), effects, titleBeforeConstruct, after, after), undef(), code);
-  });
-
-  JsValue destinationBefore = JS.method1((JsValue _s, JsValue code) => {
-    return call1(factoryDestination(effects, destinationAfter, nok, tDefinitionDestination, tDefinitionDestinationLiteral, tDefinitionDestinationLiteralMarker, tDefinitionDestinationRaw, tDefinitionDestinationString, 0), undef(), code);
-  });
-
-  JsValue markerAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEndingOrSpace(code)) {
-      return call1(factoryWhitespace(effects, destinationBefore), undef(), code);
-    }
-    return call1(destinationBefore, undef(), code);
-  });
-
-  JsValue labelAfter = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    string raw = jsString(call1(objGet(self, "sliceSerialize"), self, events[arrLen(events) - 1][1]));
-    identifier = normalizeIdentifier(jsString(JS.call(JS.get(raw, "slice"), raw, 1, -1)));
-    if (codeEq(code, cColon)) {
-      call1(objGet(effects, "enter"), effects, tDefinitionMarker);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tDefinitionMarker);
-      return markerAfter;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue before = JS.method1((JsValue _s, JsValue code) => {
-    JsValue labelArgs = JS.array();
-    push(labelArgs, effects);
-    push(labelArgs, labelAfter);
-    push(labelArgs, nok);
-    push(labelArgs, tDefinitionLabel);
-    push(labelArgs, tDefinitionLabelMarker);
-    push(labelArgs, tDefinitionLabelString);
-    return call1(apply(factoryLabel, self, labelArgs), undef(), code);
-  });
+  JsValue labelAfter = JS.undefined();
+  JsValue markerAfter = JS.undefined();
+  JsValue destinationBefore = JS.undefined();
+  JsValue destinationAfter = JS.undefined();
+  JsValue after = JS.undefined();
+  JsValue afterWhitespace = JS.undefined();
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tDefinition);
-    return call1(before, undef(), code);
+    JS.invoke(effects, "enter", tDefinition);
+    return JS.call(factoryLabel(self, effects, labelAfter, nok, tDefinitionLabel, tDefinitionLabelMarker, tDefinitionLabelString), JS.undefined(), code);
+  });
+
+  labelAfter = JS.method1((JsValue _s, JsValue code) => {
+    string label = JS.assume(JS.invoke(self, "sliceSerialize", JS.get(self, "events")[JS.get(self, "events").length - 1.0][1]));
+    identifier = normalizeIdentifier(label.slice(1, -1));
+    if (codeEq(code, cColon)) {
+      JS.invoke(effects, "enter", tDefinitionMarker);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tDefinitionMarker);
+      return markerAfter;
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  markerAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEndingOrSpace(code)) {
+      return JS.call(factoryWhitespace(effects, destinationBefore), JS.undefined(), code);
+    }
+    return JS.call(destinationBefore, JS.undefined(), code);
+  });
+
+  destinationBefore = JS.method1((JsValue _s, JsValue code) => {
+    return JS.call(factoryDestination(effects, destinationAfter, nok, tDefinitionDestination, tDefinitionDestinationLiteral, tDefinitionDestinationLiteralMarker, tDefinitionDestinationRaw, tDefinitionDestinationString, JS.undefined()), JS.undefined(), code);
+  });
+
+  destinationAfter = JS.method1((JsValue _s, JsValue code) => {
+    return JS.call(JS.invoke(effects, "attempt", titleBefore, after, after), JS.undefined(), code);
+  });
+
+  after = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      return JS.call(factorySpace(effects, afterWhitespace, tWhitespace, JS.undefined()), JS.undefined(), code);
+    }
+    return JS.call(afterWhitespace, JS.undefined(), code);
+  });
+
+  afterWhitespace = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      JS.invoke(effects, "exit", tDefinition);
+      JS.invoke(JS.get(JS.get(self, "parser"), "defined"), "push", identifier);
+      return JS.call(ok, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue definition = makeNamedConstruct("definition", tokenizeDefinition);
+export JsValue definition = JS.object("name", "definition", "tokenize", tokenizeDefinition);

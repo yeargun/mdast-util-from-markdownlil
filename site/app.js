@@ -85,9 +85,17 @@ function renderHero() {
   document.querySelector("#hero-shipped").textContent = smaller.text
   document.querySelector("#hero-gzip").textContent = smallerThan(itslil.gzip9, baseline.gzip9).text
   document.querySelector("#hero-raw").textContent = smallerThan(itslil.raw, baseline.raw).text
-  document.querySelector("#hero-spec").textContent = data.spec
-    ? `${data.spec.pass}/${data.spec.total}`
+  const spec = data.spec
+    ? `${formatter.format(data.spec.pass)}/${formatter.format(data.spec.total)}`
     : "—"
+  document.querySelector("#hero-spec").textContent = spec
+  for (const node of document.querySelectorAll("[data-spec]")) node.textContent = spec
+  const browser = data.size.find((lane) => lane.browserBar)
+  if (browser) {
+    const against = smallerThan(itslil.brotli11, browser.brotli11)
+    document.querySelector("#hero-browser").textContent =
+      `Against upstream's browser graph, which decodes them through the DOM and ships no table (Terser, ${formatter.format(browser.brotli11)} B), this file is ${against.text}.`
+  }
 }
 
 function renderSize() {
@@ -142,8 +150,83 @@ function renderPerf() {
       return `<tr><th scope="row">${row.name}</th><td>${ms(row.documentMs)}</td><td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? verdict.text : "—"}</strong></td></tr>`
     })
     .join("")
+  const workload = data.throughputDocument ? ` Document: ${data.throughputDocument}.` : ""
   document.querySelector("#perf-note").textContent =
-    `${data.runtime ?? "Node"}. ${data.codec}. Quiet median after discarding the first ${data.warmupDiscard ?? 3} samples.`
+    `${data.runtime ?? "Node"}. ${data.codec}. Median after discarding the first ${data.warmupDiscard ?? 3} samples.${workload}`
+}
+
+function median(values) {
+  const sorted = [...values].filter(Number.isFinite).sort((left, right) => left - right)
+  return sorted.length ? sorted[Math.floor(sorted.length / 2)] : null
+}
+
+function seconds(valueMs) {
+  return valueMs == null ? "—" : `${(valueMs / 1000).toFixed(2)} s`
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character])
+}
+
+function renderCompiler() {
+  const compiler = data.compiler
+  const cards = document.querySelector("#compiler-cards")
+  if (!compiler || !cards) return
+  const previous = data.previousRelease?.files ?? {}
+  const shipped = laneById("itslil")
+  const before = previous[`dist/${data.file}.esm.js`]
+  const change = shipped && before ? smallerThan(shipped.brotli11, before.brotli11) : null
+  const compileSamples = compiler.compileWallMs ?? []
+  const buildSamples = compiler.buildCompileWallMs ?? []
+  const invocations = compiler.invocations?.length ?? 0
+  cards.innerHTML = [
+    {
+      value: seconds(median(compileSamples)),
+      label: `compile wall time, shipped ESM · median of ${compileSamples.length}`,
+      win: true,
+    },
+    {
+      value: seconds(median(buildSamples)),
+      label: `all ${invocations} compiles of a clean build · median of ${buildSamples.length}`,
+    },
+    {
+      value: change ? change.text : "—",
+      win: change?.state === "win",
+      label: before && shipped
+        ? `Brotli vs previous release · ${formatter.format(before.brotli11)} → ${formatter.format(shipped.brotli11)} B`
+        : "Brotli vs previous release",
+    },
+    {
+      value: escapeHtml(compiler.revision),
+      label: "compiler source revision",
+      geo: true,
+    },
+  ]
+    .map(
+      (card) =>
+        `<article class="perf-card${card.win ? " win" : ""}${card.geo ? " geo" : ""}"><strong>${card.value}</strong><span>${card.label}</span></article>`,
+    )
+    .join("")
+  document.querySelector("#delivered-body").innerHTML = (data.delivered ?? [])
+    .map((file) => {
+      const old = previous[file.path]
+      const verdict = old ? smallerThan(file.brotli11, old.brotli11) : null
+      const writer = file.wrapper && file.wrapper !== "none" ? `${file.writtenBy} + ${file.wrapper}` : file.writtenBy
+      return `<tr><th scope="row"><code>${escapeHtml(file.path)}</code></th><td>${escapeHtml(file.condition)}</td><td>${escapeHtml(writer)}</td><td>${formatter.format(file.raw)}</td><td>${formatter.format(file.gzip9)}</td><td>${formatter.format(file.brotli11)}</td><td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? `${verdict.text} (${formatter.format(old.brotli11)})` : "—"}</strong></td></tr>`
+    })
+    .join("")
+  const samples = compileSamples.map((value) => `${value} ms`).join(" / ")
+  const prior = data.previousRelease
+    ? ` Previous release: ${data.previousRelease.commit} (${data.previousRelease.date}), ${data.previousRelease.compiler}; ${data.previousRelease.note} Measured with ${data.previousRelease.measuredWith}.`
+    : ""
+  document.querySelector("#compiler-note").textContent =
+    `Compiler ${compiler.revision}, binary SHA-256 ${compiler.binarySha256}, codec SHA-256 ${compiler.codecSha256}, recorded ${compiler.date}. Shipped-ESM compile samples: ${samples}.${prior}`
 }
 
 function bindCopy() {
@@ -393,6 +476,7 @@ function bindPlayground() {
 renderHero()
 renderPerf()
 renderSize()
+renderCompiler()
 bindCopy()
 bindProgress()
 bindPlayground()

@@ -1,28 +1,23 @@
-import { call1, objGet, undef } from "./host.lil";
 import { factorySpace } from "./factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "./util-character.lil";
 import { tLineEnding, tLinePrefix, tLineSuffix } from "./symbol/types.lil";
 
 export JsValue factoryWhitespace(JsValue effects, JsValue ok) {
   bool seen = false;
-  JsValue start = undef();
+  JsValue start = JS.undefined();
 
-  start = JS.method1((JsValue _self, JsValue code) => {
+  start = JS.method1((JsValue _s, JsValue code) => {
     if (markdownLineEnding(code)) {
-      call1(objGet(effects, "enter"), effects, tLineEnding);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tLineEnding);
+      JS.invoke(effects, "enter", tLineEnding);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tLineEnding);
       seen = true;
       return start;
     }
     if (markdownSpace(code)) {
-      string typ = tLineSuffix;
-      if (seen) {
-        typ = tLinePrefix;
-      }
-      return call1(factorySpace(effects, start, typ, 0), JS.undefined(), code);
+      return JS.call(factorySpace(effects, start, if (seen) { tLinePrefix } else { tLineSuffix }, JS.undefined()), JS.undefined(), code);
     }
-    return call1(ok, JS.undefined(), code);
+    return JS.call(ok, JS.undefined(), code);
   });
 
   return start;

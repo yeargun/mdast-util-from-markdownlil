@@ -1,28 +1,25 @@
-import { call1, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { asciiPunctuation } from "../util-character.lil";
 import { tCharacterEscape, tCharacterEscapeValue, tEscapeMarker } from "../symbol/types.lil";
 
 JsValue tokenizeCharacterEscape = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue inside = JS.method1((JsValue _s, JsValue code) => {
     if (asciiPunctuation(code)) {
-      call1(objGet(effects, "enter"), effects, tCharacterEscapeValue);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tCharacterEscapeValue);
-      call1(objGet(effects, "exit"), effects, tCharacterEscape);
+      JS.invoke(effects, "enter", tCharacterEscapeValue);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tCharacterEscapeValue);
+      JS.invoke(effects, "exit", tCharacterEscape);
       return ok;
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tCharacterEscape);
-    call1(objGet(effects, "enter"), effects, tEscapeMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tEscapeMarker);
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tCharacterEscape);
+    JS.invoke(effects, "enter", tEscapeMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tEscapeMarker);
     return inside;
   });
-
-  return start;
 });
 
-export JsValue characterEscape = makeNamedConstruct("characterEscape", tokenizeCharacterEscape);
+export JsValue characterEscape = JS.object("name", "characterEscape", "tokenize", tokenizeCharacterEscape);

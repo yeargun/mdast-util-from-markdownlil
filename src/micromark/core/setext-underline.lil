@@ -1,106 +1,102 @@
-import { arrLen, call0, call1, copyPoint, eventEnter, eventExit, isEof, makeNamedConstruct, objGet, push, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { tContent, tDefinition, tLineEnding, tLinePrefix, tLineSuffix, tParagraph, tSetextHeading, tSetextHeadingLine, tSetextHeadingLineSequence, tSetextHeadingText } from "../symbol/types.lil";
 
+import { copyPoint } from "../host.lil";
+
 JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, JsValue context) => {
-  int index = arrLen(events);
-  int content = -1;
-  int text = -1;
-  int definition = -1;
+  float index = events.length;
+  float content = 0.0;
+  float text = 0.0;
+  float definition = 0.0;
   while (true) {
-    index = index - 1;
-    if (index < 0) {
+    index--;
+    if (index < 0.0) {
       break;
     }
-    if (events[index][0] == "enter") {
-      if (objGet(events[index][1], "type") == tContent) {
+    if (JS.strictEqual(events[index][0], "enter")) {
+      if (JS.strictEqual(JS.get(events[index][1], "type"), tContent)) {
         content = index;
         break;
       }
-      if (objGet(events[index][1], "type") == tParagraph) {
+      if (JS.strictEqual(JS.get(events[index][1], "type"), tParagraph)) {
         text = index;
       }
     } else {
-      if (objGet(events[index][1], "type") == tContent) {
-        JS.call(JS.get(events, "splice"), events, index, 1);
+      if (JS.strictEqual(JS.get(events[index][1], "type"), tContent)) {
+        JS.invoke(events, "splice", index, 1);
       }
-      if (definition < 0 && objGet(events[index][1], "type") == tDefinition) {
+      if (definition == 0.0 && JS.strictEqual(JS.get(events[index][1], "type"), tDefinition)) {
         definition = index;
       }
     }
   }
-  JsValue heading = JS.object();
-  JS.set(heading, "type", tSetextHeading);
-  JS.set(heading, "start", copyPoint(objGet(events[content][1], "start")));
-  JS.set(heading, "end", copyPoint(objGet(events[arrLen(events) - 1][1], "end")));
+  JsValue heading = JS.object(
+    "type", tSetextHeading,
+    "start", copyPoint(JS.get(events[content][1], "start")),
+    "end", copyPoint(JS.get(events[events.length - 1.0][1], "end"))
+  );
   JS.set(events[text][1], "type", tSetextHeadingText);
-  if (definition > 0) {
-    JsValue enterH = eventEnter(heading, context);
-    JS.call(JS.get(events, "splice"), events, text, 0, enterH);
-    JsValue exitC = eventExit(events[content][1], context);
-    JS.call(JS.get(events, "splice"), events, definition + 1, 0, exitC);
-    JS.set(events[content][1], "end", copyPoint(objGet(events[definition][1], "end")));
+  if (definition != 0.0) {
+    JS.invoke(events, "splice", text, 0, JS.array("enter", heading, context));
+    JS.invoke(events, "splice", definition + 1.0, 0, JS.array("exit", events[content][1], context));
+    JS.set(events[content][1], "end", copyPoint(JS.get(events[definition][1], "end")));
   } else {
     events[content][1] = heading;
   }
-  JsValue exitH = eventExit(heading, context);
-  push(events, exitH);
+  JS.invoke(events, "push", JS.array("exit", heading, context));
   return events;
 });
 
 JsValue tokenizeSetextUnderline = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  int marker = 0;
-
-  JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      call1(objGet(effects, "exit"), effects, tSetextHeadingLine);
-      return call1(ok, undef(), code);
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (code == marker) {
-      call1(objGet(effects, "consume"), effects, code);
-      return inside;
-    }
-    call1(objGet(effects, "exit"), effects, tSetextHeadingLineSequence);
-    if (markdownSpace(code)) {
-      return call1(factorySpace(effects, after, tLineSuffix, 0), undef(), code);
-    }
-    return call1(after, undef(), code);
-  });
-
-  JsValue before = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tSetextHeadingLineSequence);
-    return call1(inside, undef(), code);
-  });
+  JsValue marker = JS.undefined();
+  JsValue inside = JS.undefined();
+  JsValue after = JS.undefined();
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    int index = arrLen(objGet(self, "events"));
+    float index = JS.get(self, "events").length;
     bool paragraph = false;
     while (true) {
-      index = index - 1;
-      if (index < 0) {
+      index--;
+      if (index < 0.0) {
         break;
       }
-      string typ = JS.string(objGet(objGet(self, "events")[index][1], "type"));
-      if (typ != tLineEnding && typ != tLinePrefix && typ != tContent) {
-        paragraph = typ == tParagraph;
+      JsValue typ = JS.get(JS.get(self, "events")[index][1], "type");
+      if (JS.strictNotEqual(typ, tLineEnding) && JS.strictNotEqual(typ, tLinePrefix) && JS.strictNotEqual(typ, tContent)) {
+        paragraph = JS.strictEqual(typ, tParagraph);
         break;
       }
     }
-    JsValue lazy = objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")];
-    if (!lazy.truthy() && (objGet(self, "interrupt").truthy() || paragraph)) {
-      call1(objGet(effects, "enter"), effects, tSetextHeadingLine);
-      marker = JS.number(code).toInt();
-      return call1(before, undef(), code);
+    if (!JS.get(JS.get(self, "parser"), "lazy")[JS.get(JS.invoke(self, "now"), "line")].truthy() && (JS.get(self, "interrupt").truthy() || paragraph)) {
+      JS.invoke(effects, "enter", tSetextHeadingLine);
+      marker = code;
+      JS.invoke(effects, "enter", tSetextHeadingLineSequence);
+      return JS.call(inside, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  inside = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, marker)) {
+      JS.invoke(effects, "consume", code);
+      return inside;
+    }
+    JS.invoke(effects, "exit", tSetextHeadingLineSequence);
+    if (markdownSpace(code)) {
+      return JS.call(factorySpace(effects, after, tLineSuffix, JS.undefined()), JS.undefined(), code);
+    }
+    return JS.call(after, JS.undefined(), code);
+  });
+
+  after = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      JS.invoke(effects, "exit", tSetextHeadingLine);
+      return JS.call(ok, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue setextUnderline = JS.object("name", "setextUnderline", "tokenize", tokenizeSetextUnderline, "resolveTo", resolveToSetextUnderline);
+export JsValue setextUnderline = JS.object("name", "setextUnderline", "resolveTo", resolveToSetextUnderline, "tokenize", tokenizeSetextUnderline);

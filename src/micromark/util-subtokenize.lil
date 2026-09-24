@@ -1,240 +1,178 @@
-import {
-  arrLen,
-  call1,
-  call2,
-  copyPoint,
-  jsInt,
-  jsString,
-  objGet,
-  objectAssign,
-  push,
-  slice2,
-  undef,
-  unshift
-} from "./host.lil";
+import { copyPoint } from "./host.lil";
 import { splice } from "./util-chunked.lil";
 import { SpliceBuffer } from "./splice-buffer.lil";
-import { codeEof } from "./host.lil";
-import { tChunkFlow, tChunkText, tContent, tLineEnding, tLineEndingBlank, tLinePrefix, tListItemIndent, tListItemPrefix } from "./symbol/types.lil";
+
+extern JsValue Object;
 
 export { SpliceBuffer };
 
-JsValue sbGet(JsValue events, int index) {
-  return call1(objGet(events, "get"), events, index);
+JsValue typeOf(JsValue event) {
+  return JS.get(event[1], "type");
 }
 
-JsValue sbSlice(JsValue events, JsValue start, JsValue end) {
-  return call2(objGet(events, "slice"), events, start, end);
-}
-
-void sbSplice(JsValue events, JsValue start, JsValue remove, JsValue items) {
-  JS.call(objGet(events, "splice"), events, start, remove, items);
-}
-
-int sbLen(JsValue events) {
-  return jsInt(objGet(events, "length"));
-}
-
-JsValue subcontent(JsValue events, int eventIndex) {
-  JsValue ev = sbGet(events, eventIndex);
-  JsValue token = ev[1];
-  JsValue context = ev[2];
-  int startPosition = eventIndex - 1;
-  JsValue startPositions = JS.array();
-  JsValue tokenizer = objGet(token, "_tokenizer");
+JsValue subcontent(JsValue events, float eventIndex) {
+  JsValue event = JS.invoke(events, "get", eventIndex);
+  JsValue token = event[1];
+  JsValue context = event[2];
+  float startPosition = eventIndex - 1.0;
+  JsValue[] startPositions = [];
+  JsValue tokenizer = JS.get(token, "_tokenizer");
   if (!tokenizer.truthy()) {
-    JsValue parser = objGet(context, "parser");
-    JsValue contentType = objGet(token, "contentType");
-    tokenizer = call1(objGet(parser, jsString(contentType)), parser, objGet(token, "start"));
-    if (objGet(token, "_contentTypeTextTrailing").truthy()) {
+    tokenizer = JS.invoke(JS.get(context, "parser"), JS.assume(JS.get(token, "contentType")), JS.get(token, "start"));
+    if (JS.get(token, "_contentTypeTextTrailing").truthy()) {
       JS.set(tokenizer, "_contentTypeTextTrailing", true);
     }
   }
-  JsValue childEvents = objGet(tokenizer, "events");
+  JsValue childEvents = JS.get(tokenizer, "events");
   JsValue jumps = JS.array();
   JsValue gaps = JS.object();
-  JsValue previous = undef();
-  int index = -1;
+  JsValue previous = JS.undefined();
   JsValue current = token;
-  int adjust = 0;
-  int start = 0;
-  JsValue breaks = JS.array();
-  push(breaks, start);
+  float adjust = 0.0;
+  JsValue breaks = JS.array(0);
 
   while (current.truthy()) {
     while (true) {
-      startPosition = startPosition + 1;
-      if (sbGet(events, startPosition)[1] == current) {
+      startPosition++;
+      if (JS.strictEqual(JS.invoke(events, "get", startPosition)[1], current)) {
         break;
       }
     }
-    push(startPositions, startPosition);
-    if (!objGet(current, "_tokenizer").truthy()) {
-      JsValue stream = call1(objGet(context, "sliceStream"), context, current);
-      if (!objGet(current, "next").truthy()) {
-        push(stream, codeEof);
+    startPositions.push(startPosition);
+    if (!JS.get(current, "_tokenizer").truthy()) {
+      JsValue stream = JS.invoke(context, "sliceStream", current);
+      if (!JS.get(current, "next").truthy()) {
+        JS.invoke(stream, "push", null);
       }
       if (previous.truthy()) {
-        call1(objGet(tokenizer, "defineSkip"), tokenizer, objGet(current, "start"));
+        JS.invoke(tokenizer, "defineSkip", JS.get(current, "start"));
       }
-      if (objGet(current, "_isInFirstContentOfListItem").truthy()) {
+      if (JS.get(current, "_isInFirstContentOfListItem").truthy()) {
         JS.set(tokenizer, "_gfmTasklistFirstContentOfListItem", true);
       }
-      call1(objGet(tokenizer, "write"), tokenizer, stream);
-      if (objGet(current, "_isInFirstContentOfListItem").truthy()) {
-        JS.set(tokenizer, "_gfmTasklistFirstContentOfListItem", undef());
+      JS.invoke(tokenizer, "write", stream);
+      if (JS.get(current, "_isInFirstContentOfListItem").truthy()) {
+        JS.set(tokenizer, "_gfmTasklistFirstContentOfListItem", JS.undefined());
       }
     }
     previous = current;
-    current = objGet(current, "next");
+    current = JS.get(current, "next");
   }
 
   current = token;
-  int childLen = arrLen(childEvents);
-  while (true) {
-    index = index + 1;
-    if (index >= childLen) {
-      break;
-    }
+  for (float index = 0.0; index < childEvents.length; index++) {
+    JsValue exit = childEvents[index];
+    JsValue enter = childEvents[index - 1.0];
     if (
-      childEvents[index][0] == "exit" &&
-      childEvents[index - 1][0] == "enter" &&
-      objGet(childEvents[index][1], "type") == objGet(childEvents[index - 1][1], "type") &&
-      objGet(objGet(childEvents[index][1], "start"), "line") != objGet(objGet(childEvents[index][1], "end"), "line")
+      JS.strictEqual(exit[0], "exit") &&
+      JS.strictEqual(enter[0], "enter") &&
+      JS.strictEqual(typeOf(exit), typeOf(enter)) &&
+      !JS.strictEqual(JS.get(JS.get(exit[1], "start"), "line"), JS.get(JS.get(exit[1], "end"), "line"))
     ) {
-      start = index + 1;
-      push(breaks, start);
-      JS.set(current, "_tokenizer", undef());
-      JS.set(current, "previous", undef());
-      current = objGet(current, "next");
+      JS.invoke(breaks, "push", index + 1.0);
+      JS.set(current, "_tokenizer", JS.undefined());
+      JS.set(current, "previous", JS.undefined());
+      current = JS.get(current, "next");
     }
   }
 
   JS.set(tokenizer, "events", JS.array());
 
   if (current.truthy()) {
-    JS.set(current, "_tokenizer", undef());
-    JS.set(current, "previous", undef());
+    JS.set(current, "_tokenizer", JS.undefined());
+    JS.set(current, "previous", JS.undefined());
   } else {
-    JS.call(objGet(breaks, "pop"), breaks);
+    JS.invoke(breaks, "pop");
   }
 
-  index = arrLen(breaks);
-  while (true) {
-    index = index - 1;
-    if (index < 0) {
-      break;
-    }
-    JsValue endBreak = undef();
-    if (index + 1 < arrLen(breaks)) {
-      endBreak = breaks[index + 1];
-    }
-    JsValue sl = slice2(childEvents, breaks[index], endBreak);
-    int startPos = jsInt(JS.call(objGet(startPositions, "pop"), startPositions));
-    JsValue jump = JS.array();
-    push(jump, startPos);
-    push(jump, startPos + arrLen(sl) - 1);
-    push(jumps, jump);
-    sbSplice(events, startPos, 2, sl);
+  float index = breaks.length;
+  while (index > 0.0) {
+    index--;
+    JsValue slice = JS.invoke(childEvents, "slice", breaks[index], breaks[index + 1.0]);
+    JsValue start = startPositions.pop();
+    float first = JS.assume(start);
+    JS.invoke(jumps, "push", JS.array(start, first + slice.length - 1.0));
+    JS.invoke(events, "splice", start, 2, slice);
   }
 
-  JS.call(objGet(jumps, "reverse"), jumps);
-  index = -1;
-  int jumpLen = arrLen(jumps);
-  while (true) {
-    index = index + 1;
-    if (index >= jumpLen) {
-      break;
-    }
-    JsValue jump = jumps[index];
-    int jumpStart = jsInt(jump[0]);
-    int jumpEnd = jsInt(jump[1]);
-    JS.set(gaps, JS.string(adjust + jumpStart), adjust + jumpEnd);
-    adjust = adjust + jumpEnd - jumpStart - 1;
+  JS.invoke(jumps, "reverse");
+  for (float jump = 0.0; jump < jumps.length; jump++) {
+    float jumpStart = JS.assume(jumps[jump][0]);
+    float jumpEnd = JS.assume(jumps[jump][1]);
+    gaps[adjust + jumpStart] = adjust + jumpEnd;
+    adjust = adjust + jumpEnd - jumpStart - 1.0;
   }
   return gaps;
 }
 
 export bool subtokenize(JsValue eventsArray) {
   JsValue jumps = JS.object();
-  int index = -1;
-  JsValue events = JS.construct(SpliceBuffer, eventsArray);
   bool more = false;
+  JsValue events = JS.construct(SpliceBuffer, eventsArray);
 
-  while (true) {
-    index = index + 1;
-    if (index >= sbLen(events)) {
-      break;
+  for (float index = 0.0; index < events.length; index++) {
+    while (JS.in(index, jumps)) {
+      index = JS.assume(jumps[index]);
     }
-    while (JS.has(jumps, JS.string(index))) {
-      index = jsInt(objGet(jumps, JS.string(index)));
-    }
-    JsValue event = sbGet(events, index);
+    JsValue event = JS.invoke(events, "get", index);
     if (
-      index > 0 &&
-      objGet(event[1], "type") == tChunkFlow &&
-      objGet(sbGet(events, index - 1)[1], "type") == tListItemPrefix
+      index != 0.0 &&
+      JS.strictEqual(typeOf(event), "chunkFlow") &&
+      JS.strictEqual(typeOf(JS.invoke(events, "get", index - 1.0)), "listItemPrefix")
     ) {
-      JsValue subevents = objGet(objGet(event[1], "_tokenizer"), "events");
-      int otherIndex = 0;
-      if (otherIndex < arrLen(subevents) && objGet(subevents[otherIndex][1], "type") == tLineEndingBlank) {
-        otherIndex = otherIndex + 2;
+      JsValue subevents = JS.get(JS.get(event[1], "_tokenizer"), "events");
+      float otherIndex = 0.0;
+      if (otherIndex < subevents.length && JS.strictEqual(typeOf(subevents[otherIndex]), "lineEndingBlank")) {
+        otherIndex = otherIndex + 2.0;
       }
-      if (otherIndex < arrLen(subevents) && objGet(subevents[otherIndex][1], "type") == tContent) {
+      if (otherIndex < subevents.length && JS.strictEqual(typeOf(subevents[otherIndex]), "content")) {
         while (true) {
-          otherIndex = otherIndex + 1;
-          if (otherIndex >= arrLen(subevents)) {
+          otherIndex++;
+          if (otherIndex >= subevents.length || JS.strictEqual(typeOf(subevents[otherIndex]), "content")) {
             break;
           }
-          if (objGet(subevents[otherIndex][1], "type") == tContent) {
-            break;
-          }
-          if (objGet(subevents[otherIndex][1], "type") == tChunkText) {
+          if (JS.strictEqual(typeOf(subevents[otherIndex]), "chunkText")) {
             JS.set(subevents[otherIndex][1], "_isInFirstContentOfListItem", true);
-            otherIndex = otherIndex + 1;
+            otherIndex++;
           }
         }
       }
     }
 
-    if (event[0] == "enter") {
-      if (objGet(event[1], "contentType").truthy()) {
-        objectAssign(jumps, subcontent(events, index));
-        index = jsInt(objGet(jumps, JS.string(index)));
+    if (JS.strictEqual(event[0], "enter")) {
+      if (JS.get(event[1], "contentType").truthy()) {
+        JS.call(JS.get(Object, "assign"), Object, jumps, subcontent(events, index));
+        index = JS.assume(jumps[index]);
         more = true;
       }
-    } else if (objGet(event[1], "_container").truthy()) {
-      int otherIndex = index;
-      int lineIndex = 0;
-      while (true) {
-        otherIndex = otherIndex - 1;
-        if (otherIndex < 0) {
-          break;
-        }
-        JsValue otherEvent = sbGet(events, otherIndex);
-        string otherType = jsString(objGet(otherEvent[1], "type"));
-        if (otherType == tLineEnding || otherType == tLineEndingBlank) {
-          if (otherEvent[0] == "enter") {
-            if (lineIndex > 0) {
-              JS.set(sbGet(events, lineIndex)[1], "type", tLineEndingBlank);
+    } else if (JS.get(event[1], "_container").truthy()) {
+      float otherIndex = index;
+      float lineIndex = 0.0;
+      while (otherIndex > 0.0) {
+        otherIndex--;
+        JsValue otherEvent = JS.invoke(events, "get", otherIndex);
+        JsValue otherType = typeOf(otherEvent);
+        if (JS.strictEqual(otherType, "lineEnding") || JS.strictEqual(otherType, "lineEndingBlank")) {
+          if (JS.strictEqual(otherEvent[0], "enter")) {
+            if (lineIndex != 0.0) {
+              JS.set(JS.invoke(events, "get", lineIndex)[1], "type", "lineEndingBlank");
             }
-            JS.set(otherEvent[1], "type", tLineEnding);
+            JS.set(otherEvent[1], "type", "lineEnding");
             lineIndex = otherIndex;
           }
-        } else if (otherType == tLinePrefix || otherType == tListItemIndent) {
-        } else {
+        } else if (!(JS.strictEqual(otherType, "linePrefix") || JS.strictEqual(otherType, "listItemIndent"))) {
           break;
         }
       }
-      if (lineIndex > 0) {
-        JS.set(event[1], "end", copyPoint(objGet(sbGet(events, lineIndex)[1], "start")));
-        JsValue parameters = sbSlice(events, lineIndex, index);
-        unshift(parameters, event);
-        sbSplice(events, lineIndex, index - lineIndex + 1, parameters);
+      if (lineIndex != 0.0) {
+        JS.set(event[1], "end", copyPoint(JS.get(JS.invoke(events, "get", lineIndex)[1], "start")));
+        JsValue parameters = JS.invoke(events, "slice", lineIndex, index);
+        JS.invoke(parameters, "unshift", event);
+        JS.invoke(events, "splice", lineIndex, index - lineIndex + 1.0, parameters);
       }
     }
   }
 
-  splice(eventsArray, 0, 1.0 / 0.0, sbSlice(events, 0, undef()));
+  splice(eventsArray, 0, 1.0 / 0.0, JS.invoke(events, "slice", 0));
   return !more;
 }

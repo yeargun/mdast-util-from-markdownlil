@@ -1,50 +1,46 @@
-import { call1, isEof, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { kThematicBreakMarkerCountMin } from "../symbol/constants.lil";
 import { tThematicBreak, tThematicBreakSequence, tWhitespace } from "../symbol/types.lil";
 
 JsValue tokenizeThematicBreak = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
-  int size = 0;
-  int marker = 0;
-  JsValue atBreak = undef();
+  float size = 0.0;
+  JsValue marker = JS.undefined();
+  JsValue atBreak = JS.undefined();
+  JsValue sequence = JS.undefined();
 
-  JsValue sequence = JS.method1((JsValue _s, JsValue code) => {
-    if (code == marker) {
-      call1(objGet(effects, "consume"), effects, code);
-      size = size + 1;
-      return sequence;
-    }
-    call1(objGet(effects, "exit"), effects, tThematicBreakSequence);
-    if (markdownSpace(code)) {
-      return call1(factorySpace(effects, atBreak, tWhitespace, 0), undef(), code);
-    }
-    return call1(atBreak, undef(), code);
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tThematicBreak);
+    marker = code;
+    return JS.call(atBreak, JS.undefined(), code);
   });
 
   atBreak = JS.method1((JsValue _s, JsValue code) => {
-    if (code == marker) {
-      call1(objGet(effects, "enter"), effects, tThematicBreakSequence);
-      return call1(sequence, undef(), code);
+    if (JS.strictEqual(code, marker)) {
+      JS.invoke(effects, "enter", tThematicBreakSequence);
+      return JS.call(sequence, JS.undefined(), code);
     }
-    if (size >= kThematicBreakMarkerCountMin && (isEof(code) || markdownLineEnding(code))) {
-      call1(objGet(effects, "exit"), effects, tThematicBreak);
-      return call1(ok, undef(), code);
+    if (size >= kThematicBreakMarkerCountMin && (JS.strictEqual(code, null) || markdownLineEnding(code))) {
+      JS.invoke(effects, "exit", tThematicBreak);
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue before = JS.method1((JsValue _s, JsValue code) => {
-    marker = JS.number(code).toInt();
-    return call1(atBreak, undef(), code);
-  });
-
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tThematicBreak);
-    return call1(before, undef(), code);
+  sequence = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, marker)) {
+      JS.invoke(effects, "consume", code);
+      size++;
+      return sequence;
+    }
+    JS.invoke(effects, "exit", tThematicBreakSequence);
+    if (markdownSpace(code)) {
+      return JS.call(factorySpace(effects, atBreak, tWhitespace, JS.undefined()), JS.undefined(), code);
+    }
+    return JS.call(atBreak, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue thematicBreak = makeNamedConstruct("thematicBreak", tokenizeThematicBreak);
+export JsValue thematicBreak = JS.object("name", "thematicBreak", "tokenize", tokenizeThematicBreak);

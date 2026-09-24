@@ -1,128 +1,132 @@
-import { arrLen, call1, isEof, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { markdownLineEnding } from "../util-character.lil";
 import { cGraveAccent, cSpace, codeEq } from "../symbol/codes.lil";
 import { tCharacterEscape, tCodeText, tCodeTextData, tCodeTextPadding, tCodeTextSequence, tLineEnding } from "../symbol/types.lil";
 
 JsValue resolveCodeText = JS.method2((JsValue _self, JsValue events, JsValue _context) => {
-  int tailExitIndex = arrLen(events) - 4;
-  int headEnterIndex = 3;
-  int index = 0;
-  int enter = -1;
-  if ((objGet(events[headEnterIndex][1], "type") == tLineEnding || objGet(events[headEnterIndex][1], "type") == "space") && (objGet(events[tailExitIndex][1], "type") == tLineEnding || objGet(events[tailExitIndex][1], "type") == "space")) {
+  float tailExitIndex = events.length - 4.0;
+  float headEnterIndex = 3.0;
+  float index = 0.0;
+  float enter = -1.0;
+  if ((JS.strictEqual(JS.get(events[headEnterIndex][1], "type"), tLineEnding) || JS.strictEqual(JS.get(events[headEnterIndex][1], "type"), "space")) && (JS.strictEqual(JS.get(events[tailExitIndex][1], "type"), tLineEnding) || JS.strictEqual(JS.get(events[tailExitIndex][1], "type"), "space"))) {
     index = headEnterIndex;
-    while (index + 1 < tailExitIndex) {
-      index = index + 1;
-      if (objGet(events[index][1], "type") == tCodeTextData) {
+    while (true) {
+      index++;
+      if (index >= tailExitIndex) {
+        break;
+      }
+      if (JS.strictEqual(JS.get(events[index][1], "type"), tCodeTextData)) {
         JS.set(events[headEnterIndex][1], "type", tCodeTextPadding);
         JS.set(events[tailExitIndex][1], "type", tCodeTextPadding);
-        headEnterIndex = headEnterIndex + 2;
-        tailExitIndex = tailExitIndex - 2;
+        headEnterIndex += 2.0;
+        tailExitIndex -= 2.0;
         break;
       }
     }
   }
-  index = headEnterIndex - 1;
-  tailExitIndex = tailExitIndex + 1;
-  while (index < tailExitIndex) {
-    index = index + 1;
-    if (enter < 0) {
-      if (index != tailExitIndex && objGet(events[index][1], "type") != tLineEnding) {
+  index = headEnterIndex - 1.0;
+  tailExitIndex++;
+  while (true) {
+    index++;
+    if (index > tailExitIndex) {
+      break;
+    }
+    if (enter < 0.0) {
+      if (index != tailExitIndex && JS.strictNotEqual(JS.get(events[index][1], "type"), tLineEnding)) {
         enter = index;
       }
-    } else if (index == tailExitIndex || objGet(events[index][1], "type") == tLineEnding) {
+    } else if (index == tailExitIndex || JS.strictEqual(JS.get(events[index][1], "type"), tLineEnding)) {
       JS.set(events[enter][1], "type", tCodeTextData);
-      if (index != enter + 2) {
-        JS.set(events[enter][1], "end", objGet(events[index - 1][1], "end"));
-        JS.call(JS.get(events, "splice"), events, enter + 2, index - enter - 2);
-        tailExitIndex = tailExitIndex - (index - enter - 2);
-        index = enter + 2;
+      if (index != enter + 2.0) {
+        JS.set(events[enter][1], "end", JS.get(events[index - 1.0][1], "end"));
+        JS.invoke(events, "splice", enter + 2.0, index - enter - 2.0);
+        tailExitIndex -= index - enter - 2.0;
+        index = enter + 2.0;
       }
-      enter = -1;
+      enter = -1.0;
     }
   }
   return events;
 });
 
 JsValue previousCodeText = JS.method1((JsValue self, JsValue code) => {
-  if (!codeEq(code, cGraveAccent)) {
-    return true;
-  }
-  JsValue events = objGet(self, "events");
-  return objGet(events[arrLen(events) - 1][1], "type") == tCharacterEscape;
+  return !codeEq(code, cGraveAccent) || JS.strictEqual(JS.get(JS.get(self, "events")[JS.get(self, "events").length - 1.0][1], "type"), tCharacterEscape);
 });
 
-JsValue tokenizeCodeText = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  int sizeOpen = 0;
-  int size = 0;
-  JsValue token = undef();
-  JsValue between = undef();
+JsValue tokenizeCodeText = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
+  float sizeOpen = 0.0;
+  float size = 0.0;
+  JsValue token = JS.undefined();
+  JsValue sequenceOpen = JS.undefined();
+  JsValue between = JS.undefined();
+  JsValue data = JS.undefined();
+  JsValue sequenceClose = JS.undefined();
 
-  JsValue data = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || codeEq(code, cSpace) || codeEq(code, cGraveAccent) || markdownLineEnding(code)) {
-      call1(objGet(effects, "exit"), effects, tCodeTextData);
-      return call1(between, undef(), code);
-    }
-    call1(objGet(effects, "consume"), effects, code);
-    return data;
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tCodeText);
+    JS.invoke(effects, "enter", tCodeTextSequence);
+    return JS.call(sequenceOpen, JS.undefined(), code);
   });
 
-  JsValue sequenceClose = JS.method1((JsValue _s, JsValue code) => {
+  sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cGraveAccent)) {
-      call1(objGet(effects, "consume"), effects, code);
-      size = size + 1;
-      return sequenceClose;
+      JS.invoke(effects, "consume", code);
+      sizeOpen++;
+      return sequenceOpen;
     }
-    if (size == sizeOpen) {
-      call1(objGet(effects, "exit"), effects, tCodeTextSequence);
-      call1(objGet(effects, "exit"), effects, tCodeText);
-      return call1(ok, undef(), code);
-    }
-    JS.set(token, "type", tCodeTextData);
-    return call1(data, undef(), code);
+    JS.invoke(effects, "exit", tCodeTextSequence);
+    return JS.call(between, JS.undefined(), code);
   });
 
   between = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(nok, undef(), code);
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
     }
     if (codeEq(code, cSpace)) {
-      call1(objGet(effects, "enter"), effects, "space");
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, "space");
+      JS.invoke(effects, "enter", "space");
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", "space");
       return between;
     }
     if (codeEq(code, cGraveAccent)) {
-      token = call1(objGet(effects, "enter"), effects, tCodeTextSequence);
-      size = 0;
-      return call1(sequenceClose, undef(), code);
+      token = JS.invoke(effects, "enter", tCodeTextSequence);
+      size = 0.0;
+      return JS.call(sequenceClose, JS.undefined(), code);
     }
     if (markdownLineEnding(code)) {
-      call1(objGet(effects, "enter"), effects, tLineEnding);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tLineEnding);
+      JS.invoke(effects, "enter", tLineEnding);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tLineEnding);
       return between;
     }
-    call1(objGet(effects, "enter"), effects, tCodeTextData);
-    return call1(data, undef(), code);
+    JS.invoke(effects, "enter", tCodeTextData);
+    return JS.call(data, JS.undefined(), code);
   });
 
-  JsValue sequenceOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cGraveAccent)) {
-      call1(objGet(effects, "consume"), effects, code);
-      sizeOpen = sizeOpen + 1;
-      return sequenceOpen;
+  data = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || codeEq(code, cSpace) || codeEq(code, cGraveAccent) || markdownLineEnding(code)) {
+      JS.invoke(effects, "exit", tCodeTextData);
+      return JS.call(between, JS.undefined(), code);
     }
-    call1(objGet(effects, "exit"), effects, tCodeTextSequence);
-    return call1(between, undef(), code);
+    JS.invoke(effects, "consume", code);
+    return data;
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tCodeText);
-    call1(objGet(effects, "enter"), effects, tCodeTextSequence);
-    return call1(sequenceOpen, undef(), code);
+  sequenceClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGraveAccent)) {
+      JS.invoke(effects, "consume", code);
+      size++;
+      return sequenceClose;
+    }
+    if (size == sizeOpen) {
+      JS.invoke(effects, "exit", tCodeTextSequence);
+      JS.invoke(effects, "exit", tCodeText);
+      return JS.call(ok, JS.undefined(), code);
+    }
+    JS.set(token, "type", tCodeTextData);
+    return JS.call(data, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue codeText = JS.object("name", "codeText", "tokenize", tokenizeCodeText, "previous", previousCodeText, "resolve", resolveCodeText);
+export JsValue codeText = JS.object("name", "codeText", "previous", previousCodeText, "resolve", resolveCodeText, "tokenize", tokenizeCodeText);

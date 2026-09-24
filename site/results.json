@@ -4,15 +4,19 @@
   "file": "from-markdown",
   "lilExport": "fromMarkdown",
   "officialExport": "fromMarkdown",
-  "node": "v22.21.1",
+  "node": "v24.11.1",
   "codec": "lilscript-codec gzip-9 / brotli-11",
-  "runtime": "Node v22.21.1",
+  "runtime": "Node v24.11.1",
   "warmupDiscard": 3,
-  "comparison": "Official rows are an esbuild bundle of mdast-util-from-markdown@2.0.3 plus its runtime graph, then Terser or esbuild. LilScript is the compiled npm file. Closed is extern_fields=false.",
+  "comparison": "Two official graphs are measured. The Node graph is an esbuild bundle of mdast-util-from-markdown@2.0.3 and its runtime dependencies as Node resolves them, then Terser or esbuild; it decodes named character references from the character-entities table, as @itslil/mdast-util-from-markdown does, and its Terser file is the bar. The browser graph is the same package as browsers resolve it: it decodes named references through the DOM and ships no entity table, so it is smaller than any file that carries the table. LilScript rows are the files the compiler wrote: the npm ESM is the compiler's output plus a license banner, and no minifier runs after the compiler. Closed is the same source under lilscript.closed.toml.",
   "spec": {
-    "total": 744,
-    "pass": 744,
-    "label": "runtime checks"
+    "total": 724,
+    "pass": 724,
+    "label": "official suite",
+    "checks": {
+      "total": 19,
+      "pass": 19
+    }
   },
   "play": {
     "kind": "md-json",
@@ -27,79 +31,185 @@
   "size": [
     {
       "id": "official",
-      "name": "Official mdast-util-from-markdown@2.0.3 graph",
-      "raw": 138048,
-      "gzip9": 24504,
-      "brotli11": 20876,
-      "note": "esbuild bundle of the published package plus runtime deps",
-      "diagnostic": false,
-      "measuredAt": "2026-09-10T20:50:19Z",
-      "artifactSha256": "b51c1c4deae12a04e06b9423f4e006bd2858b8671090d8b2d064f5880bebe7ce"
+      "name": "Official mdast-util-from-markdown@2.0.3 graph · Node",
+      "raw": 182161,
+      "gzip9": 36822,
+      "brotli11": 30953,
+      "note": "esbuild bundle of the published package plus its runtime dependencies as Node resolves them: named character references decode through the character-entities table, as they do in @itslil/mdast-util-from-markdown (site/official.js)",
+      "diagnostic": false
     },
     {
       "id": "official-terser-mangle",
-      "name": "Official \u00b7 Terser mangle on",
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "note": "Terser compress of that graph, mangle: true",
-      "baseline": true,
-      "measuredAt": "2026-09-10T20:50:19Z",
-      "artifactSha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+      "name": "Official · Node graph · Terser mangle on",
+      "raw": 84154,
+      "gzip9": 26849,
+      "brotli11": 23151,
+      "note": "Terser compress of the Node graph, mangle: true. The like-for-like bar: both files carry the entity table. Re-measured 2026-09-24 with Terser 5.51.2 on this host: 23,109 B with 3 passes, 23,078 B with 2 passes",
+      "baseline": true
     },
     {
       "id": "official-terser-nomangle",
-      "name": "Official \u00b7 Terser mangle off",
-      "raw": 90054,
-      "gzip9": 18398,
-      "brotli11": 16398,
-      "note": "Terser compress of that graph, mangle: false",
-      "measuredAt": "2026-09-10T20:50:19Z",
-      "artifactSha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
+      "name": "Official · Node graph · Terser mangle off",
+      "raw": 118623,
+      "gzip9": 30282,
+      "brotli11": 26196,
+      "note": "Terser compress of the Node graph, mangle: false"
     },
     {
       "id": "official-esbuild",
-      "name": "Official \u00b7 esbuild minify",
+      "name": "Official · Node graph · esbuild minify",
+      "raw": 92538,
+      "gzip9": 28038,
+      "brotli11": 24220,
+      "note": "esbuild minify of the Node graph"
+    },
+    {
+      "id": "official-browser-terser",
+      "name": "Official · browser graph · Terser mangle on",
+      "raw": 55520,
+      "gzip9": 14986,
+      "brotli11": 13336,
+      "note": "The graph as browsers resolve it, built from the pinned Git source (mdast-util-from-markdown f9ef1b3): decode-named-character-reference/index.dom.js decodes named references through the DOM, so no entity table ships. esbuild bundle, then Terser 5.51.2 (3 passes, mangle). Recorded 2026-09-10; site/esm-comparison/original.js, re-measured with this codec",
+      "artifactSha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d",
+      "browserBar": true
+    },
+    {
+      "id": "official-browser-esbuild",
+      "name": "Official · browser graph · esbuild minify",
       "raw": 56894,
       "gzip9": 16075,
       "brotli11": 14331,
-      "note": "esbuild minify of that graph",
-      "measuredAt": "2026-09-10T20:50:19Z",
+      "note": "esbuild minify of the same browser graph (recorded 2026-09-10)",
       "artifactSha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
     },
     {
       "id": "itslil",
-      "name": "@itslil/mdast-util-from-markdown \u00b7 library",
-      "raw": 87437,
-      "gzip9": 29993,
-      "brotli11": 25455,
-      "note": "ESM output from LilScript 4dc4e33.",
-      "primary": true,
-      "measuredAt": "2026-09-10T20:50:19Z",
-      "artifactSha256": "c9271244938542f1285792688d7873f777903782e1fb9b5cf2db83e4e57a4104"
+      "name": "@itslil/mdast-util-from-markdown · library",
+      "raw": 71802,
+      "gzip9": 26411,
+      "brotli11": 22308,
+      "note": "LilScript js-module under lilscript.toml. The npm ESM: compiler-written, license banner, no post-minifier.",
+      "primary": true
     },
     {
       "id": "itslil-closed",
-      "name": "@itslil/mdast-util-from-markdown \u00b7 closed",
-      "raw": 88790,
-      "gzip9": 30415,
-      "brotli11": 25806,
-      "note": "ESM output from LilScript 4dc4e33.",
-      "measuredAt": "2026-09-10T20:50:19Z",
-      "artifactSha256": "9541ced2d6a8c4d7a91fcac8b62f69a285fde9117b5f4ac988deb53f7f7a6ad3"
+      "name": "@itslil/mdast-util-from-markdown · closed",
+      "raw": 74024,
+      "gzip9": 26504,
+      "brotli11": 22380,
+      "note": "Same source under lilscript.closed.toml (level 13). Compiler-written."
     }
   ],
   "throughput": [
     {
       "id": "official",
       "name": "mdast-util-from-markdown@2.0.3",
-      "documentMs": 9.847999999999956
+      "documentMs": 37.5
     },
     {
       "id": "itslil",
       "name": "@itslil/mdast-util-from-markdown",
-      "documentMs": 2.6662089999999807
+      "documentMs": 38.46
     }
   ],
-  "sizeMeasuredAt": "2026-09-10T20:50:19Z"
+  "previousRelease": {
+    "label": "previous release",
+    "commit": "6635a35",
+    "date": "2026-09-02",
+    "compiler": "the old compiler route (lilscript feature/source-maps f504c93; deleted 2026-09-24)",
+    "measuredWith": "the same lilscript-codec, on the dist files committed at 6635a35 (unchanged through d4aa854)",
+    "note": "The npm ESM was the old compiler's output with a banner; the CommonJS and browser files were esbuild reprints of it (whitespace minified).",
+    "files": {
+      "dist/from-markdown.esm.js": {
+        "raw": 88325,
+        "gzip9": 30764,
+        "brotli11": 26103
+      },
+      "dist/from-markdown.cjs": {
+        "raw": 102745,
+        "gzip9": 32568,
+        "brotli11": 27530
+      },
+      "dist/from-markdown.umd.js": {
+        "raw": 102852,
+        "gzip9": 32631,
+        "brotli11": 27533
+      },
+      "dist/from-markdown.closed.js": {
+        "raw": 88215,
+        "gzip9": 30686,
+        "brotli11": 26114
+      }
+    }
+  },
+  "delivered": [
+    {
+      "path": "dist/from-markdown.esm.js",
+      "condition": "import",
+      "writtenBy": "compiler",
+      "wrapper": "license banner",
+      "raw": 71802,
+      "gzip9": 26411,
+      "brotli11": 22308
+    },
+    {
+      "path": "dist/from-markdown.cjs",
+      "condition": "require",
+      "writtenBy": "compiler",
+      "wrapper": "license banner, CommonJS export object",
+      "raw": 71824,
+      "gzip9": 26428,
+      "brotli11": 22374
+    },
+    {
+      "path": "dist/from-markdown.umd.js",
+      "condition": "browser script (unpkg, jsdelivr)",
+      "writtenBy": "compiler",
+      "wrapper": "license banner, function scope, global `fromMarkdown`",
+      "raw": 71847,
+      "gzip9": 26434,
+      "brotli11": 22353
+    },
+    {
+      "path": "dist/from-markdown.closed.js",
+      "condition": "./closed",
+      "writtenBy": "compiler",
+      "wrapper": "none",
+      "raw": 74024,
+      "gzip9": 26504,
+      "brotli11": 22380
+    }
+  ],
+  "throughputDocument": "the CommonMark spec's 652 examples as one document (15469 characters)",
+  "compiler": {
+    "revision": "aa2052f0",
+    "binarySha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9",
+    "codecSha256": "125776830df72bbaf9704fee3c38bb0bf29bfc6bcceb5bc8707a0507a128d7b9",
+    "compileWallMs": [
+      604.6,
+      615.5,
+      616
+    ],
+    "buildCompileWallMs": [
+      1220.2,
+      1226.2,
+      1218.3
+    ],
+    "invocations": [
+      {
+        "source": "src/entry.lil",
+        "config": "lilscript.toml",
+        "output": "from-markdown.raw.js"
+      },
+      {
+        "source": "src/entry.lil",
+        "config": "lilscript.closed.toml",
+        "output": "from-markdown.closed.js"
+      }
+    ],
+    "compileScope": "wall time of the compiler process for src/entry.lil with lilscript.toml, the shipped ESM",
+    "buildScope": "wall time of all 2 compiler processes of one clean build",
+    "date": "2026-09-24"
+  },
+  "perfLead": "same work, against the official Node graph"
 }

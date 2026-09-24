@@ -7,9 +7,9 @@
     "directory": "."
   },
   "portSource": {
-    "commit": "940982d7562bbeb23a24cdbe1596382fe45a2d1c"
+    "commit": "5c5cc8f plus the release working tree (committed together with these records)"
   },
-  "compilerCommit": "4dc4e3337d9ffd758d65e3852682d6e13d9331c1",
+  "compilerCommit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
   "install": [
     "npm",
     "install",
@@ -29,5 +29,5 @@
   "external": [],
   "esmScope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline",
   "lilscriptBuild": "node scripts/build.mjs --compile --force",
-  "test": "npm run check:types && node --test test/*.test.mjs test/official/index.js"
+  "test": "npm run check:types && node --test test/from-markdown.test.mjs test/package.test.mjs test/official/index.js"
 }

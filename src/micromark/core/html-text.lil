@@ -1,368 +1,382 @@
-import { call1, includesStr, isEof, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { asciiAlpha, asciiAlphanumeric, markdownLineEnding, markdownLineEndingOrSpace, markdownSpace } from "../util-character.lil";
-import { cApostrophe, cColon, cDash, cDot, cEqualsTo, cExclamationMark, cGraveAccent, cGreaterThan, cLeftSquareBracket, cLessThan, cQuestionMark, cQuotationMark, cRightSquareBracket, cSlash, cUnderscore, codeEq, codeInt } from "../symbol/codes.lil";
+import { cApostrophe, cColon, cDash, cDot, cEqualsTo, cExclamationMark, cGraveAccent, cGreaterThan, cLeftSquareBracket, cLessThan, cQuestionMark, cQuotationMark, cRightSquareBracket, cSlash, cUnderscore, codeEq } from "../symbol/codes.lil";
 import { kCdataOpeningString, kTabSize } from "../symbol/constants.lil";
 import { tHtmlText, tHtmlTextData, tLineEnding, tLinePrefix } from "../symbol/types.lil";
 
 JsValue tokenizeHtmlText = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  int marker = 0;
-  int index = 0;
-  JsValue returnState = undef();
-  JsValue tagOpenBetween = undef();
-  JsValue instructionClose = undef();
-  JsValue cdataClose = undef();
-  JsValue commentClose = undef();
-  JsValue commentEnd = undef();
+  JsValue marker = JS.undefined();
+  float index = 0.0;
+  JsValue returnState = JS.undefined();
+  JsValue open = JS.undefined();
+  JsValue declarationOpen = JS.undefined();
+  JsValue commentOpenInside = JS.undefined();
+  JsValue comment = JS.undefined();
+  JsValue commentClose = JS.undefined();
+  JsValue commentEnd = JS.undefined();
+  JsValue cdataOpenInside = JS.undefined();
+  JsValue cdata = JS.undefined();
+  JsValue cdataClose = JS.undefined();
+  JsValue cdataEnd = JS.undefined();
+  JsValue declaration = JS.undefined();
+  JsValue instruction = JS.undefined();
+  JsValue instructionClose = JS.undefined();
+  JsValue tagCloseStart = JS.undefined();
+  JsValue tagClose = JS.undefined();
+  JsValue tagCloseBetween = JS.undefined();
+  JsValue tagOpen = JS.undefined();
+  JsValue tagOpenBetween = JS.undefined();
+  JsValue tagOpenAttributeName = JS.undefined();
+  JsValue tagOpenAttributeNameAfter = JS.undefined();
+  JsValue tagOpenAttributeValueBefore = JS.undefined();
+  JsValue tagOpenAttributeValueQuoted = JS.undefined();
+  JsValue tagOpenAttributeValueUnquoted = JS.undefined();
+  JsValue tagOpenAttributeValueQuotedAfter = JS.undefined();
+  JsValue end = JS.undefined();
+  JsValue lineEndingBefore = JS.undefined();
+  JsValue lineEndingAfter = JS.undefined();
+  JsValue lineEndingAfterPrefix = JS.undefined();
 
-  JsValue consume = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "consume"), effects, code);
-    return undef();
+  auto consume = (JsValue code) => {
+    JS.invoke(effects, "consume", code);
+  };
+
+  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tHtmlText);
+    JS.invoke(effects, "enter", tHtmlTextData);
+    consume(code);
+    return open;
   });
 
-  JsValue lineEndingAfterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tHtmlTextData);
-    return call1(returnState, undef(), code);
-  });
-
-  JsValue lineEndingAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownSpace(code)) {
-      float max = kTabSize;
-      if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-        max = 0;
-      }
-      return call1(factorySpace(effects, lineEndingAfterPrefix, tLinePrefix, max), undef(), code);
+  open = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cExclamationMark)) {
+      consume(code);
+      return declarationOpen;
     }
-    return call1(lineEndingAfterPrefix, undef(), code);
-  });
-
-  JsValue lineEndingBefore = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "exit"), effects, tHtmlTextData);
-    call1(objGet(effects, "enter"), effects, tLineEnding);
-    call1(consume, undef(), code);
-    call1(objGet(effects, "exit"), effects, tLineEnding);
-    return lineEndingAfter;
-  });
-
-  JsValue end = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cGreaterThan)) {
-      call1(consume, undef(), code);
-      call1(objGet(effects, "exit"), effects, tHtmlTextData);
-      call1(objGet(effects, "exit"), effects, tHtmlText);
-      return ok;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue tagOpenAttributeValueQuotedAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
-      return call1(tagOpenBetween, undef(), code);
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue tagOpenAttributeValueUnquoted = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGraveAccent)) {
-      return call1(nok, undef(), code);
-    }
-    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
-      return call1(tagOpenBetween, undef(), code);
-    }
-    call1(consume, undef(), code);
-    return tagOpenAttributeValueUnquoted;
-  });
-
-  JsValue tagOpenAttributeValueQuoted = JS.method1((JsValue _s, JsValue code) => {
-    if (code == marker) {
-      call1(consume, undef(), code);
-      marker = 0;
-      return tagOpenAttributeValueQuotedAfter;
-    }
-    if (isEof(code)) {
-      return call1(nok, undef(), code);
-    }
-    if (markdownLineEnding(code)) {
-      returnState = tagOpenAttributeValueQuoted;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    call1(consume, undef(), code);
-    return tagOpenAttributeValueQuoted;
-  });
-
-  JsValue tagOpenAttributeValueBefore = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGreaterThan) || codeEq(code, cGraveAccent)) {
-      return call1(nok, undef(), code);
-    }
-    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe)) {
-      call1(consume, undef(), code);
-      marker = JS.number(code).toInt();
-      return tagOpenAttributeValueQuoted;
-    }
-    if (markdownLineEnding(code)) {
-      returnState = tagOpenAttributeValueBefore;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    if (markdownSpace(code)) {
-      call1(consume, undef(), code);
-      return tagOpenAttributeValueBefore;
-    }
-    call1(consume, undef(), code);
-    return tagOpenAttributeValueUnquoted;
-  });
-
-  JsValue tagOpenAttributeNameAfter = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cEqualsTo)) {
-      call1(consume, undef(), code);
-      return tagOpenAttributeValueBefore;
-    }
-    if (markdownLineEnding(code)) {
-      returnState = tagOpenAttributeNameAfter;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    if (markdownSpace(code)) {
-      call1(consume, undef(), code);
-      return tagOpenAttributeNameAfter;
-    }
-    return call1(tagOpenBetween, undef(), code);
-  });
-
-  JsValue tagOpenAttributeName = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cDash) || codeEq(code, cDot) || codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlphanumeric(code)) {
-      call1(consume, undef(), code);
-      return tagOpenAttributeName;
-    }
-    return call1(tagOpenAttributeNameAfter, undef(), code);
-  });
-
-  tagOpenBetween = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cSlash)) {
-      call1(consume, undef(), code);
-      return end;
-    }
-    if (codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlpha(code)) {
-      call1(consume, undef(), code);
-      return tagOpenAttributeName;
-    }
-    if (markdownLineEnding(code)) {
-      returnState = tagOpenBetween;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    if (markdownSpace(code)) {
-      call1(consume, undef(), code);
-      return tagOpenBetween;
-    }
-    return call1(end, undef(), code);
-  });
-
-  JsValue tagOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
-      call1(consume, undef(), code);
-      return tagOpen;
-    }
-    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
-      return call1(tagOpenBetween, undef(), code);
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue tagCloseBetween = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEnding(code)) {
-      returnState = tagCloseBetween;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    if (markdownSpace(code)) {
-      call1(consume, undef(), code);
-      return tagCloseBetween;
-    }
-    return call1(end, undef(), code);
-  });
-
-  JsValue tagClose = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
-      call1(consume, undef(), code);
-      return tagClose;
-    }
-    return call1(tagCloseBetween, undef(), code);
-  });
-
-  JsValue tagCloseStart = JS.method1((JsValue _s, JsValue code) => {
-    if (asciiAlpha(code)) {
-      call1(consume, undef(), code);
-      return tagClose;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue instruction = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(nok, undef(), code);
+      consume(code);
+      return tagCloseStart;
     }
     if (codeEq(code, cQuestionMark)) {
-      call1(consume, undef(), code);
-      return instructionClose;
+      consume(code);
+      return instruction;
     }
-    if (markdownLineEnding(code)) {
-      returnState = instruction;
-      return call1(lineEndingBefore, undef(), code);
+    if (asciiAlpha(code)) {
+      consume(code);
+      return tagOpen;
     }
-    call1(consume, undef(), code);
-    return instruction;
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  instructionClose = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cGreaterThan)) {
-      return call1(end, undef(), code);
+  declarationOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash)) {
+      consume(code);
+      return commentOpenInside;
     }
-    return call1(instruction, undef(), code);
-  });
-
-  JsValue declaration = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || codeEq(code, cGreaterThan)) {
-      return call1(end, undef(), code);
-    }
-    if (markdownLineEnding(code)) {
-      returnState = declaration;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    call1(consume, undef(), code);
-    return declaration;
-  });
-
-  JsValue cdata = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(nok, undef(), code);
-    }
-    if (codeEq(code, cRightSquareBracket)) {
-      call1(consume, undef(), code);
-      return cdataClose;
-    }
-    if (markdownLineEnding(code)) {
-      returnState = cdata;
-      return call1(lineEndingBefore, undef(), code);
-    }
-    call1(consume, undef(), code);
-    return cdata;
-  });
-
-  JsValue cdataEnd = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cGreaterThan)) {
-      return call1(end, undef(), code);
-    }
-    if (codeEq(code, cRightSquareBracket)) {
-      call1(consume, undef(), code);
-      return cdataEnd;
-    }
-    return call1(cdata, undef(), code);
-  });
-
-  cdataClose = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cRightSquareBracket)) {
-      call1(consume, undef(), code);
-      return cdataEnd;
-    }
-    return call1(cdata, undef(), code);
-  });
-
-  JsValue cdataOpenInside = JS.method1((JsValue _s, JsValue code) => {
-    int currentIndex = index;
-    index = index + 1;
-    if (!isEof(code) && codeInt(code) == kCdataOpeningString.charCodeAt(currentIndex)) {
-      call1(consume, undef(), code);
-      if (currentIndex + 1 == kCdataOpeningString.length) {
-        return cdata;
-      }
+    if (codeEq(code, cLeftSquareBracket)) {
+      consume(code);
+      index = 0;
       return cdataOpenInside;
     }
-    return call1(nok, undef(), code);
+    if (asciiAlpha(code)) {
+      consume(code);
+      return declaration;
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue comment = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(nok, undef(), code);
+  commentOpenInside = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash)) {
+      consume(code);
+      return commentEnd;
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  comment = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
     }
     if (codeEq(code, cDash)) {
-      call1(consume, undef(), code);
+      consume(code);
       return commentClose;
     }
     if (markdownLineEnding(code)) {
       returnState = comment;
-      return call1(lineEndingBefore, undef(), code);
+      return JS.call(lineEndingBefore, JS.undefined(), code);
     }
-    call1(consume, undef(), code);
+    consume(code);
     return comment;
   });
 
   commentClose = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cDash)) {
-      call1(consume, undef(), code);
+      consume(code);
       return commentEnd;
     }
-    return call1(comment, undef(), code);
+    return JS.call(comment, JS.undefined(), code);
   });
 
   commentEnd = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cGreaterThan)) {
-      return call1(end, undef(), code);
+      return JS.call(end, JS.undefined(), code);
     }
     if (codeEq(code, cDash)) {
-      return call1(commentClose, undef(), code);
+      return JS.call(commentClose, JS.undefined(), code);
     }
-    return call1(comment, undef(), code);
+    return JS.call(comment, JS.undefined(), code);
   });
 
-  JsValue commentOpenInside = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cDash)) {
-      call1(consume, undef(), code);
-      return commentEnd;
+  cdataOpenInside = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, JS.invoke(kCdataOpeningString, "charCodeAt", index))) {
+      index++;
+      consume(code);
+      return if (index == kCdataOpeningString.length) { cdata } else { cdataOpenInside };
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue declarationOpen = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cDash)) {
-      call1(consume, undef(), code);
-      return commentOpenInside;
+  cdata = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
     }
-    if (codeEq(code, cLeftSquareBracket)) {
-      call1(consume, undef(), code);
-      index = 0;
-      return cdataOpenInside;
+    if (codeEq(code, cRightSquareBracket)) {
+      consume(code);
+      return cdataClose;
     }
-    if (asciiAlpha(code)) {
-      call1(consume, undef(), code);
-      return declaration;
+    if (markdownLineEnding(code)) {
+      returnState = cdata;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    consume(code);
+    return cdata;
   });
 
-  JsValue open = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cExclamationMark)) {
-      call1(consume, undef(), code);
-      return declarationOpen;
+  cdataClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cRightSquareBracket)) {
+      consume(code);
+      return cdataEnd;
     }
-    if (codeEq(code, cSlash)) {
-      call1(consume, undef(), code);
-      return tagCloseStart;
+    return JS.call(cdata, JS.undefined(), code);
+  });
+
+  cdataEnd = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      return JS.call(end, JS.undefined(), code);
+    }
+    if (codeEq(code, cRightSquareBracket)) {
+      consume(code);
+      return cdataEnd;
+    }
+    return JS.call(cdata, JS.undefined(), code);
+  });
+
+  declaration = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || codeEq(code, cGreaterThan)) {
+      return JS.call(end, JS.undefined(), code);
+    }
+    if (markdownLineEnding(code)) {
+      returnState = declaration;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    consume(code);
+    return declaration;
+  });
+
+  instruction = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
     }
     if (codeEq(code, cQuestionMark)) {
-      call1(consume, undef(), code);
-      return instruction;
+      consume(code);
+      return instructionClose;
     }
-    if (asciiAlpha(code)) {
-      call1(consume, undef(), code);
-      return tagOpen;
+    if (markdownLineEnding(code)) {
+      returnState = instruction;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    consume(code);
+    return instruction;
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tHtmlText);
-    call1(objGet(effects, "enter"), effects, tHtmlTextData);
-    call1(consume, undef(), code);
-    return open;
+  instructionClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      return JS.call(end, JS.undefined(), code);
+    }
+    return JS.call(instruction, JS.undefined(), code);
+  });
+
+  tagCloseStart = JS.method1((JsValue _s, JsValue code) => {
+    if (asciiAlpha(code)) {
+      consume(code);
+      return tagClose;
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  tagClose = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
+      consume(code);
+      return tagClose;
+    }
+    return JS.call(tagCloseBetween, JS.undefined(), code);
+  });
+
+  tagCloseBetween = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownLineEnding(code)) {
+      returnState = tagCloseBetween;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    if (markdownSpace(code)) {
+      consume(code);
+      return tagCloseBetween;
+    }
+    return JS.call(end, JS.undefined(), code);
+  });
+
+  tagOpen = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || asciiAlphanumeric(code)) {
+      consume(code);
+      return tagOpen;
+    }
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return JS.call(tagOpenBetween, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  tagOpenBetween = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cSlash)) {
+      consume(code);
+      return end;
+    }
+    if (codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlpha(code)) {
+      consume(code);
+      return tagOpenAttributeName;
+    }
+    if (markdownLineEnding(code)) {
+      returnState = tagOpenBetween;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    if (markdownSpace(code)) {
+      consume(code);
+      return tagOpenBetween;
+    }
+    return JS.call(end, JS.undefined(), code);
+  });
+
+  tagOpenAttributeName = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cDash) || codeEq(code, cDot) || codeEq(code, cColon) || codeEq(code, cUnderscore) || asciiAlphanumeric(code)) {
+      consume(code);
+      return tagOpenAttributeName;
+    }
+    return JS.call(tagOpenAttributeNameAfter, JS.undefined(), code);
+  });
+
+  tagOpenAttributeNameAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cEqualsTo)) {
+      consume(code);
+      return tagOpenAttributeValueBefore;
+    }
+    if (markdownLineEnding(code)) {
+      returnState = tagOpenAttributeNameAfter;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    if (markdownSpace(code)) {
+      consume(code);
+      return tagOpenAttributeNameAfter;
+    }
+    return JS.call(tagOpenBetween, JS.undefined(), code);
+  });
+
+  tagOpenAttributeValueBefore = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGreaterThan) || codeEq(code, cGraveAccent)) {
+      return JS.call(nok, JS.undefined(), code);
+    }
+    if (codeEq(code, cQuotationMark) || codeEq(code, cApostrophe)) {
+      consume(code);
+      marker = code;
+      return tagOpenAttributeValueQuoted;
+    }
+    if (markdownLineEnding(code)) {
+      returnState = tagOpenAttributeValueBefore;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    if (markdownSpace(code)) {
+      consume(code);
+      return tagOpenAttributeValueBefore;
+    }
+    consume(code);
+    return tagOpenAttributeValueUnquoted;
+  });
+
+  tagOpenAttributeValueQuoted = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, marker)) {
+      consume(code);
+      marker = JS.undefined();
+      return tagOpenAttributeValueQuotedAfter;
+    }
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
+    }
+    if (markdownLineEnding(code)) {
+      returnState = tagOpenAttributeValueQuoted;
+      return JS.call(lineEndingBefore, JS.undefined(), code);
+    }
+    consume(code);
+    return tagOpenAttributeValueQuoted;
+  });
+
+  tagOpenAttributeValueUnquoted = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || codeEq(code, cQuotationMark) || codeEq(code, cApostrophe) || codeEq(code, cLessThan) || codeEq(code, cEqualsTo) || codeEq(code, cGraveAccent)) {
+      return JS.call(nok, JS.undefined(), code);
+    }
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return JS.call(tagOpenBetween, JS.undefined(), code);
+    }
+    consume(code);
+    return tagOpenAttributeValueUnquoted;
+  });
+
+  tagOpenAttributeValueQuotedAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cSlash) || codeEq(code, cGreaterThan) || markdownLineEndingOrSpace(code)) {
+      return JS.call(tagOpenBetween, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  end = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cGreaterThan)) {
+      consume(code);
+      JS.invoke(effects, "exit", tHtmlTextData);
+      JS.invoke(effects, "exit", tHtmlText);
+      return ok;
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  lineEndingBefore = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "exit", tHtmlTextData);
+    JS.invoke(effects, "enter", tLineEnding);
+    consume(code);
+    JS.invoke(effects, "exit", tLineEnding);
+    return lineEndingAfter;
+  });
+
+  lineEndingAfter = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code)) {
+      JsValue max = if (JS.invoke(JS.get(JS.get(JS.get(self, "parser"), "constructs"), "disable")["null"], "includes", "codeIndented").truthy()) { JS.undefined() } else { kTabSize };
+      return JS.call(factorySpace(effects, lineEndingAfterPrefix, tLinePrefix, max), JS.undefined(), code);
+    }
+    return JS.call(lineEndingAfterPrefix, JS.undefined(), code);
+  });
+
+  lineEndingAfterPrefix = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tHtmlTextData);
+    return JS.call(returnState, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue htmlText = makeNamedConstruct("htmlText", tokenizeHtmlText);
+export JsValue htmlText = JS.object("name", "htmlText", "tokenize", tokenizeHtmlText);

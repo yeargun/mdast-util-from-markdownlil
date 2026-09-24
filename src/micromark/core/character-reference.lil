@@ -1,90 +1,75 @@
-import { call1, jsString, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { decodeNamedCharacterReference } from "../decode-named.lil";
 import { asciiAlphanumeric, asciiDigit, asciiHexDigit } from "../util-character.lil";
 import { cLowercaseX, cNumberSign, cSemicolon, cUppercaseX, codeEq } from "../symbol/codes.lil";
 import { kCharacterReferenceDecimalSizeMax, kCharacterReferenceHexadecimalSizeMax, kCharacterReferenceNamedSizeMax } from "../symbol/constants.lil";
 import { tCharacterReference, tCharacterReferenceMarker, tCharacterReferenceMarkerHexadecimal, tCharacterReferenceMarkerNumeric, tCharacterReferenceValue } from "../symbol/types.lil";
 
-class CharacterReferenceState {
-  int size;
-  int max;
-  int kind;
-}
-
-bool testCode(int kind, JsValue code) {
-  if (kind == 0) {
-    return asciiAlphanumeric(code);
-  }
-  if (kind == 1) {
-    return asciiHexDigit(code);
-  }
-  return asciiDigit(code);
-}
-
 JsValue tokenizeCharacterReference = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  CharacterReferenceState st = new CharacterReferenceState();
-
-  JsValue value = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cSemicolon) && st.size > 0) {
-      JsValue token = call1(objGet(effects, "exit"), effects, tCharacterReferenceValue);
-      if (st.kind == 0) {
-        string serialized = jsString(call1(objGet(self, "sliceSerialize"), self, token));
-        if (!decodeNamedCharacterReference(serialized).truthy()) {
-          return call1(nok, undef(), code);
-        }
-      }
-      call1(objGet(effects, "enter"), effects, tCharacterReferenceMarker);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tCharacterReferenceMarker);
-      call1(objGet(effects, "exit"), effects, tCharacterReference);
-      return ok;
-    }
-    if (testCode(st.kind, code) && st.size < st.max) {
-      st.size = st.size + 1;
-      call1(objGet(effects, "consume"), effects, code);
-      return value;
-    }
-    return call1(nok, undef(), code);
-  });
-
-  JsValue numeric = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cUppercaseX) || codeEq(code, cLowercaseX)) {
-      call1(objGet(effects, "enter"), effects, tCharacterReferenceMarkerHexadecimal);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tCharacterReferenceMarkerHexadecimal);
-      call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-      st.max = kCharacterReferenceHexadecimalSizeMax;
-      st.kind = 1;
-      return value;
-    }
-    call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-    st.max = kCharacterReferenceDecimalSizeMax;
-    st.kind = 2;
-    return call1(value, undef(), code);
-  });
-
-  JsValue open = JS.method1((JsValue _s, JsValue code) => {
-    if (codeEq(code, cNumberSign)) {
-      call1(objGet(effects, "enter"), effects, tCharacterReferenceMarkerNumeric);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tCharacterReferenceMarkerNumeric);
-      return numeric;
-    }
-    call1(objGet(effects, "enter"), effects, tCharacterReferenceValue);
-    st.max = kCharacterReferenceNamedSizeMax;
-    st.kind = 0;
-    return call1(value, undef(), code);
-  });
+  float size = 0.0;
+  float max = 0.0;
+  func(JsValue)->bool test = asciiAlphanumeric;
+  JsValue open = JS.undefined();
+  JsValue numeric = JS.undefined();
+  JsValue value = JS.undefined();
 
   JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tCharacterReference);
-    call1(objGet(effects, "enter"), effects, tCharacterReferenceMarker);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tCharacterReferenceMarker);
+    JS.invoke(effects, "enter", tCharacterReference);
+    JS.invoke(effects, "enter", tCharacterReferenceMarker);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tCharacterReferenceMarker);
     return open;
+  });
+
+  open = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cNumberSign)) {
+      JS.invoke(effects, "enter", tCharacterReferenceMarkerNumeric);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tCharacterReferenceMarkerNumeric);
+      return numeric;
+    }
+    JS.invoke(effects, "enter", tCharacterReferenceValue);
+    max = kCharacterReferenceNamedSizeMax;
+    test = asciiAlphanumeric;
+    return JS.call(value, JS.undefined(), code);
+  });
+
+  numeric = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cUppercaseX) || codeEq(code, cLowercaseX)) {
+      JS.invoke(effects, "enter", tCharacterReferenceMarkerHexadecimal);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tCharacterReferenceMarkerHexadecimal);
+      JS.invoke(effects, "enter", tCharacterReferenceValue);
+      max = kCharacterReferenceHexadecimalSizeMax;
+      test = asciiHexDigit;
+      return value;
+    }
+    JS.invoke(effects, "enter", tCharacterReferenceValue);
+    max = kCharacterReferenceDecimalSizeMax;
+    test = asciiDigit;
+    return JS.call(value, JS.undefined(), code);
+  });
+
+  value = JS.method1((JsValue _s, JsValue code) => {
+    if (codeEq(code, cSemicolon) && size != 0.0) {
+      JsValue token = JS.invoke(effects, "exit", tCharacterReferenceValue);
+      if (test == asciiAlphanumeric && !decodeNamedCharacterReference(JS.assume(JS.invoke(self, "sliceSerialize", token))).truthy()) {
+        return JS.call(nok, JS.undefined(), code);
+      }
+      JS.invoke(effects, "enter", tCharacterReferenceMarker);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tCharacterReferenceMarker);
+      JS.invoke(effects, "exit", tCharacterReference);
+      return ok;
+    }
+    if (test(code) && size < max) {
+      size++;
+      JS.invoke(effects, "consume", code);
+      return value;
+    }
+    return JS.call(nok, JS.undefined(), code);
   });
 
   return start;
 });
 
-export JsValue characterReference = makeNamedConstruct("characterReference", tokenizeCharacterReference);
+export JsValue characterReference = JS.object("name", "characterReference", "tokenize", tokenizeCharacterReference);

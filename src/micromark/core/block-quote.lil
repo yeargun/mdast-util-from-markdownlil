@@ -1,4 +1,3 @@
-import { call1, call2, call3, includesStr, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownSpace } from "../util-character.lil";
 import { cGreaterThan, codeEq } from "../symbol/codes.lil";
@@ -8,64 +7,55 @@ import { tBlockQuote, tBlockQuoteMarker, tBlockQuotePrefix, tBlockQuotePrefixWhi
 JsValue tokenizeBlockQuoteStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      call1(objGet(effects, "enter"), effects, tBlockQuotePrefixWhitespace);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tBlockQuotePrefixWhitespace);
-      call1(objGet(effects, "exit"), effects, tBlockQuotePrefix);
+      JS.invoke(effects, "enter", tBlockQuotePrefixWhitespace);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tBlockQuotePrefixWhitespace);
+      JS.invoke(effects, "exit", tBlockQuotePrefix);
       return ok;
     }
-    call1(objGet(effects, "exit"), effects, tBlockQuotePrefix);
-    return call1(ok, undef(), code);
+    JS.invoke(effects, "exit", tBlockQuotePrefix);
+    return JS.call(ok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
+  return JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cGreaterThan)) {
-      JsValue state = objGet(self, "containerState");
-      if (!objGet(state, "open").truthy()) {
-        JsValue fields = JS.object();
-        JS.set(fields, "_container", true);
-        call2(objGet(effects, "enter"), effects, tBlockQuote, fields);
+      JsValue state = JS.get(self, "containerState");
+      if (!JS.get(state, "open").truthy()) {
+        JS.invoke(effects, "enter", tBlockQuote, JS.object("_container", true));
         JS.set(state, "open", true);
       }
-      call1(objGet(effects, "enter"), effects, tBlockQuotePrefix);
-      call1(objGet(effects, "enter"), effects, tBlockQuoteMarker);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tBlockQuoteMarker);
+      JS.invoke(effects, "enter", tBlockQuotePrefix);
+      JS.invoke(effects, "enter", tBlockQuoteMarker);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tBlockQuoteMarker);
       return after;
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
-
-  return start;
-});
-
-export JsValue blockQuote = makeNamedConstruct("blockQuote", tokenizeBlockQuoteStart);
-
-JsValue tokenizeBlockQuoteContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue contBefore = JS.method1((JsValue _s, JsValue code) => {
-    return call1(call3(objGet(effects, "attempt"), effects, blockQuote, ok, nok), undef(), code);
-  });
-
-  JsValue contStart = JS.method1((JsValue _s, JsValue code) => {
-    if (markdownSpace(code)) {
-      float max = kTabSize;
-      if (includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented")) {
-        max = 0;
-      }
-      return call1(factorySpace(effects, contBefore, tLinePrefix, max), undef(), code);
-    }
-    return call1(contBefore, undef(), code);
-  });
-
-  return contStart;
 });
 
 JsValue exitBlockQuote = JS.method1((JsValue _self, JsValue effects) => {
-  call1(objGet(effects, "exit"), effects, tBlockQuote);
-  return undef();
+  JS.invoke(effects, "exit", tBlockQuote);
+  return JS.undefined();
 });
 
-JsValue continuation = JS.object();
-JS.set(continuation, "tokenize", tokenizeBlockQuoteContinuation);
-JS.set(blockQuote, "continuation", continuation);
-JS.set(blockQuote, "exit", exitBlockQuote);
+// The continuation tokenizer attempts `blockQuote` itself, so it is written
+// inside the construct's own initializer.
+export JsValue blockQuote = JS.object(
+  "continuation", JS.object("tokenize", JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+    JsValue contBefore = JS.method1((JsValue _s, JsValue code) => {
+      return JS.call(JS.invoke(effects, "attempt", blockQuote, ok, nok), JS.undefined(), code);
+    });
+
+    return JS.method1((JsValue _s, JsValue code) => {
+      if (markdownSpace(code)) {
+        JsValue max = if (JS.invoke(JS.get(JS.get(JS.get(self, "parser"), "constructs"), "disable")["null"], "includes", "codeIndented").truthy()) { JS.undefined() } else { kTabSize };
+        return JS.call(factorySpace(effects, contBefore, tLinePrefix, max), JS.undefined(), code);
+      }
+      return JS.call(contBefore, JS.undefined(), code);
+    });
+  })),
+  "exit", exitBlockQuote,
+  "name", "blockQuote",
+  "tokenize", tokenizeBlockQuoteStart
+);

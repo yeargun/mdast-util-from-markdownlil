@@ -1,4 +1,3 @@
-import { arrLen, call1, call2, call3, includesStr, isEof, jsString, makeConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding } from "../util-character.lil";
 import { subtokenize } from "../util-subtokenize.lil";
@@ -12,75 +11,65 @@ JsValue resolveContent = JS.method2((JsValue _self, JsValue events, JsValue _con
 
 JsValue tokenizeContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue prefixed = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      return call1(nok, undef(), code);
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      return JS.call(nok, JS.undefined(), code);
     }
-    JsValue events = objGet(self, "events");
-    JsValue tail = events[arrLen(events) - 1];
-    bool disabled = includesStr(objGet(objGet(objGet(self, "parser"), "constructs"), "disable")["null"], "codeIndented");
-    if (!disabled && tail.truthy() && objGet(tail[1], "type") == tLinePrefix && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length >= kTabSize) {
-      return call1(ok, undef(), code);
+    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+    if (!JS.invoke(JS.get(JS.get(JS.get(self, "parser"), "constructs"), "disable")["null"], "includes", "codeIndented").truthy() && tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix) && JS.invoke(tail[2], "sliceSerialize", tail[1], true).length >= kTabSize) {
+      return JS.call(ok, JS.undefined(), code);
     }
-    return call1(call3(objGet(effects, "interrupt"), effects, objGet(objGet(self, "parser"), "constructs")["flow"], nok, ok), undef(), code);
+    return JS.call(JS.invoke(effects, "interrupt", JS.get(JS.get(JS.get(self, "parser"), "constructs"), "flow"), nok, ok), JS.undefined(), code);
   });
 
-  JsValue startLookahead = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "exit"), effects, tChunkContent);
-    call1(objGet(effects, "enter"), effects, tLineEnding);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tLineEnding);
-    return factorySpace(effects, prefixed, tLinePrefix, 0);
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "exit", tChunkContent);
+    JS.invoke(effects, "enter", tLineEnding);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tLineEnding);
+    return factorySpace(effects, prefixed, tLinePrefix, JS.undefined());
   });
-
-  return startLookahead;
 });
 
-JsValue continuationConstruct = makeConstruct(tokenizeContinuation);
-JS.set(continuationConstruct, "partial", true);
+JsValue continuationConstruct = JS.object("partial", true, "tokenize", tokenizeContinuation);
 
 JsValue tokenizeContent = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue _nok) => {
-  JsValue previous = undef();
-  JsValue contentEnd = undef();
-  JsValue contentContinue = undef();
+  JsValue previous = JS.undefined();
+  JsValue chunkInside = JS.undefined();
+  JsValue contentEnd = JS.undefined();
+  JsValue contentContinue = JS.undefined();
 
-  JsValue chunkInside = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(contentEnd, undef(), code);
+  JsValue chunkStart = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tContent);
+    previous = JS.invoke(effects, "enter", tChunkContent, JS.object("contentType", kContentTypeContent));
+    return JS.call(chunkInside, JS.undefined(), code);
+  });
+
+  chunkInside = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(contentEnd, JS.undefined(), code);
     }
     if (markdownLineEnding(code)) {
-      return call1(call3(objGet(effects, "check"), effects, continuationConstruct, contentContinue, contentEnd), undef(), code);
+      return JS.call(JS.invoke(effects, "check", continuationConstruct, contentContinue, contentEnd), JS.undefined(), code);
     }
-    call1(objGet(effects, "consume"), effects, code);
+    JS.invoke(effects, "consume", code);
     return chunkInside;
   });
 
   contentEnd = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "exit"), effects, tChunkContent);
-    call1(objGet(effects, "exit"), effects, tContent);
-    return call1(ok, undef(), code);
+    JS.invoke(effects, "exit", tChunkContent);
+    JS.invoke(effects, "exit", tContent);
+    return JS.call(ok, JS.undefined(), code);
   });
 
   contentContinue = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tChunkContent);
-    JsValue fields = JS.object();
-    JS.set(fields, "contentType", kContentTypeContent);
-    JS.set(fields, "previous", previous);
-    JsValue next = call2(objGet(effects, "enter"), effects, tChunkContent, fields);
-    JS.set(previous, "next", next);
-    previous = next;
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tChunkContent);
+    JS.set(previous, "next", JS.invoke(effects, "enter", tChunkContent, JS.object("contentType", kContentTypeContent, "previous", previous)));
+    previous = JS.get(previous, "next");
     return chunkInside;
-  });
-
-  JsValue chunkStart = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tContent);
-    JsValue fields = JS.object();
-    JS.set(fields, "contentType", kContentTypeContent);
-    previous = call2(objGet(effects, "enter"), effects, tChunkContent, fields);
-    return call1(chunkInside, undef(), code);
   });
 
   return chunkStart;
 });
 
-export JsValue content = JS.object("tokenize", tokenizeContent, "resolve", resolveContent);
+export JsValue content = JS.object("resolve", resolveContent, "tokenize", tokenizeContent);

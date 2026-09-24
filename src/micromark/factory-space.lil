@@ -1,31 +1,27 @@
-import { call1, objGet, undef } from "./host.lil";
 import { markdownSpace } from "./util-character.lil";
 
-export JsValue factorySpace(JsValue effects, JsValue ok, string typ, float max) {
-  float limit = 1.0 / 0.0;
-  if (max != 0.0) {
-    limit = max - 1.0;
-  }
+// `max` is optional, as upstream's: pass `JS.undefined()` (elided at the call
+// site) or a falsy value for no limit.
+export JsValue factorySpace(JsValue effects, JsValue ok, string typ, JsValue max) {
+  float limit = if (max.truthy()) { JS.number(max) - 1.0 } else { 1.0 / 0.0 };
   float size = 0.0;
-  JsValue prefix = undef();
+  JsValue prefix = JS.undefined();
 
-  prefix = JS.method1((JsValue _self, JsValue code) => {
+  prefix = JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code) && size < limit) {
-      size = size + 1.0;
-      call1(objGet(effects, "consume"), effects, code);
+      size++;
+      JS.invoke(effects, "consume", code);
       return prefix;
     }
-    call1(objGet(effects, "exit"), effects, typ);
-    return call1(ok, JS.undefined(), code);
+    JS.invoke(effects, "exit", typ);
+    return JS.call(ok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _self, JsValue code) => {
+  return JS.method1((JsValue _s, JsValue code) => {
     if (markdownSpace(code)) {
-      call1(objGet(effects, "enter"), effects, typ);
-      return call1(prefix, JS.undefined(), code);
+      JS.invoke(effects, "enter", typ);
+      return JS.call(prefix, JS.undefined(), code);
     }
-    return call1(ok, JS.undefined(), code);
+    return JS.call(ok, JS.undefined(), code);
   });
-
-  return start;
 }

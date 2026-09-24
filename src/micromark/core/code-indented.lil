@@ -1,86 +1,81 @@
-import { arrLen, call0, call1, call2, call3, isEof, jsString, makeConstruct, makeNamedConstruct, objGet, undef } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
-import { markdownLineEnding, markdownSpace } from "../util-character.lil";
+import { markdownLineEnding } from "../util-character.lil";
 import { kTabSize } from "../symbol/constants.lil";
 import { tCodeFlowValue, tCodeIndented, tLineEnding, tLinePrefix } from "../symbol/types.lil";
 
 JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue furtherStart = undef();
+  JsValue furtherStart = JS.undefined();
 
   JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    JsValue tail = events[arrLen(events) - 1];
-    if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length >= kTabSize) {
-      return call1(ok, undef(), code);
+    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+    if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix) && JS.invoke(tail[2], "sliceSerialize", tail[1], true).length >= kTabSize) {
+      return JS.call(ok, JS.undefined(), code);
     }
     if (markdownLineEnding(code)) {
-      return call1(furtherStart, undef(), code);
+      return JS.call(furtherStart, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
   furtherStart = JS.method1((JsValue _s, JsValue code) => {
-    if (objGet(objGet(self, "parser"), "lazy")[objGet(call0(objGet(self, "now"), self), "line")].truthy()) {
-      return call1(nok, undef(), code);
+    if (JS.get(JS.get(self, "parser"), "lazy")[JS.get(JS.invoke(self, "now"), "line")].truthy()) {
+      return JS.call(nok, JS.undefined(), code);
     }
     if (markdownLineEnding(code)) {
-      call1(objGet(effects, "enter"), effects, tLineEnding);
-      call1(objGet(effects, "consume"), effects, code);
-      call1(objGet(effects, "exit"), effects, tLineEnding);
+      JS.invoke(effects, "enter", tLineEnding);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", tLineEnding);
       return furtherStart;
     }
-    return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
+    return JS.call(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), JS.undefined(), code);
   });
 
   return furtherStart;
 });
 
-JsValue furtherStartConstruct = makeConstruct(tokenizeFurtherStart);
-JS.set(furtherStartConstruct, "partial", true);
+JsValue furtherStartConstruct = JS.object("partial", true, "tokenize", tokenizeFurtherStart);
 
 JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue atBreak = undef();
-
-  JsValue inside = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code) || markdownLineEnding(code)) {
-      call1(objGet(effects, "exit"), effects, tCodeFlowValue);
-      return call1(atBreak, undef(), code);
-    }
-    call1(objGet(effects, "consume"), effects, code);
-    return inside;
-  });
+  JsValue atBreak = JS.undefined();
+  JsValue inside = JS.undefined();
 
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "exit"), effects, tCodeIndented);
-    return call1(ok, undef(), code);
-  });
-
-  atBreak = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      return call1(after, undef(), code);
-    }
-    if (markdownLineEnding(code)) {
-      return call1(call3(objGet(effects, "attempt"), effects, furtherStartConstruct, atBreak, after), undef(), code);
-    }
-    call1(objGet(effects, "enter"), effects, tCodeFlowValue);
-    return call1(inside, undef(), code);
+    JS.invoke(effects, "exit", tCodeIndented);
+    return JS.call(ok, JS.undefined(), code);
   });
 
   JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue events = objGet(self, "events");
-    JsValue tail = events[arrLen(events) - 1];
-    if (tail.truthy() && objGet(tail[1], "type") == tLinePrefix && jsString(call2(objGet(tail[2], "sliceSerialize"), tail[2], tail[1], true)).length >= kTabSize) {
-      return call1(atBreak, undef(), code);
+    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
+    if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix) && JS.invoke(tail[2], "sliceSerialize", tail[1], true).length >= kTabSize) {
+      return JS.call(atBreak, JS.undefined(), code);
     }
-    return call1(nok, undef(), code);
+    return JS.call(nok, JS.undefined(), code);
   });
 
-  JsValue start = JS.method1((JsValue _s, JsValue code) => {
-    call1(objGet(effects, "enter"), effects, tCodeIndented);
-    return call1(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), undef(), code);
+  atBreak = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(after, JS.undefined(), code);
+    }
+    if (markdownLineEnding(code)) {
+      return JS.call(JS.invoke(effects, "attempt", furtherStartConstruct, atBreak, after), JS.undefined(), code);
+    }
+    JS.invoke(effects, "enter", tCodeFlowValue);
+    return JS.call(inside, JS.undefined(), code);
   });
 
-  return start;
+  inside = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null) || markdownLineEnding(code)) {
+      JS.invoke(effects, "exit", tCodeFlowValue);
+      return JS.call(atBreak, JS.undefined(), code);
+    }
+    JS.invoke(effects, "consume", code);
+    return inside;
+  });
+
+  return JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(effects, "enter", tCodeIndented);
+    return JS.call(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), JS.undefined(), code);
+  });
 });
 
-export JsValue codeIndented = makeNamedConstruct("codeIndented", tokenizeCodeIndented);
+export JsValue codeIndented = JS.object("name", "codeIndented", "tokenize", tokenizeCodeIndented);

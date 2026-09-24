@@ -1,50 +1,44 @@
-import { call1, call2, call3, makeConstruct, objGet, undef } from "../host.lil";
-import { factorySpace } from "../factory-space.lil";
-import { markdownLineEnding } from "../util-character.lil";
 import { isEof } from "../host.lil";
-import { tLineEnding, tLineEndingBlank, tLinePrefix } from "../symbol/types.lil";
+import { factorySpace } from "../factory-space.lil";
 import { blankLine } from "../core/blank-line.lil";
 import { content } from "../core/content.lil";
 
-JsValue initializeFlow = JS.method1((JsValue self, JsValue effects) => {
-  JsValue constructs = objGet(self, "parser")["constructs"];
+export JsValue flowConstruct = JS.object("tokenize", JS.method1((JsValue self, JsValue effects) => {
+  JsValue constructs = JS.get(JS.get(self, "parser"), "constructs");
   JsValue initial = JS.undefined();
 
-  JsValue afterConstruct = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      call1(objGet(effects, "consume"), effects, code);
-      return undef();
-    }
-    call1(objGet(effects, "enter"), effects, tLineEnding);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tLineEnding);
-    JS.set(self, "currentConstruct", undef());
-    return initial;
-  });
+  func(string)->JsValue after = (string type) => {
+    return JS.method1((JsValue _s, JsValue code) => {
+      if (isEof(code)) {
+        JS.invoke(effects, "consume", code);
+        return JS.undefined();
+      }
+      JS.invoke(effects, "enter", type);
+      JS.invoke(effects, "consume", code);
+      JS.invoke(effects, "exit", type);
+      JS.set(self, "currentConstruct", JS.undefined());
+      return initial;
+    });
+  };
 
-  JsValue atBlankEnding = JS.method1((JsValue _s, JsValue code) => {
-    if (isEof(code)) {
-      call1(objGet(effects, "consume"), effects, code);
-      return undef();
-    }
-    call1(objGet(effects, "enter"), effects, tLineEndingBlank);
-    call1(objGet(effects, "consume"), effects, code);
-    call1(objGet(effects, "exit"), effects, tLineEndingBlank);
-    JS.set(self, "currentConstruct", undef());
-    return initial;
-  });
-
-  JsValue flowAttempt = call3(
-    objGet(effects, "attempt"),
+  JsValue afterConstruct = after("lineEnding");
+  initial = JS.invoke(
     effects,
-    objGet(constructs, "flow"),
-    afterConstruct,
-    call3(objGet(effects, "attempt"), effects, content, afterConstruct, undef())
+    "attempt",
+    blankLine,
+    after("lineEndingBlank"),
+    JS.invoke(
+      effects,
+      "attempt",
+      JS.get(constructs, "flowInitial"),
+      afterConstruct,
+      factorySpace(
+        effects,
+        JS.invoke(effects, "attempt", JS.get(constructs, "flow"), afterConstruct, JS.invoke(effects, "attempt", content, afterConstruct)),
+        "linePrefix",
+        0.0
+      )
+    )
   );
-  JsValue spaced = factorySpace(effects, flowAttempt, tLinePrefix, 0);
-  JsValue flowInitial = call3(objGet(effects, "attempt"), effects, objGet(constructs, "flowInitial"), afterConstruct, spaced);
-  initial = call3(objGet(effects, "attempt"), effects, blankLine, atBlankEnding, flowInitial);
   return initial;
-});
-
-export JsValue flowConstruct = makeConstruct(initializeFlow);
+}));

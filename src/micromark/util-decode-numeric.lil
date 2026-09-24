@@ -1,33 +1,20 @@
-import { fromCodePoint } from "./host.lil";
-import { parseIntBase } from "./host.lil";
-import { cCr, cHt, cSpace, cTilde, cVt } from "./symbol/codes.lil";
-import { vReplacementCharacter } from "./symbol/values.lil";
+extern JsValue Number;
+extern JsValue String;
 
 export string decodeNumericCharacterReference(string value, int base) {
-  float codeF = parseIntBase(value, base);
-  int code = codeF.toInt();
-  bool unsafe = false;
-  if (code < cHt) {
-    unsafe = true;
-  } else if (code == cVt) {
-    unsafe = true;
-  } else if (code > cCr && code < cSpace) {
-    unsafe = true;
-  } else if (code > cTilde && code < 160) {
-    unsafe = true;
-  } else if (code > 55295 && code < 57344) {
-    unsafe = true;
-  } else if (code > 64975 && code < 65008) {
-    unsafe = true;
-  } else if ((code & 65535) == 65535) {
-    unsafe = true;
-  } else if ((code & 65535) == 65534) {
-    unsafe = true;
-  } else if (code > 1114111) {
-    unsafe = true;
+  int code = JS.number(JS.call(Number["parseInt"], Number, value, base)).toInt();
+  if (
+    code < 9 ||
+    code == 11 ||
+    (code > 13 && code < 32) ||
+    (code > 126 && code < 160) ||
+    (code > 55295 && code < 57344) ||
+    (code > 64975 && code < 65008) ||
+    (code & 65535) == 65535 ||
+    (code & 65535) == 65534 ||
+    code > 1114111
+  ) {
+    return "�";
   }
-  if (unsafe) {
-    return vReplacementCharacter;
-  }
-  return fromCodePoint(code);
+  return JS.assume(JS.call(String["fromCodePoint"], String, code));
 }

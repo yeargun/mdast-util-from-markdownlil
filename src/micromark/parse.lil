@@ -1,4 +1,3 @@
-import { arrLen, call1, isNullish, objGet, optionOrEmpty, push } from "./host.lil";
 import { combineExtensions } from "./util-combine-extensions.lil";
 import { createTokenizer } from "./create-tokenizer.lil";
 import { contentConstruct } from "./initialize/content.lil";
@@ -7,34 +6,24 @@ import { flowConstruct } from "./initialize/flow.lil";
 import { stringConstruct, textConstruct } from "./initialize/text.lil";
 import { defaultConstructs } from "./constructs.lil";
 
-JsValue makeCreate(JsValue parser, JsValue initial) {
-  return JS.method1((JsValue _self, JsValue from) => {
-    return createTokenizer(parser, initial, from);
-  });
-}
-
 export JsValue parse(JsValue options) {
-  JsValue settings = optionOrEmpty(options);
-  JsValue list = JS.array();
-  push(list, defaultConstructs);
-  JsValue extras = objGet(settings, "extensions");
-  if (extras.truthy()) {
-    int i = 0;
-    int n = arrLen(extras);
-    while (i < n) {
-      push(list, extras[i]);
-      i = i + 1;
-    }
-  }
-  JsValue constructs = combineExtensions(list);
-  JsValue parser = JS.object();
-  JS.set(parser, "constructs", constructs);
-  JS.set(parser, "defined", JS.array());
-  JS.set(parser, "lazy", JS.object());
-  JS.set(parser, "content", makeCreate(parser, contentConstruct));
-  JS.set(parser, "document", makeCreate(parser, documentConstruct));
-  JS.set(parser, "flow", makeCreate(parser, flowConstruct));
-  JS.set(parser, "string", makeCreate(parser, stringConstruct));
-  JS.set(parser, "text", makeCreate(parser, textConstruct));
+  JsValue parser = JS.undefined();
+  func(JsValue)->JsValue create = (JsValue initial) => {
+    return JS.method1((JsValue _self, JsValue from) => {
+      return createTokenizer(parser, initial, from);
+    });
+  };
+  JsValue[] extensions = JS.assume(JS.or(JS.get(JS.or(options, JS.object()), "extensions"), JS.array()));
+  JsValue[] list = [defaultConstructs, ...extensions];
+  parser = JS.object(
+    "constructs", combineExtensions(list),
+    "content", create(contentConstruct),
+    "defined", JS.array(),
+    "document", create(documentConstruct),
+    "flow", create(flowConstruct),
+    "lazy", JS.object(),
+    "string", create(stringConstruct),
+    "text", create(textConstruct)
+  );
   return parser;
 }

@@ -1,38 +1,13 @@
-import { hasOwn, isNullish, jsString, objGet } from "./micromark/host.lil";
-
-string indexPart(JsValue value) {
-  if (value.truthy() && JS.typeOf(value) == "number") {
-    return jsString(value);
-  }
-  return "1";
+// unist-util-stringify-position, as this package uses it: every caller passes a token, and upstream
+// builds `{start: token.start, end: token.end}` for it, which always takes the `start`/`end` branch.
+JsValue index(JsValue value) {
+  return if (value.truthy() && JS.typeOf(value) == "number") { value } else { 1 };
 }
 
-string pointPart(JsValue pt) {
-  if (isNullish(pt)) {
-    return indexPart(JS.undefined()) + ":" + indexPart(JS.undefined());
-  }
-  return indexPart(objGet(pt, "line")) + ":" + indexPart(objGet(pt, "column"));
+string point(JsValue value) {
+  return index(JS.and(value, value["line"])) + ":" + index(JS.and(value, value["column"]));
 }
 
-string positionPart(JsValue pos) {
-  if (isNullish(pos)) {
-    return pointPart(JS.undefined()) + "-" + pointPart(JS.undefined());
-  }
-  return pointPart(objGet(pos, "start")) + "-" + pointPart(objGet(pos, "end"));
-}
-
-export string stringifyPosition(JsValue value) {
-  if (!value.truthy() || JS.typeOf(value) != "object") {
-    return "";
-  }
-  if (hasOwn(value, "position") || hasOwn(value, "type")) {
-    return positionPart(objGet(value, "position"));
-  }
-  if (hasOwn(value, "start") || hasOwn(value, "end")) {
-    return positionPart(value);
-  }
-  if (hasOwn(value, "line") || hasOwn(value, "column")) {
-    return pointPart(value);
-  }
-  return "";
+export string stringifyPosition(JsValue token) {
+  return point(token["start"]) + "-" + point(token["end"]);
 }
