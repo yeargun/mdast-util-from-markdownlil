@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "measuredAt": "2026-09-24T04:22:43Z",
+  "measuredAt": "2026-09-28T13:00:20Z",
   "name": "mdast-util-from-markdownlil",
   "compiler": {
-    "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
+    "commit": "249686599dc3bf1b6bf70dc9a030081b755bbb24",
+    "sha256": "47048e41164027e92d3bf1d1840d8d83e04c60532c031ceb3346222e194b3041"
   },
   "upstream": {
     "package": "mdast-util-from-markdown",
@@ -30,22 +30,22 @@
     "node": "v24.11.1",
     "rayonThreads": 8,
     "loadAtStart": [
-      1.02490234375,
-      1.255859375,
-      2.55859375
+      2.31201171875,
+      2.0712890625,
+      2.33984375
     ],
     "loadAtEnd": [
-      1.896484375,
-      1.43408203125,
-      2.54248046875
+      2.650390625,
+      2.21044921875,
+      2.37109375
     ]
   },
   "build": {
-    "compilerSeconds": 0.6208934783935547,
+    "compilerSeconds": 2.4133028984069824,
     "compilerScope": "One compiler process for the shipped ESM (src/entry.lil, lilscript.toml)",
-    "packageSeconds": 1.366876267005864,
-    "originalSeconds": 8.540216777997557,
-    "originalEsmSeconds": 0.6318341480000002,
+    "packageSeconds": 4.373435868998058,
+    "originalSeconds": 8.885582153001451,
+    "originalEsmSeconds": 0.5670613820000001,
     "packageScope": "node scripts/build.mjs --compile --force",
     "originalScope": "npm run build",
     "protocol": {
@@ -58,26 +58,26 @@
   },
   "esm": {
     "lilscript": {
-      "raw": 71802,
-      "gzip9": 26411,
-      "brotli11": 22308,
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58",
+      "raw": 72106,
+      "gzip9": 26694,
+      "brotli11": 22653,
+      "sha256": "c6eafb2811fd00887765ed1868de319edb34d99d8b8f9072f3d9cc6051d80873",
       "file": "./esm-comparison/lilscript.js"
     },
     "original": {
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d",
+      "raw": 56143,
+      "gzip9": 15329,
+      "brotli11": 13672,
+      "sha256": "cf2b9429ad8979f64a7a7c6309898098061dd719791643a71ce0e7bd413b43e3",
       "file": "./esm-comparison/original.js"
     }
   },
   "sourceBuild": {
     "original": {
       "complete": true,
-      "medianSeconds": 8.540216777997557,
-      "minimumSeconds": 8.181539725999755,
-      "maximumSeconds": 8.63449308899726,
+      "medianSeconds": 8.885582153001451,
+      "minimumSeconds": 8.834360357999685,
+      "maximumSeconds": 8.985182963006082,
       "samples": [
         {
           "command": [
@@ -85,12 +85,12 @@
             "run",
             "build"
           ],
-          "wallSeconds": 8.540216777997557,
-          "cpuSeconds": 14.955217999999999,
+          "wallSeconds": 8.834360357999685,
+          "cpuSeconds": 15.279606000000001,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-1.log",
-          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+          "logSha256": "fde288e26fe6ccd2501312b69ad6cca9b7aca8e2b1f5fca82b008ce53999a7ce"
         },
         {
           "command": [
@@ -98,12 +98,12 @@
             "run",
             "build"
           ],
-          "wallSeconds": 8.181539725999755,
-          "cpuSeconds": 13.942072,
+          "wallSeconds": 8.885582153001451,
+          "cpuSeconds": 15.374729000000004,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-2.log",
-          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+          "logSha256": "fde288e26fe6ccd2501312b69ad6cca9b7aca8e2b1f5fca82b008ce53999a7ce"
         },
         {
           "command": [
@@ -111,20 +111,20 @@
             "run",
             "build"
           ],
-          "wallSeconds": 8.63449308899726,
-          "cpuSeconds": 15.145434,
+          "wallSeconds": 8.985182963006082,
+          "cpuSeconds": 15.518122999999996,
           "exitCode": 0,
           "timedOut": false,
           "log": "original-build-3.log",
-          "logSha256": "334e0d6c8a618334255644c942a6646c9f8c9610878d0262e00d0150a8c57c80"
+          "logSha256": "fde288e26fe6ccd2501312b69ad6cca9b7aca8e2b1f5fca82b008ce53999a7ce"
         }
       ]
     },
     "lilscript": {
       "complete": true,
-      "medianSeconds": 1.366876267005864,
-      "minimumSeconds": 1.366703414998483,
-      "maximumSeconds": 1.3669506250007544,
+      "medianSeconds": 4.373435868998058,
+      "minimumSeconds": 4.372916622000048,
+      "maximumSeconds": 4.423418559003039,
       "samples": [
         {
           "command": [
@@ -132,8 +132,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 1.366876267005864,
-          "cpuSeconds": 1.3509590000000022,
+          "wallSeconds": 4.372916622000048,
+          "cpuSeconds": 4.326817999999996,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-1.log",
@@ -145,8 +145,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 1.366703414998483,
-          "cpuSeconds": 1.3466679999999958,
+          "wallSeconds": 4.423418559003039,
+          "cpuSeconds": 4.383453,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-2.log",
@@ -158,8 +158,8 @@
             "-c",
             "node scripts/build.mjs --compile --force"
           ],
-          "wallSeconds": 1.3669506250007544,
-          "cpuSeconds": 1.3524670000000025,
+          "wallSeconds": 4.373435868998058,
+          "cpuSeconds": 4.347783999999999,
           "exitCode": 0,
           "timedOut": false,
           "log": "lilscript-build-3.log",

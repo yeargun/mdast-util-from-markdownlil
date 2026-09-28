@@ -23,21 +23,20 @@ Every delivered file is written by the LilScript compiler (revision `aa2052f0`, 
 compiler); the build adds a license banner and, for CommonJS and the browser script, a
 module wrapper. No minifier runs after the compiler. Measured with `lilscript-codec`
 (Brotli-11 / gzip-9 / raw); the bars are the official `mdast-util-from-markdown@2.0.3`
-runtime graph bundled by esbuild, then minified. The Node graph is the like-for-like bar:
+runtime graph (micromark 4.0.3, as a fresh install resolves it) bundled by esbuild, then minified. The Node graph is the like-for-like bar:
 it decodes named character references from an entity table, as this port does. Upstream's
 browser graph decodes them through the DOM and ships no table; against it this port loses.
 
 | File | Brotli-11 | gzip-9 | Raw |
 | --- | ---: | ---: | ---: |
-| `dist/from-markdown.esm.js` (npm) | **22,308** | 26,411 | 71,802 |
-| `dist/from-markdown.closed.js` | 22,380 | 26,504 | 74,024 |
-| Official Node graph, Terser (mangle on) | 23,151 | 26,849 | 84,154 |
-| Official Node graph, esbuild minify | 24,220 | 28,038 | 92,538 |
-| Official browser graph (no entity table), Terser | 13,336 | 14,986 | 55,520 |
-| Previous release (2026-09-02, old compiler route) | 26,103 | 30,764 | 88,325 |
+| `dist/from-markdown.esm.js` (npm) | **22,653** | 26,694 | 72,106 |
+| `dist/from-markdown.closed.js` | 22,658 | 26,836 | 74,384 |
+| Official Node graph, Terser (mangle on) | 23,436 | 27,170 | 84,774 |
+| Official Node graph, esbuild minify | 24,605 | 28,399 | 93,149 |
+| Official browser graph (no entity table), Terser | 13,672 | 15,329 | 56,143 |
 
-Compiling `src/entry.lil` for the npm file takes about 0.6 s of wall time (604.6 / 615.5 /
-616 ms over three clean builds). `npm run record:release` re-measures all of this into
+Compiling `src/entry.lil` for the npm file takes about 2.4 s of wall time (2407.3 / 2413.5 / 2373.1
+ms over three clean builds). `npm run record:release` re-measures all of this into
 `site/results.json`.
 
 The LilScript compiler lives next door at `../lilscript`.

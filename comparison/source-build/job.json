@@ -7,9 +7,10 @@
     "directory": "."
   },
   "portSource": {
-    "commit": "5c5cc8f plus the release working tree (committed together with these records)"
+    "commit": "a095f9a56a61beb92330b8b8518467cacb85f8e0",
+    "snapshot": "/home/azureuser/lilscript-work/release-0927/ports/mdast-util-from-markdownlil"
   },
-  "compilerCommit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
+  "compilerCommit": "249686599dc3bf1b6bf70dc9a030081b755bbb24",
   "install": [
     "npm",
     "install",

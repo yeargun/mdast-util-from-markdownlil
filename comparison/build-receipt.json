@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "mdast-util-from-markdownlil",
-  "measuredAt": "2026-09-24T04:22:43Z",
+  "measuredAt": "2026-09-28T13:00:20Z",
   "status": "published",
   "buildPassed": true,
   "summary": "Rebuilt by the one LilScript compiler; every delivered file is compiler-written (a license banner and module wrappers are the only bytes the build adds).",
-  "sourceCommit": "5c5cc8f plus the release working tree (committed together with these records)",
-  "previousPublicCommit": "84a24d54696b44ef61859596adc553ad84877661",
+  "sourceCommit": "a095f9a56a61beb92330b8b8518467cacb85f8e0",
+  "previousPublicCommit": "7dd91b6",
   "compiler": {
-    "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9",
+    "commit": "249686599dc3bf1b6bf70dc9a030081b755bbb24",
+    "sha256": "47048e41164027e92d3bf1d1840d8d83e04c60532c031ceb3346222e194b3041",
     "profile": "release",
     "dirty": false
   },
@@ -24,14 +24,14 @@
     "node": "v24.11.1",
     "rayonThreads": 8,
     "loadAtStart": [
-      1.02490234375,
-      1.255859375,
-      2.55859375
+      2.31201171875,
+      2.0712890625,
+      2.33984375
     ],
     "loadAtEnd": [
-      1.896484375,
-      1.43408203125,
-      2.54248046875
+      2.650390625,
+      2.21044921875,
+      2.37109375
     ]
   },
   "upstream": {
@@ -45,149 +45,150 @@
   "sizes": {
     "current": {
       "path": "dist/from-markdown.esm.js",
-      "raw": 71802,
-      "gzip9": 26411,
-      "brotli11": 22308,
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
+      "raw": 72106,
+      "gzip9": 26694,
+      "brotli11": 22653,
+      "sha256": "c6eafb2811fd00887765ed1868de319edb34d99d8b8f9072f3d9cc6051d80873"
     },
     "upstream": {
       "path": "original.esm.js",
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+      "raw": 56143,
+      "gzip9": 15329,
+      "brotli11": 13672,
+      "sha256": "cf2b9429ad8979f64a7a7c6309898098061dd719791643a71ce0e7bd413b43e3"
     }
   },
   "officialArtifacts": [
     {
       "path": "original.esm.js",
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+      "raw": 56143,
+      "gzip9": 15329,
+      "brotli11": 13672,
+      "sha256": "cf2b9429ad8979f64a7a7c6309898098061dd719791643a71ce0e7bd413b43e3"
     },
     {
       "path": "original.unminified.js",
-      "raw": 138048,
-      "gzip9": 24504,
-      "brotli11": 20876,
-      "sha256": "b51c1c4deae12a04e06b9423f4e006bd2858b8671090d8b2d064f5880bebe7ce"
+      "raw": 140839,
+      "gzip9": 25218,
+      "brotli11": 21516,
+      "sha256": "74b45c43a95c4cb9e168425c682ef3bc87f7c032d2ac9cf08e87d26da936faf3"
     },
     {
       "path": "original.terser-nomangle.js",
-      "raw": 90054,
-      "gzip9": 18398,
-      "brotli11": 16398,
-      "sha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
+      "raw": 91180,
+      "gzip9": 18851,
+      "brotli11": 16816,
+      "sha256": "50aec81f0c8e8c19d2c1515ae0f710a2c7b72e734547ac58d386ad24275a6452"
     },
     {
       "path": "original.esbuild.js",
-      "raw": 56894,
-      "gzip9": 16075,
-      "brotli11": 14331,
-      "sha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
+      "raw": 57505,
+      "gzip9": 16429,
+      "brotli11": 14643,
+      "sha256": "9ffa0d35e7a468fe7d02279f3feb7a786f266299e001a8b36d3d2af975f629d1"
     }
   ],
   "candidateArtifacts": [
     {
       "path": "dist/from-markdown.umd.js",
-      "raw": 71847,
-      "gzip9": 26434,
-      "brotli11": 22353,
-      "sha256": "2189c5bbd37489a625f40d1ef5250a7254c4c56be31dfbeba0ed06b330b9011c"
+      "raw": 72151,
+      "gzip9": 26716,
+      "brotli11": 22666,
+      "sha256": "9695072029ca30d1413fc9df4b273b9e3bc706aa242c7446b94ce02aa7b041d6"
     },
     {
       "path": "dist/from-markdown.raw.js",
-      "raw": 71692,
-      "gzip9": 26339,
-      "brotli11": 22287,
-      "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
+      "raw": 71996,
+      "gzip9": 26622,
+      "brotli11": 22525,
+      "sha256": "23a79086786a46e909f84acfe77119636a65c493f1f18f7ce211d91435c6d2ef"
     },
     {
       "path": "dist/from-markdown.closed.js",
-      "raw": 74024,
-      "gzip9": 26504,
-      "brotli11": 22380,
-      "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
+      "raw": 74384,
+      "gzip9": 26836,
+      "brotli11": 22658,
+      "sha256": "d739e7deb27a706b776aa966b72fe0c91a753cb752e65b2e0cf6118a962bf52e"
     },
     {
       "path": "dist/from-markdown.cjs",
-      "raw": 71824,
-      "gzip9": 26428,
-      "brotli11": 22374,
-      "sha256": "c5a52501c434e209bc900708ef1947dbb0d5bf6c408df3d48599b23ca17c98e5"
+      "raw": 72128,
+      "gzip9": 26710,
+      "brotli11": 22636,
+      "sha256": "db1ad875beaadd65ac392428d000f57b6450c60c229bcb9fc04a885bbd721154"
     },
     {
       "path": "dist/from-markdown.esm.js",
-      "raw": 71802,
-      "gzip9": 26411,
-      "brotli11": 22308,
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
+      "raw": 72106,
+      "gzip9": 26694,
+      "brotli11": 22653,
+      "sha256": "c6eafb2811fd00887765ed1868de319edb34d99d8b8f9072f3d9cc6051d80873"
     }
   ],
   "timing": {
-    "primaryCompilerSeconds": 0.6208934783935547,
+    "primaryCompilerSeconds": 2.4133028984069824,
     "primaryScope": "One compiler process for the shipped ESM (src/entry.lil, lilscript.toml)",
-    "packageSeconds": 1.366876267005864,
+    "packageSeconds": 4.373435868998058,
     "packageScope": "node scripts/build.mjs --compile --force; 2 compiler invocations plus package wrapping",
-    "originalSeconds": 8.540216777997557,
+    "originalSeconds": 8.885582153001451,
     "originalScope": "npm run build"
   },
   "behavior": {
     "command": "npm run check:types && node --test test/from-markdown.test.mjs test/package.test.mjs test/official/index.js",
     "summary": "Runtime checks: 743/743 pass.",
     "exitCode": 0,
-    "logSha256": "0987ca57ecef08f13b550dd34095a8dc93a39c879ccff1290d22edf85ba6747b"
+    "logSha256": "a51aa7c9423f3817e71a1e15b197078e2e52f2bb0405c75b67eb6cf8c2e18fc4"
   },
   "primaryArtifact": "dist/from-markdown.esm.js",
-  "codecSha256": "125776830df72bbaf9704fee3c38bb0bf29bfc6bcceb5bc8707a0507a128d7b9",
+  "codecSha256": "85329d361ef3339d4ff7b7ca1f00065d561340eb4fc98a2799af327134a3a3f0",
   "publicationArtifacts": [
     {
       "path": "dist/from-markdown.cjs",
-      "sha256": "c5a52501c434e209bc900708ef1947dbb0d5bf6c408df3d48599b23ca17c98e5"
+      "sha256": "db1ad875beaadd65ac392428d000f57b6450c60c229bcb9fc04a885bbd721154"
     },
     {
       "path": "dist/from-markdown.closed.js",
-      "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
+      "sha256": "d739e7deb27a706b776aa966b72fe0c91a753cb752e65b2e0cf6118a962bf52e"
     },
     {
       "path": "dist/from-markdown.esm.js",
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
+      "sha256": "c6eafb2811fd00887765ed1868de319edb34d99d8b8f9072f3d9cc6051d80873"
     },
     {
       "path": "dist/from-markdown.umd.js",
-      "sha256": "2189c5bbd37489a625f40d1ef5250a7254c4c56be31dfbeba0ed06b330b9011c"
+      "sha256": "9695072029ca30d1413fc9df4b273b9e3bc706aa242c7446b94ce02aa7b041d6"
     }
   ],
   "publicationPolicy": "Publish the compiler-written distribution",
-  "publicationBase": "84a24d54696b44ef61859596adc553ad84877661",
-  "publicationSourceFingerprint": "53e6e5e50e6420c73aed67258252f6d07b3bc199622f4d9586a570cd6ee4dcdc",
+  "publicationBase": "7dd91b6",
+  "publicationSourceFingerprint": "324081f32bc31cb7552f1167b7be24a63763113279adc046e7756a09ca67e3bc",
   "comparisonArtifacts": [
     {
       "path": "site/esm-comparison/original.js",
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
+      "sha256": "cf2b9429ad8979f64a7a7c6309898098061dd719791643a71ce0e7bd413b43e3"
     },
     {
       "path": "site/esm-comparison/lilscript.js",
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
+      "sha256": "c6eafb2811fd00887765ed1868de319edb34d99d8b8f9072f3d9cc6051d80873"
     },
     {
       "path": "site/source-build.json",
-      "sha256": "e0bfd46732a39255f9763dfb23d95f4b989925a19aef6d595836a1308a2d0a02"
+      "sha256": "fb2f11a1e1a346b9bf337c7e001ad5167e7d09a4029a6fdf6cb99abe6ead04e7"
     },
     {
       "path": "site/comparison.json",
-      "sha256": "0e7bd1af5c0a32ce940208a43e092132d50c941de071f2e300c82512a946de8f"
+      "sha256": "23456c4b325d5cb734ecdf6cdb6cc49b5f96fcfee45de392e29075029c4f6872"
     }
   ],
   "sourceBuildReceipt": "comparison/source-build/result.json",
   "currentMeasurement": {
     "compiler": {
-      "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-      "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
+      "commit": "249686599dc3bf1b6bf70dc9a030081b755bbb24",
+      "sha256": "47048e41164027e92d3bf1d1840d8d83e04c60532c031ceb3346222e194b3041"
     },
     "source": {
-      "commit": "5c5cc8f plus the release working tree (committed together with these records)"
+      "commit": "a095f9a56a61beb92330b8b8518467cacb85f8e0",
+      "snapshot": "/home/azureuser/lilscript-work/release-0927/ports/mdast-util-from-markdownlil"
     },
     "upstream": {
       "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",

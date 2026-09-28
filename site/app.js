@@ -178,10 +178,9 @@ function renderCompiler() {
   const compiler = data.compiler
   const cards = document.querySelector("#compiler-cards")
   if (!compiler || !cards) return
-  const previous = data.previousRelease?.files ?? {}
   const shipped = laneById("itslil")
-  const before = previous[`dist/${data.file}.esm.js`]
-  const change = shipped && before ? smallerThan(shipped.brotli11, before.brotli11) : null
+  const bar = data.size.find((lane) => lane.baseline)
+  const change = shipped && bar ? smallerThan(shipped.brotli11, bar.brotli11) : null
   const compileSamples = compiler.compileWallMs ?? []
   const buildSamples = compiler.buildCompileWallMs ?? []
   const invocations = compiler.invocations?.length ?? 0
@@ -198,9 +197,9 @@ function renderCompiler() {
     {
       value: change ? change.text : "—",
       win: change?.state === "win",
-      label: before && shipped
-        ? `Brotli vs previous release · ${formatter.format(before.brotli11)} → ${formatter.format(shipped.brotli11)} B`
-        : "Brotli vs previous release",
+      label: bar && shipped
+        ? `Brotli vs the bar (${escapeHtml(bar.name)}) · ${formatter.format(bar.brotli11)} → ${formatter.format(shipped.brotli11)} B`
+        : "Brotli vs the bar",
     },
     {
       value: escapeHtml(compiler.revision),
@@ -215,18 +214,14 @@ function renderCompiler() {
     .join("")
   document.querySelector("#delivered-body").innerHTML = (data.delivered ?? [])
     .map((file) => {
-      const old = previous[file.path]
-      const verdict = old ? smallerThan(file.brotli11, old.brotli11) : null
+      const verdict = bar ? smallerThan(file.brotli11, bar.brotli11) : null
       const writer = file.wrapper && file.wrapper !== "none" ? `${file.writtenBy} + ${file.wrapper}` : file.writtenBy
-      return `<tr><th scope="row"><code>${escapeHtml(file.path)}</code></th><td>${escapeHtml(file.condition)}</td><td>${escapeHtml(writer)}</td><td>${formatter.format(file.raw)}</td><td>${formatter.format(file.gzip9)}</td><td>${formatter.format(file.brotli11)}</td><td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? `${verdict.text} (${formatter.format(old.brotli11)})` : "—"}</strong></td></tr>`
+      return `<tr><th scope="row"><code>${escapeHtml(file.path)}</code></th><td>${escapeHtml(file.condition)}</td><td>${escapeHtml(writer)}</td><td>${formatter.format(file.raw)}</td><td>${formatter.format(file.gzip9)}</td><td>${formatter.format(file.brotli11)}</td><td class="verdict ${verdict ? verdict.state : ""}"><strong>${verdict ? verdict.text : "—"}</strong></td></tr>`
     })
     .join("")
   const samples = compileSamples.map((value) => `${value} ms`).join(" / ")
-  const prior = data.previousRelease
-    ? ` Previous release: ${data.previousRelease.commit} (${data.previousRelease.date}), ${data.previousRelease.compiler}; ${data.previousRelease.note} Measured with ${data.previousRelease.measuredWith}.`
-    : ""
   document.querySelector("#compiler-note").textContent =
-    `Compiler ${compiler.revision}, binary SHA-256 ${compiler.binarySha256}, codec SHA-256 ${compiler.codecSha256}, recorded ${compiler.date}. Shipped-ESM compile samples: ${samples}.${prior}`
+    `Compiler ${compiler.revision}, binary SHA-256 ${compiler.binarySha256}, codec SHA-256 ${compiler.codecSha256}, recorded ${compiler.date}. Shipped-ESM compile samples: ${samples}.`
 }
 
 function bindCopy() {
