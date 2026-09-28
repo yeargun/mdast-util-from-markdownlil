@@ -1,7 +1,7 @@
 import { pushAll, splice } from "../util-chunked.lil";
 import { classifyCharacter } from "../util-classify-character.lil";
 import { resolveAll } from "../util-resolve-all.lil";
-import { cAsterisk } from "../symbol/codes.lil";
+import { cAsterisk, cUnderscore } from "../symbol/codes.lil";
 import { kCharacterGroupPunctuation } from "../symbol/constants.lil";
 import { tAttentionSequence, tData, tEmphasis, tEmphasisSequence, tEmphasisText, tStrong, tStrongSequence, tStrongText } from "../symbol/types.lil";
 
@@ -120,8 +120,10 @@ JsValue tokenizeAttention = JS.method3((JsValue self, JsValue effects, JsValue o
     }
     AttentionToken token = JS.assume(JS.invoke(effects, "exit", tAttentionSequence));
     JsValue after = classifyCharacter(code);
-    JsValue open = JS.or(JS.or(!after.truthy(), JS.and(JS.strictEqual(after, kCharacterGroupPunctuation), before)), JS.invoke(attentionMarkers, "includes", code));
-    JsValue close = JS.or(JS.or(!before.truthy(), JS.and(JS.strictEqual(before, kCharacterGroupPunctuation), after)), JS.invoke(attentionMarkers, "includes", previous));
+    // `*` and `_` are in `attentionMarkers` through core; the loosening is meant for markers registered
+    // by other constructs (such as GFM strikethrough's `~`), so it excludes them.
+    JsValue open = JS.or(JS.or(!after.truthy(), JS.and(JS.strictEqual(after, kCharacterGroupPunctuation), before)), JS.and(JS.and(JS.invoke(attentionMarkers, "includes", code), !JS.strictEqual(code, cAsterisk)), !JS.strictEqual(code, cUnderscore)));
+    JsValue close = JS.or(JS.or(!before.truthy(), JS.and(JS.strictEqual(before, kCharacterGroupPunctuation), after)), JS.and(JS.and(JS.invoke(attentionMarkers, "includes", previous), !JS.strictEqual(previous, cAsterisk)), !JS.strictEqual(previous, cUnderscore)));
     token._open = (if (JS.strictEqual(marker, cAsterisk)) { open } else { JS.and(open, JS.or(before, !close.truthy())) }).truthy();
     token._close = (if (JS.strictEqual(marker, cAsterisk)) { close } else { JS.and(close, JS.or(after, !open.truthy())) }).truthy();
     return JS.call(ok, JS.undefined(), code);

@@ -3,8 +3,10 @@ import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { tContent, tDefinition, tLineEnding, tLinePrefix, tLineSuffix, tParagraph, tSetextHeading, tSetextHeadingLine, tSetextHeadingLineSequence, tSetextHeadingText } from "../symbol/types.lil";
 
 import { copyPoint } from "../host.lil";
+import { editMapAdd, editMapConsume, newEditMap } from "../util-edit-map.lil";
 
 JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, JsValue context) => {
+  JsValue editMap = newEditMap();
   float index = events.length;
   float content = 0.0;
   float text = 0.0;
@@ -24,7 +26,7 @@ JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, Js
       }
     } else {
       if (JS.strictEqual(JS.get(events[index][1], "type"), tContent)) {
-        JS.invoke(events, "splice", index, 1);
+        editMapAdd(editMap, index, 1.0, JS.array());
       }
       if (definition == 0.0 && JS.strictEqual(JS.get(events[index][1], "type"), tDefinition)) {
         definition = index;
@@ -38,13 +40,14 @@ JsValue resolveToSetextUnderline = JS.method2((JsValue _self, JsValue events, Js
   );
   JS.set(events[text][1], "type", tSetextHeadingText);
   if (definition != 0.0) {
-    JS.invoke(events, "splice", text, 0, JS.array("enter", heading, context));
-    JS.invoke(events, "splice", definition + 1.0, 0, JS.array("exit", events[content][1], context));
+    editMapAdd(editMap, text, 0.0, JS.array(JS.array("enter", heading, context)));
+    editMapAdd(editMap, definition + 1.0, 0.0, JS.array(JS.array("exit", events[content][1], context)));
     JS.set(events[content][1], "end", copyPoint(JS.get(events[definition][1], "end")));
   } else {
     events[content][1] = heading;
   }
-  JS.invoke(events, "push", JS.array("exit", heading, context));
+  editMapAdd(editMap, events.length, 0.0, JS.array(JS.array("exit", heading, context)));
+  editMapConsume(editMap, events);
   return events;
 });
 

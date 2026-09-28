@@ -1,8 +1,10 @@
 import { TokenizerToken, copyPoint, isEof } from "../host.lil";
+import { editMapAdd, editMapConsume, newEditMap } from "../util-edit-map.lil";
 
 extern JsValue Object;
 
 JsValue resolveAllLineSuffixes = JS.method2((JsValue _self, JsValue events, JsValue context) => {
+  JsValue editMap = newEditMap();
   for (float eventIndex = 1.0; eventIndex <= events.length; eventIndex++) {
     if (
       (eventIndex == events.length || JS.strictEqual(JS.get(events[eventIndex][1], "type"), "lineEnding")) &&
@@ -57,13 +59,13 @@ JsValue resolveAllLineSuffixes = JS.method2((JsValue _self, JsValue events, JsVa
         if (data.start.offset == data.end.offset) {
           JS.call(JS.get(Object, "assign"), Object, data, token);
         } else {
-          JS.invoke(events, "splice", eventIndex, 0, JS.array("enter", token, context), JS.array("exit", token, context));
-          eventIndex = eventIndex + 2.0;
+          editMapAdd(editMap, eventIndex, 0.0, JS.array(JS.array("enter", token, context), JS.array("exit", token, context)));
         }
       }
       eventIndex++;
     }
   }
+  editMapConsume(editMap, events);
   return events;
 });
 

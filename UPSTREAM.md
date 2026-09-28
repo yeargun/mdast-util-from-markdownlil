@@ -12,11 +12,12 @@ resolved in that pinned checkout.
 | `src/stringify-position.lil` | `unist-util-stringify-position@4.0.0/lib/index.js` |
 | `src/micromark/character-entities.lil` | `character-entities@2.0.2` |
 | `src/micromark/decode-named.lil` | `decode-named-character-reference@1.3.0` |
-| `src/micromark/constructs.lil`, `create-tokenizer.lil`, `parse.lil`, `postprocess.lil`, `preprocess.lil`, `initialize/**` | `micromark@4.0.2` |
-| `src/micromark/core/**` | `micromark-core-commonmark@2.0.3` |
+| `src/micromark/constructs.lil`, `create-tokenizer.lil`, `parse.lil`, `postprocess.lil`, `preprocess.lil`, `initialize/**` | `micromark@4.0.3` |
+| `src/micromark/core/**` | `micromark-core-commonmark@2.0.4` |
 | `src/micromark/factory-destination.lil` | `micromark-factory-destination@2.0.1` |
 | `src/micromark/factory-label.lil` | `micromark-factory-label@2.0.1` |
-| `src/micromark/factory-space.lil` | `micromark-factory-space@2.0.1` |
+| `src/micromark/factory-space.lil` | `micromark-factory-space@2.1.0` |
+| `src/micromark/util-edit-map.lil` | `micromark-util-edit-map@1.0.0` |
 | `src/micromark/factory-title.lil` | `micromark-factory-title@2.0.1` |
 | `src/micromark/factory-whitespace.lil` | `micromark-factory-whitespace@2.0.1` |
 | `src/micromark/splice-buffer.lil`, `util-subtokenize.lil` | `micromark-util-subtokenize@2.1.0` |

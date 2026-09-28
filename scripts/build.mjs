@@ -16,7 +16,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const lilscriptRoot = process.env.LILSCRIPT_ROOT ?? resolve(root, "..", "lilscript")
 const dist = resolve(root, "dist")
 const file = "from-markdown"
-const banner = "/*! @itslil/mdast-util-from-markdown 2.0.3 | LilScript reimplementation of mdast-util-from-markdown | MIT */\n"
+const { version } = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"))
+const banner = `/*! @itslil/mdast-util-from-markdown ${version} | LilScript reimplementation of mdast-util-from-markdown | MIT */\n`
 const publicApi = ["fromMarkdown"]
 
 function compilerPath() {

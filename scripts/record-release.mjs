@@ -6,8 +6,8 @@
 //
 // It builds `--samples` times (default 3) with a clean compile each time, checks
 // that every build wrote the same bytes, and rewrites the measured fields of
-// site/results.json. Fields it does not measure (the official bars, the previous
-// release, the playground) are kept as they are.
+// site/results.json. Fields it does not measure (the official bars, the playground)
+// are kept as they are; the page shows this release only, so no previous release is kept.
 import { createHash } from "node:crypto"
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -148,6 +148,7 @@ data.compiler = {
   buildScope: `wall time of all ${builds[0].invocations.length} compiler processes of one clean build`,
   date: new Date().toISOString().slice(0, 10),
 }
+delete data.previousRelease
 writeFileSync(resultsPath, `${JSON.stringify(data, null, 2)}\n`)
 console.log(
   `recorded: esm ${byPath["dist/from-markdown.esm.js"].brotli11} Brotli, compile ${data.compiler.compileWallMs.join("/")} ms, build ${data.compiler.buildCompileWallMs.join("/")} ms, official suite ${spec.pass}/${spec.total}, checks ${spec.checks.pass}/${spec.checks.total}, throughput ${data.throughput[1].documentMs} vs ${data.throughput[0].documentMs} ms`,

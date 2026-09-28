@@ -2,28 +2,9 @@ import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding, markdownSpace } from "../util-character.lil";
 import { cGraveAccent, codeEq } from "../symbol/codes.lil";
 import { kCodeFencedSequenceSizeMin, kContentTypeString, kTabSize } from "../symbol/constants.lil";
+import { nonLazyContinuation } from "./partial-non-lazy-continuation.lil";
 import { tChunkString, tCodeFenced, tCodeFencedFence, tCodeFencedFenceInfo, tCodeFencedFenceMeta, tCodeFencedFenceSequence, tCodeFlowValue, tLineEnding, tLinePrefix, tWhitespace } from "../symbol/types.lil";
 
-JsValue tokenizeNonLazyContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue lineStart = JS.method1((JsValue _s, JsValue code) => {
-    if (JS.get(JS.get(self, "parser"), "lazy")[JS.get(JS.invoke(self, "now"), "line")].truthy()) {
-      return JS.call(nok, JS.undefined(), code);
-    }
-    return JS.call(ok, JS.undefined(), code);
-  });
-
-  return JS.method1((JsValue _s, JsValue code) => {
-    if (JS.strictEqual(code, null)) {
-      return JS.call(nok, JS.undefined(), code);
-    }
-    JS.invoke(effects, "enter", tLineEnding);
-    JS.invoke(effects, "consume", code);
-    JS.invoke(effects, "exit", tLineEnding);
-    return lineStart;
-  });
-});
-
-JsValue nonLazyContinuation = JS.object("partial", true, "tokenize", tokenizeNonLazyContinuation);
 
 JsValue tokenizeCodeFenced = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   float initialPrefix = 0.0;

@@ -1,4 +1,4 @@
-import { factorySpace } from "../factory-space.lil";
+import { factorySpaceMinMax } from "../factory-space.lil";
 import { markdownLineEnding } from "../util-character.lil";
 import { kTabSize } from "../symbol/constants.lil";
 import { tCodeFlowValue, tCodeIndented, tLineEnding, tLinePrefix } from "../symbol/types.lil";
@@ -6,11 +6,7 @@ import { tCodeFlowValue, tCodeIndented, tLineEnding, tLinePrefix } from "../symb
 JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue furtherStart = JS.undefined();
 
-  JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
-    if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix) && JS.invoke(tail[2], "sliceSerialize", tail[1], true).length >= kTabSize) {
-      return JS.call(ok, JS.undefined(), code);
-    }
+  JsValue onNotEnoughPrefix = JS.method1((JsValue _s, JsValue code) => {
     if (markdownLineEnding(code)) {
       return JS.call(furtherStart, JS.undefined(), code);
     }
@@ -27,7 +23,7 @@ JsValue tokenizeFurtherStart = JS.method3((JsValue self, JsValue effects, JsValu
       JS.invoke(effects, "exit", tLineEnding);
       return furtherStart;
     }
-    return JS.call(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), JS.undefined(), code);
+    return JS.call(factorySpaceMinMax(effects, ok, onNotEnoughPrefix, tLinePrefix, kTabSize, kTabSize), JS.undefined(), code);
   });
 
   return furtherStart;
@@ -42,14 +38,6 @@ JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValu
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     JS.invoke(effects, "exit", tCodeIndented);
     return JS.call(ok, JS.undefined(), code);
-  });
-
-  JsValue afterPrefix = JS.method1((JsValue _s, JsValue code) => {
-    JsValue tail = JS.get(self, "events")[JS.get(self, "events").length - 1.0];
-    if (tail.truthy() && JS.strictEqual(JS.get(tail[1], "type"), tLinePrefix) && JS.invoke(tail[2], "sliceSerialize", tail[1], true).length >= kTabSize) {
-      return JS.call(atBreak, JS.undefined(), code);
-    }
-    return JS.call(nok, JS.undefined(), code);
   });
 
   atBreak = JS.method1((JsValue _s, JsValue code) => {
@@ -74,7 +62,7 @@ JsValue tokenizeCodeIndented = JS.method3((JsValue self, JsValue effects, JsValu
 
   return JS.method1((JsValue _s, JsValue code) => {
     JS.invoke(effects, "enter", tCodeIndented);
-    return JS.call(factorySpace(effects, afterPrefix, tLinePrefix, kTabSize + 1), JS.undefined(), code);
+    return JS.call(factorySpaceMinMax(effects, atBreak, nok, tLinePrefix, kTabSize, kTabSize), JS.undefined(), code);
   });
 });
 

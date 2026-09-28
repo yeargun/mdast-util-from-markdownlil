@@ -5,6 +5,7 @@ import { cApostrophe, cEqualsTo, cGraveAccent, cQuotationMark } from "../symbol/
 import { kCdataOpeningString, kHtmlBasic, kHtmlCdata, kHtmlComment, kHtmlComplete, kHtmlDeclaration, kHtmlInstruction, kHtmlRaw, kHtmlRawSizeMax } from "../symbol/constants.lil";
 import { tHtmlFlow, tHtmlFlowData, tLineEnding, tLinePrefix } from "../symbol/types.lil";
 import { blankLine } from "./blank-line.lil";
+import { nonLazyContinuation } from "./partial-non-lazy-continuation.lil";
 
 extern JsValue String;
 
@@ -24,26 +25,6 @@ JsValue resolveToHtmlFlow = JS.method2((JsValue _self, JsValue events, JsValue _
   return events;
 });
 
-JsValue tokenizeNonLazyContinuationStart = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  JsValue after = JS.method1((JsValue _s, JsValue code) => {
-    if (JS.get(JS.get(self, "parser"), "lazy")[JS.get(JS.invoke(self, "now"), "line")].truthy()) {
-      return JS.call(nok, JS.undefined(), code);
-    }
-    return JS.call(ok, JS.undefined(), code);
-  });
-
-  return JS.method1((JsValue _s, JsValue code) => {
-    if (markdownLineEnding(code)) {
-      JS.invoke(effects, "enter", tLineEnding);
-      JS.invoke(effects, "consume", code);
-      JS.invoke(effects, "exit", tLineEnding);
-      return after;
-    }
-    return JS.call(nok, JS.undefined(), code);
-  });
-});
-
-JsValue nonLazyContinuationStart = JS.object("partial", true, "tokenize", tokenizeNonLazyContinuationStart);
 
 JsValue tokenizeBlankLineBefore = JS.method3((JsValue _self, JsValue effects, JsValue ok, JsValue nok) => {
   return JS.method1((JsValue _s, JsValue code) => {
@@ -362,7 +343,7 @@ JsValue tokenizeHtmlFlow = JS.method3((JsValue self, JsValue effects, JsValue ok
   });
 
   continuationStart = JS.method1((JsValue _s, JsValue code) => {
-    return JS.call(JS.invoke(effects, "check", nonLazyContinuationStart, continuationStartNonLazy, continuationAfter), JS.undefined(), code);
+    return JS.call(JS.invoke(effects, "check", nonLazyContinuation, continuationStartNonLazy, continuationAfter), JS.undefined(), code);
   });
 
   continuationStartNonLazy = JS.method1((JsValue _s, JsValue code) => {

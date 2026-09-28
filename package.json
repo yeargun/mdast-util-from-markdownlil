@@ -1,6 +1,6 @@
 {
   "name": "@itslil/mdast-util-from-markdown",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "mdast-util-from-markdown reimplemented in LilScript",
   "keywords": [
     "mdast",
@@ -78,6 +78,7 @@
     "esbuild": "0.28.1",
     "hast-util-from-html": "^2.0.0",
     "hast-util-to-html": "^9.0.0",
+    "mdast-util-from-markdown": "2.0.3",
     "mdast-util-to-hast": "^13.0.0",
     "mdast-util-to-string": "^4.0.0",
     "typescript": "^5.0.0"

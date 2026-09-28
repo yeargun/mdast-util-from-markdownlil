@@ -1,0 +1,65 @@
+extern JsValue Map;
+
+// micromark-util-edit-map: changes to a list of events are recorded against the
+// original indices and applied in one pass by `editMapConsume`, instead of one
+// splice (and one shift of everything after it) per change.
+
+void addImplementation(JsValue editMap, float at, float remove, JsValue add, bool before) {
+  if (remove == 0.0 && add.length == 0.0) {
+    return;
+  }
+  JsValue existing = JS.invoke(JS.get(editMap, "index"), "get", at);
+  if (existing.truthy()) {
+    JS.set(existing, "1", JS.number(existing[1]) + remove);
+    if (before) {
+      JS.apply(JS.get(add, "push"), add, existing[2]);
+      JS.set(existing, "2", add);
+    } else {
+      JS.apply(JS.get(existing[2], "push"), existing[2], add);
+    }
+    return;
+  }
+  JsValue change = JS.array(at, remove, add);
+  JS.invoke(JS.get(editMap, "map"), "push", change);
+  JS.invoke(JS.get(editMap, "index"), "set", at, change);
+}
+
+export JsValue newEditMap() {
+  return JS.object("index", JS.construct(Map), "map", JS.array());
+}
+
+export void editMapAdd(JsValue editMap, float at, float remove, JsValue add) {
+  addImplementation(editMap, at, remove, add, false);
+}
+
+export void editMapAddBefore(JsValue editMap, float at, float remove, JsValue add) {
+  addImplementation(editMap, at, remove, add, true);
+}
+
+export void editMapConsume(JsValue editMap, JsValue events) {
+  JsValue map = JS.get(editMap, "map");
+  JS.invoke(map, "sort", JS.method2((JsValue _s, JsValue a, JsValue b) => {
+    return JS.number(a[0]) - JS.number(b[0]);
+  }));
+  if (map.length == 0.0) {
+    return;
+  }
+  float index = map.length;
+  JsValue vecs = JS.array();
+  while (index > 0.0) {
+    index = index - 1.0;
+    JS.invoke(vecs, "push", JS.invoke(events, "slice", JS.number(map[index][0]) + JS.number(map[index][1])), map[index][2]);
+    JS.set(events, "length", map[index][0]);
+  }
+  JS.invoke(vecs, "push", JS.invoke(events, "slice"));
+  JS.set(events, "length", 0);
+  JsValue slice = JS.invoke(vecs, "pop");
+  while (slice.truthy()) {
+    for (float element = 0.0; element < slice.length; element++) {
+      JS.invoke(events, "push", slice[element]);
+    }
+    slice = JS.invoke(vecs, "pop");
+  }
+  JS.set(map, "length", 0);
+  JS.invoke(JS.get(editMap, "index"), "clear");
+}

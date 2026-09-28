@@ -3,10 +3,14 @@ import { tLabelLink, tLabelMarker } from "../symbol/types.lil";
 import { labelEnd } from "./label-end.lil";
 
 JsValue tokenizeLabelStartLink = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue labelLink = JS.undefined();
+
   JsValue after = JS.method1((JsValue _s, JsValue code) => {
     if (codeEq(code, cCaret) && JS.in("_hiddenFootnoteSupport", JS.get(JS.get(self, "parser"), "constructs"))) {
       return JS.call(nok, JS.undefined(), code);
     }
+    JS.set(self, "_labelStarts", JS.or(JS.get(self, "_labelStarts"), JS.array()));
+    JS.invoke(JS.get(self, "_labelStarts"), "push", labelLink);
     return JS.call(ok, JS.undefined(), code);
   });
 
@@ -15,7 +19,7 @@ JsValue tokenizeLabelStartLink = JS.method3((JsValue self, JsValue effects, JsVa
     JS.invoke(effects, "enter", tLabelMarker);
     JS.invoke(effects, "consume", code);
     JS.invoke(effects, "exit", tLabelMarker);
-    JS.invoke(effects, "exit", tLabelLink);
+    labelLink = JS.invoke(effects, "exit", tLabelLink);
     return after;
   });
 });

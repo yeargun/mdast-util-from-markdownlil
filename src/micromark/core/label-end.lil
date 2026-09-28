@@ -204,24 +204,20 @@ JsValue referenceFullConstruct = JS.object("tokenize", tokenizeReferenceFull);
 JsValue referenceCollapsedConstruct = JS.object("tokenize", tokenizeReferenceCollapsed);
 
 JsValue tokenizeLabelEnd = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
-  float index = JS.get(self, "events").length;
+  JsValue labelStarts = JS.get(self, "_labelStarts");
   JsValue labelStart = JS.undefined();
   JsValue defined = JS.undefined();
-  while (true) {
-    index--;
-    if (index < 0.0) {
-      break;
+  if (labelStarts.truthy()) {
+    while (labelStarts.length > 0.0 && JS.get(labelStarts[labelStarts.length - 1.0], "_balanced").truthy()) {
+      JS.invoke(labelStarts, "pop");
     }
-    JsValue token = JS.get(self, "events")[index][1];
-    if ((JS.strictEqual(JS.get(token, "type"), tLabelImage) || JS.strictEqual(JS.get(token, "type"), tLabelLink)) && !JS.get(token, "_balanced").truthy()) {
-      labelStart = token;
-      break;
-    }
+    labelStart = labelStarts[labelStarts.length - 1.0];
   }
   JsValue after = JS.undefined();
   JsValue referenceNotFull = JS.undefined();
 
   JsValue labelEndOk = JS.method1((JsValue _s, JsValue code) => {
+    JS.invoke(labelStarts, "pop");
     return JS.call(ok, JS.undefined(), code);
   });
 

@@ -1,7 +1,7 @@
 import { copyPoint, isEof } from "../host.lil";
 import { factorySpace } from "../factory-space.lil";
 import { markdownLineEnding } from "../util-character.lil";
-import { splice } from "../util-chunked.lil";
+import { editMapAdd, editMapConsume, newEditMap } from "../util-edit-map.lil";
 
 JsValue containerConstruct = JS.object("tokenize", JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
   JsValue constructs = JS.get(JS.get(self, "parser"), "constructs");
@@ -21,8 +21,10 @@ void moveExits(JsValue events, float indexBeforeExits, float indexBeforeFlow, Js
     JS.set(events[index][1], "end", copyPoint(point));
     index++;
   }
-  splice(events, indexBeforeFlow + 1.0, 0, JS.invoke(events, "slice", indexBeforeExits));
-  JS.set(events, "length", index);
+  JsValue editMap = newEditMap();
+  editMapAdd(editMap, indexBeforeFlow + 1.0, 0.0, JS.invoke(events, "slice", indexBeforeExits));
+  editMapAdd(editMap, indexBeforeExits, index - indexBeforeExits, JS.array());
+  editMapConsume(editMap, events);
 }
 
 export JsValue documentConstruct = JS.object("tokenize", JS.method1((JsValue self, JsValue effects) => {

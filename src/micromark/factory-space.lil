@@ -25,3 +25,34 @@ export JsValue factorySpace(JsValue effects, JsValue ok, string typ, JsValue max
     return JS.call(ok, JS.undefined(), code);
   });
 }
+
+// Between `min` and `max` spaces as `typ`, then `ok`; fewer than `min`, `nok`.
+export JsValue factorySpaceMinMax(JsValue effects, JsValue ok, JsValue nok, string typ, float min, float max) {
+  float size = 0.0;
+  JsValue prefix = JS.undefined();
+
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (size >= min) {
+      return JS.call(ok, JS.undefined(), code);
+    }
+    return JS.call(nok, JS.undefined(), code);
+  });
+
+  prefix = JS.method1((JsValue _s, JsValue code) => {
+    if (markdownSpace(code) && size < max) {
+      JS.invoke(effects, "consume", code);
+      size++;
+      return prefix;
+    }
+    JS.invoke(effects, "exit", typ);
+    return JS.call(after, JS.undefined(), code);
+  });
+
+  return JS.method1((JsValue _s, JsValue code) => {
+    if (max > 0.0 && markdownSpace(code)) {
+      JS.invoke(effects, "enter", typ);
+      return JS.call(prefix, JS.undefined(), code);
+    }
+    return JS.call(after, JS.undefined(), code);
+  });
+}

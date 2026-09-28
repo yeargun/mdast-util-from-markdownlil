@@ -1,0 +1,24 @@
+import { tLineEnding } from "../symbol/types.lil";
+
+// A line ending followed by a line that is not lazy; fenced code and HTML (flow)
+// share it.
+JsValue tokenizeNonLazyContinuation = JS.method3((JsValue self, JsValue effects, JsValue ok, JsValue nok) => {
+  JsValue after = JS.method1((JsValue _s, JsValue code) => {
+    if (JS.get(JS.get(self, "parser"), "lazy")[JS.get(JS.invoke(self, "now"), "line")].truthy()) {
+      return JS.call(nok, JS.undefined(), code);
+    }
+    return JS.call(ok, JS.undefined(), code);
+  });
+
+  return JS.method1((JsValue _s, JsValue code) => {
+    if (JS.strictEqual(code, null)) {
+      return JS.call(nok, JS.undefined(), code);
+    }
+    JS.invoke(effects, "enter", tLineEnding);
+    JS.invoke(effects, "consume", code);
+    JS.invoke(effects, "exit", tLineEnding);
+    return after;
+  });
+});
+
+export JsValue nonLazyContinuation = JS.object("partial", true, "tokenize", tokenizeNonLazyContinuation);
