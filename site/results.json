@@ -1,23 +1,7 @@
 {
-  "pin": "mdast-util-from-markdown@2.0.3",
-  "package": "@itslil/mdast-util-from-markdown",
   "file": "from-markdown",
   "lilExport": "fromMarkdown",
   "officialExport": "fromMarkdown",
-  "node": "v24.11.1",
-  "codec": "lilscript-codec gzip-9 / brotli-11",
-  "runtime": "Node v24.11.1",
-  "warmupDiscard": 3,
-  "comparison": "Two official graphs are measured. The Node graph is an esbuild bundle of mdast-util-from-markdown@2.0.3 and its runtime dependencies as Node resolves them, then Terser or esbuild; it decodes named character references from the character-entities table, as @itslil/mdast-util-from-markdown does, and its Terser file is the bar. The browser graph is the same package as browsers resolve it: it decodes named references through the DOM and ships no entity table, so it is smaller than any file that carries the table. LilScript rows are the files the compiler wrote: the npm ESM is the compiler's output plus a license banner, and no minifier runs after the compiler. Closed is the same source under lilscript.closed.toml.",
-  "spec": {
-    "total": 724,
-    "pass": 724,
-    "label": "official suite",
-    "checks": {
-      "total": 19,
-      "pass": 19
-    }
-  },
   "play": {
     "kind": "md-json",
     "sample": "# Lab\n\nA [link](https://example.com \"t\") with **bold**, *em*, and `code`.\n\n- [x] tasks\n- item\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n\n```js\nconsole.log(1)\n```\n\n> quote\n\nhttps://yeargun.github.io/\n",
@@ -28,162 +12,202 @@
       }
     ]
   },
-  "size": [
-    {
-      "id": "official",
-      "name": "Official mdast-util-from-markdown@2.0.3 graph · Node",
-      "raw": 184950,
-      "gzip9": 37537,
-      "brotli11": 31599,
-      "note": "esbuild bundle of the published package plus its runtime dependencies as Node resolves them: named character references decode through the character-entities table, as they do in @itslil/mdast-util-from-markdown (site/official.js) Dependencies as a fresh install resolves them on 2026-09-28 (micromark 4.0.3, micromark-core-commonmark 2.0.4).",
-      "diagnostic": false,
-      "artifactSha256": "d2e44ba66649187febab89638bd4fa2f9db941eaa418ccc0a7810fe6c1d35d98"
+  "package": "@itslil/mdast-util-from-markdown",
+  "pin": "mdast-util-from-markdown@2.0.3",
+  "objectiveComparison": {
+    "schemaVersion": 4,
+    "name": "mdast-util-from-markdownlil",
+    "package": "@itslil/mdast-util-from-markdown",
+    "measuredAt": "2026-10-03T02:05:48.476442+03:00",
+    "compiler": {
+      "baseRevision": "f7d29bd9",
+      "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+      "hasLocalSourceChanges": true
     },
-    {
-      "id": "official-terser-mangle",
-      "name": "Official · Node graph · Terser mangle on",
-      "raw": 84774,
-      "gzip9": 27170,
-      "brotli11": 23436,
-      "note": "Terser compress of the Node graph, mangle: true. The like-for-like bar: both files carry the entity table. Terser 5.51.2, 3 passes.",
-      "baseline": true,
-      "artifactSha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238"
+    "upstream": {
+      "package": "mdast-util-from-markdown",
+      "version": "2.0.3",
+      "external": [],
+      "sharedExports": [
+        "fromMarkdown"
+      ],
+      "excludedExports": [],
+      "additionalExports": [],
+      "resolution": {
+        "platform": "neutral",
+        "conditions": [
+          "production"
+        ],
+        "mainFields": [
+          "module",
+          "main"
+        ],
+        "target": "es2020",
+        "defines": {
+          "process.env.NODE_ENV": "production"
+        }
+      }
     },
-    {
-      "id": "official-terser-nomangle",
-      "name": "Official · Node graph · Terser mangle off",
-      "raw": 119747,
-      "gzip9": 30740,
-      "brotli11": 26607,
-      "note": "Terser compress of the Node graph, mangle: false",
-      "artifactSha256": "c45b8372db8f72341d50ab8ddd1423ea5833ba9b3f1f23529303d1383f59ab22"
+    "scope": "Portable main-entry ESM with matching shared named exports and external imports. The original uses production/default package conditions, keeping data-based entity decoding rather than relying on the DOM.",
+    "machine": {
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "logicalCpus": 8,
+      "memoryGiB": 15.6,
+      "os": "Linux-7.0.0-1014-azure-x86_64-with-glibc2.39",
+      "node": "v20.19.0"
     },
-    {
-      "id": "official-esbuild",
-      "name": "Official · Node graph · esbuild minify",
-      "raw": 93149,
-      "gzip9": 28399,
-      "brotli11": 24605,
-      "note": "esbuild minify of the Node graph",
-      "artifactSha256": "ac6812cdf035be5d27ecef8b8db3d18209e7576e33bfbc4006d1c0c0a8f0b81e"
-    },
-    {
-      "id": "official-browser-terser",
-      "name": "Official · browser graph · Terser mangle on",
-      "raw": 56143,
-      "gzip9": 15329,
-      "brotli11": 13672,
-      "note": "The graph as browsers resolve it, built from the pinned Git source (mdast-util-from-markdown f9ef1b3): decode-named-character-reference/index.dom.js decodes named references through the DOM, so no entity table ships. esbuild bundle, then Terser 5.51.2 (3 passes, mangle). Built by this release's source build; site/esm-comparison/original.js",
-      "artifactSha256": "cf2b9429ad8979f64a7a7c6309898098061dd719791643a71ce0e7bd413b43e3",
-      "browserBar": true
-    },
-    {
-      "id": "official-browser-esbuild",
-      "name": "Official · browser graph · esbuild minify",
-      "raw": 57505,
-      "gzip9": 16429,
-      "brotli11": 14643,
-      "note": "esbuild minify of npm mdast-util-from-markdown@2.0.3 as browsers resolve it (the same graph, from the npm package)",
-      "artifactSha256": "9ffa0d35e7a468fe7d02279f3feb7a786f266299e001a8b36d3d2af975f629d1"
-    },
-    {
-      "id": "itslil",
-      "name": "@itslil/mdast-util-from-markdown · library",
-      "raw": 72106,
-      "gzip9": 26694,
-      "brotli11": 22653,
-      "note": "LilScript js-module under lilscript.toml. The npm ESM: compiler-written, license banner, no post-minifier.",
-      "primary": true
-    },
-    {
-      "id": "itslil-closed",
-      "name": "@itslil/mdast-util-from-markdown · closed",
-      "raw": 74384,
-      "gzip9": 26836,
-      "brotli11": 22658,
-      "note": "Same source under lilscript.closed.toml (level 13). Compiler-written."
-    }
-  ],
-  "throughput": [
-    {
-      "id": "official",
-      "name": "mdast-util-from-markdown@2.0.3",
-      "documentMs": 40.6
-    },
-    {
-      "id": "itslil",
-      "name": "@itslil/mdast-util-from-markdown",
-      "documentMs": 40.9
-    }
-  ],
-  "delivered": [
-    {
-      "path": "dist/from-markdown.esm.js",
-      "condition": "import",
-      "writtenBy": "compiler",
-      "wrapper": "license banner",
-      "raw": 72106,
-      "gzip9": 26694,
-      "brotli11": 22653
-    },
-    {
-      "path": "dist/from-markdown.cjs",
-      "condition": "require",
-      "writtenBy": "compiler",
-      "wrapper": "license banner, CommonJS export object",
-      "raw": 72128,
-      "gzip9": 26710,
-      "brotli11": 22636
-    },
-    {
-      "path": "dist/from-markdown.umd.js",
-      "condition": "browser script (unpkg, jsdelivr)",
-      "writtenBy": "compiler",
-      "wrapper": "license banner, function scope, global `fromMarkdown`",
-      "raw": 72151,
-      "gzip9": 26716,
-      "brotli11": 22666
-    },
-    {
-      "path": "dist/from-markdown.closed.js",
-      "condition": "./closed",
-      "writtenBy": "compiler",
-      "wrapper": "none",
-      "raw": 74384,
-      "gzip9": 26836,
-      "brotli11": 22658
-    }
-  ],
-  "throughputDocument": "the CommonMark spec's 652 examples as one document (15469 characters)",
-  "compiler": {
-    "revision": "24968659",
-    "binarySha256": "47048e41164027e92d3bf1d1840d8d83e04c60532c031ceb3346222e194b3041",
-    "codecSha256": "85329d361ef3339d4ff7b7ca1f00065d561340eb4fc98a2799af327134a3a3f0",
-    "compileWallMs": [
-      2407.3,
-      2413.5,
-      2373.1
-    ],
-    "buildCompileWallMs": [
-      4260.5,
-      4189,
-      4155.2
-    ],
-    "invocations": [
+    "objectives": [
       {
-        "source": "src/entry.lil",
-        "config": "lilscript.toml",
-        "output": "from-markdown.raw.js"
+        "objective": "raw",
+        "metric": "raw",
+        "lilscript": {
+          "artifact": "./comparison-artifacts/lilscript-raw.mjs",
+          "sizes": {
+            "raw": 68067,
+            "gzip9": 26165,
+            "brotli11": 22071
+          },
+          "sha256": "632e3a7b9d73db848347d0582da7aeb6f880f2f262455a90e3eb1b56095d83a7",
+          "buildSeconds": 13.790887051000027,
+          "config": "./comparison-artifacts/lilscript-raw.toml",
+          "configSha256": "7b0044b9b52992265b41b4d4706237505db90402a655414563e51f8b28cf4254"
+        },
+        "original": {
+          "tool": "Terser",
+          "version": "5.51.2",
+          "artifact": "./comparison-artifacts/original-terser.mjs",
+          "sizes": {
+            "raw": 84154,
+            "gzip9": 26849,
+            "brotli11": 23151
+          },
+          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
+          "buildSeconds": 1.0162451749999997
+        },
+        "ratio": 0.8088385578819782
       },
       {
-        "source": "src/entry.lil",
-        "config": "lilscript.closed.toml",
-        "output": "from-markdown.closed.js"
+        "objective": "gzip",
+        "metric": "gzip9",
+        "lilscript": {
+          "artifact": "./comparison-artifacts/lilscript-gzip.mjs",
+          "sizes": {
+            "raw": 66155,
+            "gzip9": 25987,
+            "brotli11": 22052
+          },
+          "sha256": "f27d9ec0419898d2d2beb7d302cdbafa0863438a7adeb413bfb44ea864bdb295",
+          "buildSeconds": 12.287886428999627,
+          "config": "./comparison-artifacts/lilscript-gzip.toml",
+          "configSha256": "6c98be347871ac92f197128f2c469779338a870c8db02b7a2b932dc869e0d082"
+        },
+        "original": {
+          "tool": "Terser",
+          "version": "5.51.2",
+          "artifact": "./comparison-artifacts/original-terser.mjs",
+          "sizes": {
+            "raw": 84154,
+            "gzip9": 26849,
+            "brotli11": 23151
+          },
+          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
+          "buildSeconds": 1.0162451749999997
+        },
+        "ratio": 0.9678945212112183
+      },
+      {
+        "objective": "brotli",
+        "metric": "brotli11",
+        "lilscript": {
+          "artifact": "./comparison-artifacts/lilscript-brotli.mjs",
+          "sizes": {
+            "raw": 66217,
+            "gzip9": 26050,
+            "brotli11": 22066
+          },
+          "sha256": "aa6756e45456a47372b92e2af65c43d78f031accb9ae8cb16de7720e6feac38e",
+          "buildSeconds": 31.328844108997146,
+          "config": "./comparison-artifacts/lilscript-brotli.toml",
+          "configSha256": "d4ab68c914e36655559893eb00a07e55170ee4344bab45fccf58775d11fa3481"
+        },
+        "original": {
+          "tool": "Terser",
+          "version": "5.51.2",
+          "artifact": "./comparison-artifacts/original-terser.mjs",
+          "sizes": {
+            "raw": 84154,
+            "gzip9": 26849,
+            "brotli11": 23151
+          },
+          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
+          "buildSeconds": 1.0162451749999997
+        },
+        "ratio": 0.9531337739190532
       }
     ],
-    "compileScope": "wall time of the compiler process for src/entry.lil with lilscript.toml, the shipped ESM",
-    "buildScope": "wall time of all 2 compiler processes of one clean build",
-    "date": "2026-09-28"
+    "minifiers": [
+      {
+        "tool": "Terser",
+        "version": "5.51.2",
+        "artifact": "./comparison-artifacts/original-terser.mjs",
+        "sizes": {
+          "raw": 84154,
+          "gzip9": 26849,
+          "brotli11": 23151
+        },
+        "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
+        "buildSeconds": 1.0162451749999997
+      },
+      {
+        "tool": "esbuild",
+        "version": "0.28.1",
+        "artifact": "./comparison-artifacts/original-esbuild.mjs",
+        "sizes": {
+          "raw": 92538,
+          "gzip9": 28038,
+          "brotli11": 24220
+        },
+        "sha256": "95b9cee66ac7df36bad96265ca0478f32ae092a87db02c4341cf1840c889c3c5",
+        "buildSeconds": 0.08405117900000005
+      },
+      {
+        "tool": "Oxc",
+        "version": "via Vite 8.2.1",
+        "artifact": "./comparison-artifacts/original-oxc.mjs",
+        "sizes": {
+          "raw": 84249,
+          "gzip9": 27045,
+          "brotli11": 23259
+        },
+        "sha256": "1e936ff5f2f347f808974fbe71e1c85dbe89ee3d664c802a9c553d49788261c1",
+        "buildSeconds": 0.19732843999999933
+      }
+    ],
+    "validation": {
+      "checks": 2082,
+      "objectives": [
+        {
+          "objective": "raw",
+          "checks": 694,
+          "suite": "differential"
+        },
+        {
+          "objective": "gzip",
+          "checks": 694,
+          "suite": "differential"
+        },
+        {
+          "objective": "brotli",
+          "checks": 694,
+          "suite": "differential"
+        }
+      ],
+      "scope": "Main ESM entry; selected corpora and API checks, not all package formats or complete upstream equivalence."
+    }
   },
-  "perfLead": "same work, against the official Node graph"
+  "spec": {
+    "pass": 2082,
+    "total": 2082,
+    "label": "current main-entry checks"
+  }
 }
