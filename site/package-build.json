@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 1,
+  "package": "@itslil/mdast-util-from-markdown",
+  "version": "2.0.5",
+  "checkedAt": "2026-10-03T15:05:12.154010+00:00",
+  "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+  "buildReport": "./comparison/package-build-report.json",
+  "packageBuildSeconds": 56.732,
+  "validation": {
+    "ok": true,
+    "checks": [
+      {
+        "suite": "test",
+        "command": [
+          "bash",
+          "-c",
+          "npm run check:types && node --test-concurrency=1 --test test/*.test.mjs test/official/index.js"
+        ],
+        "returncode": 0,
+        "log": "./comparison/package-validation/test.log",
+        "logSha256": "734114ff5880b17457452bf0d18f9c27c012a4157f52fe7fb25fe5b977790c0e"
+      },
+      {
+        "suite": "pack",
+        "command": [
+          "npm",
+          "run",
+          "check:pack"
+        ],
+        "returncode": 0,
+        "log": "./comparison/package-validation/pack.log",
+        "logSha256": "7f57220ab343c524cde45cd816d20280e3df9dd037675a5a8ed06f3d5556bf55"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "src/browser.lil",
+      "sha256": "3f0580a909a2d33448e4e53e0e43ba6cedce00f0d27824f7360ad452c6d1df1c"
+    },
+    {
+      "path": "src/entry.lil",
+      "sha256": "f0f45324b5f212e1941e1fcb4e70e485f46f5949ceecbca0a5088342d214a37a"
+    },
+    {
+      "path": "src/from-markdown.lil",
+      "sha256": "78894f1bafbd7b1717b28b6f4ffa140cca0fcec02c92e7b6951a5c33ca551bae"
+    },
+    {
+      "path": "src/micromark/character-entities.lil",
+      "sha256": "c8b6618cbfd0fdf86d5c36b8a4ed1e4ee141a25088251142a20fe599fca210b3"
+    },
+    {
+      "path": "src/micromark/constructs.lil",
+      "sha256": "74cb525c1651cc300f78f4770c648d3593c4e2dc3f4a45351e459b29be14d84a"
+    },
+    {
+      "path": "src/micromark/core/attention.lil",
+      "sha256": "8785d4809209ff4f57b2f9a4b1e44b13e6dfa95fb8642533febc044370b26fbd"
+    },
+    {
+      "path": "src/micromark/core/autolink.lil",
+      "sha256": "97e7eb8b4b33f23df8600b7d811b5cfbbb8df23bfc01dfa25fb528a085d55703"
+    },
+    {
+      "path": "src/micromark/core/blank-line.lil",
+      "sha256": "115d2dcacdf715b02efce52caac3960d5b855939a68dc0a20817491e8b1194b0"
+    },
+    {
+      "path": "src/micromark/core/block-quote.lil",
+      "sha256": "eae45318d2972f4be0fd616cb243d59dd366cb61209b13796d651cfc8297ab49"
+    },
+    {
+      "path": "src/micromark/core/character-escape.lil",
+      "sha256": "20193c0809adfe18e77d04a7a782ad437d912f3de997a402930af8e46031c6ab"
+    },
+    {
+      "path": "src/micromark/core/character-reference.lil",
+      "sha256": "b355201b60833cf854ca7328b4cd1a9d405ae491b4d1b5a70178313c8c16c71a"
+    },
+    {
+      "path": "src/micromark/core/code-fenced.lil",
+      "sha256": "fbf73e900a6ec1c4e65bd5ad337cf9e265cc09ed58a109a6d5af3681ba04dc3f"
+    },
+    {
+      "path": "src/micromark/core/code-indented.lil",
+      "sha256": "0c425be55062ae56586da36fadf63199832686073abadb34d5dcb3eaba4113c3"
+    },
+    {
+      "path": "src/micromark/core/code-text.lil",
+      "sha256": "d35e0cdd7e33ae98579152b3114a826ff43fe69b3802b9e9db7c58fae8ee4388"
+    },
+    {
+      "path": "src/micromark/core/content.lil",
+      "sha256": "05cc704bd51c0eaf8b9740bd243bbd92842e77a0c6d0372834c76d42ca6a7620"
+    },
+    {
+      "path": "src/micromark/core/definition.lil",
+      "sha256": "38becb049d8509a9239480090acf683d90d24ad4ef4e8b35f14e92c326788011"
+    },
+    {
+      "path": "src/micromark/core/hard-break-escape.lil",
+      "sha256": "92b8a9e28270f61184e6572a8e0640c33f7fbd163c24dde1255d7211e7ca0b2a"
+    },
+    {
+      "path": "src/micromark/core/heading-atx.lil",
+      "sha256": "9d2fd673aab15d904d2b876aa66e7c92ac30c14f8b838ea34b58d4af0f9d269c"
+    },
+    {
+      "path": "src/micromark/core/html-flow.lil",
+      "sha256": "c281af2ed8e0cbf2acdaac9f6f2be7e5ef5da63d07c9acc309f96511516d3587"
+    },
+    {
+      "path": "src/micromark/core/html-text.lil",
+      "sha256": "1e386a681a07b86327fc72dd7735683e86367f0a183a817976a302c0b3da26fa"
+    },
+    {
+      "path": "src/micromark/core/label-end.lil",
+      "sha256": "458a5430025df6d45ea1d75e645d6d1aeda9b985118f30d34336fc5e5f4fcc1f"
+    },
+    {
+      "path": "src/micromark/core/label-start-image.lil",
+      "sha256": "93c9f78c05ccb6f61784e976eda38b88151e28f7ecb4e94e6b40cb4855a19f58"
+    },
+    {
+      "path": "src/micromark/core/label-start-link.lil",
+      "sha256": "c44bd16f9b0c8c5e447b80c86e6957fcbd1ea118e591532ee9890971c48093b0"
+    },
+    {
+      "path": "src/micromark/core/line-ending.lil",
+      "sha256": "a448ed6a6485a776f3e67941bebef001cdbe486f23bdfd4664842178973d39be"
+    },
+    {
+      "path": "src/micromark/core/list.lil",
+      "sha256": "3a8e976a8a6ccdc8330f26561caa457040ecf0c2d86773551abc505180ef4119"
+    },
+    {
+      "path": "src/micromark/core/partial-non-lazy-continuation.lil",
+      "sha256": "5af2c36e199564378933b8c17cdd4216891c1b88b0359e0a2a244419745bd721"
+    },
+    {
+      "path": "src/micromark/core/setext-underline.lil",
+      "sha256": "d0de9d01945e3ef6e84aa15a45fdb5f93d3be2301fe8865c0c950d49358029a7"
+    },
+    {
+      "path": "src/micromark/core/thematic-break.lil",
+      "sha256": "5776bda5a2850218bd3c4c9fdc796d46c8979b2deac17c7e19376c6816a54313"
+    },
+    {
+      "path": "src/micromark/create-tokenizer.lil",
+      "sha256": "d587bd8a701c469fb05407a1b988231862430bc2d1cbaa0198218a705d41e690"
+    },
+    {
+      "path": "src/micromark/decode-named.lil",
+      "sha256": "e4150b19e19a214e7ccfb5d6762bdce62fde30b8cc907642d911f9ea87b9e6e8"
+    },
+    {
+      "path": "src/micromark/factory-destination.lil",
+      "sha256": "5be6c3c02bacd604c1501b85b6785602ed8b447a85679f85e6ee7351964bb161"
+    },
+    {
+      "path": "src/micromark/factory-label.lil",
+      "sha256": "6376115906bbfbce66d13f0a50ff3b921922135b18b6e66d290eb0b54221f21d"
+    },
+    {
+      "path": "src/micromark/factory-space.lil",
+      "sha256": "10e2f534df5fd967981552355489c5540dd7f66f05da8e18b1aae8f0f009c6c3"
+    },
+    {
+      "path": "src/micromark/factory-title.lil",
+      "sha256": "f22c5e3e9919b86b7f2e0cc8b38f6cc1182e88917c9f3fcb61cbdba56404a07c"
+    },
+    {
+      "path": "src/micromark/factory-whitespace.lil",
+      "sha256": "e63b322526936f7e746978a4a3e6d56b315dcd01bde6732cf9d94bfb93845d36"
+    },
+    {
+      "path": "src/micromark/host.lil",
+      "sha256": "6badb1a179beafd2e5fc92d05c784290b3407412ab9a58769a85dbfe33e2f357"
+    },
+    {
+      "path": "src/micromark/initialize/content.lil",
+      "sha256": "3f4959b21c63be2570bbc74960af330e4b6a9646fbb348cef55300baabff2d45"
+    },
+    {
+      "path": "src/micromark/initialize/document.lil",
+      "sha256": "131e9ea079af0550bb72bfe044e8d4f1865f8145223fd2a140ac876fd512a6ed"
+    },
+    {
+      "path": "src/micromark/initialize/flow.lil",
+      "sha256": "4ed3a38963b8557e3d1cf818ad7ba0f9bcd3f90c2268f91962891ec3fb14f1e7"
+    },
+    {
+      "path": "src/micromark/initialize/text.lil",
+      "sha256": "7fbecd09aaf42b50850007228d62d7adbe2e2b761ecbabdc4de644216035d1ba"
+    },
+    {
+      "path": "src/micromark/parse.lil",
+      "sha256": "b036c2932912ef350c629c126601292bda49caab2a0152d77988dcb979481d83"
+    },
+    {
+      "path": "src/micromark/postprocess.lil",
+      "sha256": "0ea578b00bed09960e8f9c2d06f962b9e626fec4a528beaba4be30f2c5c50b31"
+    },
+    {
+      "path": "src/micromark/preprocess.lil",
+      "sha256": "ce28b92f70b3bd54428324b0f6695ca162aa5df1d2e0f431fde1f8ef4638e9b8"
+    },
+    {
+      "path": "src/micromark/splice-buffer.lil",
+      "sha256": "9fcce40f739a2119a7bb0b44ad7ec6c69344173854feedef3e528d168102f512"
+    },
+    {
+      "path": "src/micromark/symbol/codes.lil",
+      "sha256": "762a3e62e1500ba78d71f8218fcb2e7e357ea3795d21bb5e81b8d4287f513c19"
+    },
+    {
+      "path": "src/micromark/symbol/constants.lil",
+      "sha256": "c89476d798ffe1eb1f9843219c41cd1d19849707ceb9fc18d5583b5ae2470188"
+    },
+    {
+      "path": "src/micromark/symbol/types.lil",
+      "sha256": "6ae172165319ad71396ca532ec544326d82d9625f8ee46090d02a587e40c1aa8"
+    },
+    {
+      "path": "src/micromark/symbol/values.lil",
+      "sha256": "1aabedd9c760c573fd1ea24d07ae9d35d207bbe61a0ecc62985f0953fc73c3e9"
+    },
+    {
+      "path": "src/micromark/util-character.lil",
+      "sha256": "634af98913dfb47ab2fcdf6fd17e2b4733bc26608f78609e110ce0d33bdf4a15"
+    },
+    {
+      "path": "src/micromark/util-chunked.lil",
+      "sha256": "da747a8e78fa84b0a467616f68d83384737e53ad1b016e83f9fb803d2edf8e54"
+    },
+    {
+      "path": "src/micromark/util-classify-character.lil",
+      "sha256": "80373b35201103ddfd5b5a942d97e1ab492fee40858c395d9e9113d2255d4477"
+    },
+    {
+      "path": "src/micromark/util-combine-extensions.lil",
+      "sha256": "45dda94d1f191795642dac1e553985170a046717ad685685a9c61453a1768cfd"
+    },
+    {
+      "path": "src/micromark/util-decode-numeric.lil",
+      "sha256": "03d27ae0446af7f4aa870de13c4c41b65bf53f7a12731c8ee96694f34f95f4fc"
+    },
+    {
+      "path": "src/micromark/util-decode-string.lil",
+      "sha256": "df8465926f8b05577467dfc4fb4ed42f28b71574e541002cfc2395275c5fc907"
+    },
+    {
+      "path": "src/micromark/util-edit-map.lil",
+      "sha256": "e3c8260f5d93c40adf0423ae85ae6f24508aba764eafb850b509eb83301bf16b"
+    },
+    {
+      "path": "src/micromark/util-html-tag-name.lil",
+      "sha256": "db2a6d54b5cbdbc8273a776f7b609fb2ed9b90f87242c1d26801ef11771b0380"
+    },
+    {
+      "path": "src/micromark/util-normalize-identifier.lil",
+      "sha256": "9c605bcd8454ea59378864ba8abfb67315008fbdea73f96e9fb09e76594fe20e"
+    },
+    {
+      "path": "src/micromark/util-resolve-all.lil",
+      "sha256": "d7df6ed1af3b6b922a3f3150f0fc8f94cf4f38852f32819513c56a5a0c546a74"
+    },
+    {
+      "path": "src/micromark/util-subtokenize.lil",
+      "sha256": "2b22576838b22844e1b6d793a4ee542deb73a396ae594b53ce1d9550ff0fe69a"
+    },
+    {
+      "path": "src/stringify-position.lil",
+      "sha256": "4a625ab59ab7059b489f26d9089f6f69530cb5a56044eaf1ad71f4de8d1b0663"
+    },
+    {
+      "path": "src/to-string.lil",
+      "sha256": "d1d84463da85bc5a419f8755e502fcfa8a26c60e2dddd6c737e7b2c9d9884a93"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/.lilscript/closed.json",
+      "bytes": 28286,
+      "sha256": "c923039c1ce5f3dd732db76b7ae37c29269e34abcba75dba73691e2e83d0d556"
+    },
+    {
+      "path": "dist/.lilscript/public.json",
+      "bytes": 37141,
+      "sha256": "752af2bacf7f4e2dab69480f354c0c432e490feb294387db07354c8e9a738f14"
+    },
+    {
+      "path": "dist/from-markdown.cjs",
+      "bytes": 66897,
+      "sha256": "7b379198186e0514bdf43d6c30ecc2c890e1dd96733956e7412addc556c832a1"
+    },
+    {
+      "path": "dist/from-markdown.closed.js",
+      "bytes": 80664,
+      "sha256": "afe28cf013b87c898cb75c0b065675169bd103e652c28bf75ae4d9785ffff7bf"
+    },
+    {
+      "path": "dist/from-markdown.d.ts",
+      "bytes": 2669,
+      "sha256": "addfae7bae136425b9221112b8f0fde082b5a091fa46bff125d73f73081e4d38"
+    },
+    {
+      "path": "dist/from-markdown.esm.js",
+      "bytes": 66597,
+      "sha256": "2e45fba9946a515793242721c96921157f96493a26a647dc2d5213ef12e54d37"
+    },
+    {
+      "path": "dist/from-markdown.raw.js",
+      "bytes": 66597,
+      "sha256": "2e45fba9946a515793242721c96921157f96493a26a647dc2d5213ef12e54d37"
+    },
+    {
+      "path": "dist/from-markdown.umd.js",
+      "bytes": 67149,
+      "sha256": "2f484eefc14bad23b70ff1a00162cbaa16fbb58120d6ff1be4624a6705177cce"
+    },
+    {
+      "path": "dist/lilscript.manifest.json",
+      "bytes": 17413,
+      "sha256": "7a6c04056665024b95356a7b13d70d650853ec251fb2d9d19500a4ff81a37d0d"
+    }
+  ],
+  "scope": "Checked repository package; independent of npm publication. Main-entry objective comparisons have separate artifacts and timings."
+}

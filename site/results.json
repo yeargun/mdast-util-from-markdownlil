@@ -18,7 +18,7 @@
     "schemaVersion": 4,
     "name": "mdast-util-from-markdownlil",
     "package": "@itslil/mdast-util-from-markdown",
-    "measuredAt": "2026-10-03T02:05:48.476442+03:00",
+    "measuredAt": "2026-10-03T18:02:15.268520+03:00",
     "compiler": {
       "baseRevision": "f7d29bd9",
       "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
@@ -45,10 +45,11 @@
         "target": "es2020",
         "defines": {
           "process.env.NODE_ENV": "production"
-        }
+        },
+        "css": "excluded; measured JavaScript only"
       }
     },
-    "scope": "Portable main-entry ESM with matching shared named exports and external imports. The original uses production/default package conditions, keeping data-based entity decoding rather than relying on the DOM.",
+    "scope": "Portable main-entry ESM with matching shared named exports and external imports. The original uses production/default package conditions. Package Node, browser and development variants are tested separately.",
     "machine": {
       "cpu": "AMD EPYC 7763 64-Core Processor",
       "logicalCpus": 8,
@@ -63,28 +64,28 @@
         "lilscript": {
           "artifact": "./comparison-artifacts/lilscript-raw.mjs",
           "sizes": {
-            "raw": 68067,
-            "gzip9": 26165,
-            "brotli11": 22071
+            "raw": 74532,
+            "gzip9": 27890,
+            "brotli11": 23832
           },
-          "sha256": "632e3a7b9d73db848347d0582da7aeb6f880f2f262455a90e3eb1b56095d83a7",
-          "buildSeconds": 13.790887051000027,
+          "sha256": "5879d13e495f90ca43ef1157ddba7ac0b6ee5ac73525d80e21990d179db614d4",
+          "buildSeconds": 72.37892403399746,
           "config": "./comparison-artifacts/lilscript-raw.toml",
-          "configSha256": "7b0044b9b52992265b41b4d4706237505db90402a655414563e51f8b28cf4254"
+          "configSha256": "ca8fff75814b94bdb3b786e43baee231f050bb973c472e19e4c60f5004c20878"
         },
         "original": {
           "tool": "Terser",
           "version": "5.51.2",
           "artifact": "./comparison-artifacts/original-terser.mjs",
           "sizes": {
-            "raw": 84154,
-            "gzip9": 26849,
-            "brotli11": 23151
+            "raw": 84774,
+            "gzip9": 27170,
+            "brotli11": 23436
           },
-          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
-          "buildSeconds": 1.0162451749999997
+          "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
+          "buildSeconds": 1.2931329040000001
         },
-        "ratio": 0.8088385578819782
+        "ratio": 0.8791846556727299
       },
       {
         "objective": "gzip",
@@ -92,28 +93,28 @@
         "lilscript": {
           "artifact": "./comparison-artifacts/lilscript-gzip.mjs",
           "sizes": {
-            "raw": 66155,
-            "gzip9": 25987,
-            "brotli11": 22052
+            "raw": 74748,
+            "gzip9": 27466,
+            "brotli11": 23431
           },
-          "sha256": "f27d9ec0419898d2d2beb7d302cdbafa0863438a7adeb413bfb44ea864bdb295",
-          "buildSeconds": 12.287886428999627,
+          "sha256": "811166c994af64e8aaa3d6bdd31df4ac22efdaf59c2d18f1ecd8cc08d4612a04",
+          "buildSeconds": 71.46254628199677,
           "config": "./comparison-artifacts/lilscript-gzip.toml",
-          "configSha256": "6c98be347871ac92f197128f2c469779338a870c8db02b7a2b932dc869e0d082"
+          "configSha256": "e8e049be63dba8c61e24802f75296f4342160c7fea8704976c19ec25642e22c5"
         },
         "original": {
           "tool": "Terser",
           "version": "5.51.2",
           "artifact": "./comparison-artifacts/original-terser.mjs",
           "sizes": {
-            "raw": 84154,
-            "gzip9": 26849,
-            "brotli11": 23151
+            "raw": 84774,
+            "gzip9": 27170,
+            "brotli11": 23436
           },
-          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
-          "buildSeconds": 1.0162451749999997
+          "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
+          "buildSeconds": 1.2931329040000001
         },
-        "ratio": 0.9678945212112183
+        "ratio": 1.0108943687891057
       },
       {
         "objective": "brotli",
@@ -121,28 +122,28 @@
         "lilscript": {
           "artifact": "./comparison-artifacts/lilscript-brotli.mjs",
           "sizes": {
-            "raw": 66217,
-            "gzip9": 26050,
-            "brotli11": 22066
+            "raw": 77082,
+            "gzip9": 27295,
+            "brotli11": 23118
           },
-          "sha256": "aa6756e45456a47372b92e2af65c43d78f031accb9ae8cb16de7720e6feac38e",
-          "buildSeconds": 31.328844108997146,
+          "sha256": "30416a2170eb1a482fb0b70a414eaca61cd115dbdc5fb0c7de8100695a9a0c8f",
+          "buildSeconds": 166.41679810501228,
           "config": "./comparison-artifacts/lilscript-brotli.toml",
-          "configSha256": "d4ab68c914e36655559893eb00a07e55170ee4344bab45fccf58775d11fa3481"
+          "configSha256": "e6a7722ed8ae7074de34e04b9e92074b801cd74cfe622aa8d6f0cdd90c8888ae"
         },
         "original": {
           "tool": "Terser",
           "version": "5.51.2",
           "artifact": "./comparison-artifacts/original-terser.mjs",
           "sizes": {
-            "raw": 84154,
-            "gzip9": 26849,
-            "brotli11": 23151
+            "raw": 84774,
+            "gzip9": 27170,
+            "brotli11": 23436
           },
-          "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
-          "buildSeconds": 1.0162451749999997
+          "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
+          "buildSeconds": 1.2931329040000001
         },
-        "ratio": 0.9531337739190532
+        "ratio": 0.9864311315924219
       }
     ],
     "minifiers": [
@@ -151,58 +152,121 @@
         "version": "5.51.2",
         "artifact": "./comparison-artifacts/original-terser.mjs",
         "sizes": {
-          "raw": 84154,
-          "gzip9": 26849,
-          "brotli11": 23151
+          "raw": 84774,
+          "gzip9": 27170,
+          "brotli11": 23436
         },
-        "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
-        "buildSeconds": 1.0162451749999997
+        "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
+        "buildSeconds": 1.2931329040000001
       },
       {
         "tool": "esbuild",
         "version": "0.28.1",
         "artifact": "./comparison-artifacts/original-esbuild.mjs",
         "sizes": {
-          "raw": 92538,
-          "gzip9": 28038,
-          "brotli11": 24220
+          "raw": 93149,
+          "gzip9": 28399,
+          "brotli11": 24605
         },
-        "sha256": "95b9cee66ac7df36bad96265ca0478f32ae092a87db02c4341cf1840c889c3c5",
-        "buildSeconds": 0.08405117900000005
+        "sha256": "ac6812cdf035be5d27ecef8b8db3d18209e7576e33bfbc4006d1c0c0a8f0b81e",
+        "buildSeconds": 0.08440108100000089
       },
       {
         "tool": "Oxc",
         "version": "via Vite 8.2.1",
         "artifact": "./comparison-artifacts/original-oxc.mjs",
         "sizes": {
-          "raw": 84249,
-          "gzip9": 27045,
-          "brotli11": 23259
+          "raw": 84838,
+          "gzip9": 27346,
+          "brotli11": 23617
         },
-        "sha256": "1e936ff5f2f347f808974fbe71e1c85dbe89ee3d664c802a9c553d49788261c1",
-        "buildSeconds": 0.19732843999999933
+        "sha256": "f2d8784a061b7ba9c27ac7e77b0a165b4a3eb3b65eb58b2cae6eac8233a675f4",
+        "buildSeconds": 0.20039710699999977
       }
     ],
     "validation": {
       "checks": 2082,
-      "objectives": [
+      "runs": [
         {
           "objective": "raw",
+          "suite": "differential",
           "checks": 694,
-          "suite": "differential"
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/raw",
+            "mdast-util-from-markdownlil"
+          ],
+          "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/raw/mdast-util-from-markdownlil/dist/index.mjs",
+          "ok": true
         },
         {
           "objective": "gzip",
+          "suite": "differential",
           "checks": 694,
-          "suite": "differential"
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/gzip",
+            "mdast-util-from-markdownlil"
+          ],
+          "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/gzip/mdast-util-from-markdownlil/dist/index.mjs",
+          "ok": true
         },
         {
           "objective": "brotli",
+          "suite": "differential",
           "checks": 694,
-          "suite": "differential"
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/brotli",
+            "mdast-util-from-markdownlil"
+          ],
+          "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/brotli/mdast-util-from-markdownlil/dist/index.mjs",
+          "ok": true
         }
       ],
-      "scope": "Main ESM entry; selected corpora and API checks, not all package formats or complete upstream equivalence."
+      "ok": true,
+      "scope": "Current independent main-entry builds; package-format tests are recorded separately."
+    },
+    "originalValidation": {
+      "checks": 2082,
+      "runs": [
+        {
+          "minifier": "terser",
+          "checks": 694,
+          "ok": true,
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/original-terser",
+            "mdast-util-from-markdownlil"
+          ]
+        },
+        {
+          "minifier": "esbuild",
+          "checks": 694,
+          "ok": true,
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/original-esbuild",
+            "mdast-util-from-markdownlil"
+          ]
+        },
+        {
+          "minifier": "oxc",
+          "checks": 694,
+          "ok": true,
+          "command": [
+            "node",
+            "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
+            "validation/original-oxc",
+            "mdast-util-from-markdownlil"
+          ]
+        }
+      ]
     }
   },
   "spec": {

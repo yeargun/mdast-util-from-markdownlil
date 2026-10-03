@@ -1,0 +1,5 @@
+
+> @itslil/mdast-util-from-markdown@2.0.5 check:pack
+> node scripts/check-pack.mjs
+
+npm pack: 71 files, 164634 bytes packed, 563263 bytes unpacked

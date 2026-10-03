@@ -1,205 +1,34 @@
 {
-  "compiler": {
-    "baseRevision": "f7d29bd9",
-    "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-    "hasLocalSourceChanges": true
-  },
-  "machine": {
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "logicalCpus": 8,
-    "memoryGiB": 15.6,
-    "os": "Linux-7.0.0-1014-azure-x86_64-with-glibc2.39",
-    "node": "v20.19.0"
-  },
-  "lilscript": [
-    {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "raw",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-raw.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/raw",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
-      ],
-      "wallSeconds": 72.37892403399746,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "ca8fff75814b94bdb3b786e43baee231f050bb973c472e19e4c60f5004c20878",
-      "measuredAt": "2026-10-03T13:52:58.266371+00:00",
-      "outputSha256": "5879d13e495f90ca43ef1157ddba7ac0b6ee5ac73525d80e21990d179db614d4",
-      "raw": 74532
-    },
-    {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "gzip",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-gzip.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/gzip",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
-      ],
-      "wallSeconds": 71.46254628199677,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "e8e049be63dba8c61e24802f75296f4342160c7fea8704976c19ec25642e22c5",
-      "measuredAt": "2026-10-03T13:54:09.740806+00:00",
-      "outputSha256": "811166c994af64e8aaa3d6bdd31df4ac22efdaf59c2d18f1ecd8cc08d4612a04",
-      "raw": 74748
-    },
-    {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "brotli",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-brotli.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/brotli",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
-      ],
-      "wallSeconds": 166.41679810501228,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "e6a7722ed8ae7074de34e04b9e92074b801cd74cfe622aa8d6f0cdd90c8888ae",
-      "measuredAt": "2026-10-03T13:56:56.166242+00:00",
-      "outputSha256": "30416a2170eb1a482fb0b70a414eaca61cd115dbdc5fb0c7de8100695a9a0c8f",
-      "raw": 77082
-    }
-  ],
-  "upstream": {
-    "name": "mdast-util-from-markdownlil",
-    "package": "mdast-util-from-markdown",
-    "version": "2.0.3",
-    "resolveDir": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/ports/mdast-util-from-markdownlil",
-    "output": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil",
-    "entry": "export {fromMarkdown} from \"mdast-util-from-markdown\";",
-    "external": [],
-    "sharedExports": [
-      "fromMarkdown"
-    ],
-    "excludedExports": [],
-    "additionalExports": [],
-    "resolution": {
-      "platform": "neutral",
-      "conditions": [
-        "production"
-      ],
-      "mainFields": [
-        "module",
-        "main"
-      ],
-      "target": "es2020",
-      "defines": {
-        "process.env.NODE_ENV": "production"
-      },
-      "css": "excluded; measured JavaScript only"
-    },
-    "minifiers": [
-      {
-        "tool": "Terser",
-        "version": "5.51.2",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/terser.mjs",
-        "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
-        "raw": 84774,
-        "imports": [],
-        "wallSeconds": 1.2931329040000001,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "Terser"
-        ]
-      },
-      {
-        "tool": "esbuild",
-        "version": "0.28.1",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/esbuild.mjs",
-        "sha256": "ac6812cdf035be5d27ecef8b8db3d18209e7576e33bfbc4006d1c0c0a8f0b81e",
-        "raw": 93149,
-        "imports": [],
-        "wallSeconds": 0.08440108100000089,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "esbuild"
-        ]
-      },
-      {
-        "tool": "Oxc",
-        "version": "via Vite 8.2.1",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/oxc.mjs",
-        "sha256": "f2d8784a061b7ba9c27ac7e77b0a165b4a3eb3b65eb58b2cae6eac8233a675f4",
-        "raw": 84838,
-        "imports": [],
-        "wallSeconds": 0.20039710699999977,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "Oxc"
-        ]
-      }
-    ]
-  },
-  "sourceInputs": {
+  "version": 5,
+  "source_sha256": "61d97832e876fcd05b291845e082bfef27620c20772791fd9e3b6a5a881c6fe3",
+  "inputs": {
     "root": 0,
     "entries": [
       {
-        "name": "index",
+        "name": "browser",
         "module": 0
+      },
+      {
+        "name": "index",
+        "module": 1
       }
     ],
     "modules": [
+      {
+        "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/ports/mdast-util-from-markdownlil/src/browser.lil",
+        "bytes": 82,
+        "sha256": "3f0580a909a2d33448e4e53e0e43ba6cedce00f0d27824f7360ad452c6d1df1c",
+        "dependencies": [
+          1
+        ],
+        "dynamic_dependencies": []
+      },
       {
         "path": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/ports/mdast-util-from-markdownlil/src/entry.lil",
         "bytes": 78,
         "sha256": "f0f45324b5f212e1941e1fcb4e70e485f46f5949ceecbca0a5088342d214a37a",
         "dependencies": [
-          1
+          2
         ],
         "dynamic_dependencies": []
       },
@@ -208,17 +37,17 @@
         "bytes": 23031,
         "sha256": "78894f1bafbd7b1717b28b6f4ffa140cca0fcec02c92e7b6951a5c33ca551bae",
         "dependencies": [
-          2,
           3,
-          54,
+          4,
           55,
           56,
           57,
-          40,
-          29,
-          15,
           58,
-          59
+          41,
+          30,
+          16,
+          59,
+          60
         ],
         "dynamic_dependencies": []
       },
@@ -234,13 +63,13 @@
         "bytes": 1180,
         "sha256": "b036c2932912ef350c629c126601292bda49caab2a0152d77988dcb979481d83",
         "dependencies": [
-          4,
-          6,
-          9,
-          11,
-          13,
-          20,
-          21
+          5,
+          7,
+          10,
+          12,
+          14,
+          21,
+          22
         ],
         "dynamic_dependencies": []
       },
@@ -249,8 +78,8 @@
         "bytes": 1615,
         "sha256": "45dda94d1f191795642dac1e553985170a046717ad685685a9c61453a1768cfd",
         "dependencies": [
-          2,
-          5
+          3,
+          6
         ],
         "dynamic_dependencies": []
       },
@@ -266,10 +95,10 @@
         "bytes": 11638,
         "sha256": "d587bd8a701c469fb05407a1b988231862430bc2d1cbaa0198218a705d41e690",
         "dependencies": [
-          2,
-          7,
-          5,
-          8
+          3,
+          8,
+          6,
+          9
         ],
         "dynamic_dependencies": []
       },
@@ -292,9 +121,9 @@
         "bytes": 1869,
         "sha256": "3f4959b21c63be2570bbc74960af330e4b6a9646fbb348cef55300baabff2d45",
         "dependencies": [
-          2,
-          10,
-          7
+          3,
+          11,
+          8
         ],
         "dynamic_dependencies": []
       },
@@ -303,7 +132,7 @@
         "bytes": 1871,
         "sha256": "10e2f534df5fd967981552355489c5540dd7f66f05da8e18b1aae8f0f009c6c3",
         "dependencies": [
-          7
+          8
         ],
         "dynamic_dependencies": []
       },
@@ -312,10 +141,10 @@
         "bytes": 8489,
         "sha256": "131e9ea079af0550bb72bfe044e8d4f1865f8145223fd2a140ac876fd512a6ed",
         "dependencies": [
-          2,
-          10,
-          7,
-          12
+          3,
+          11,
+          8,
+          13
         ],
         "dynamic_dependencies": []
       },
@@ -331,10 +160,10 @@
         "bytes": 1333,
         "sha256": "4ed3a38963b8557e3d1cf818ad7ba0f9bcd3f90c2268f91962891ec3fb14f1e7",
         "dependencies": [
-          2,
-          10,
-          14,
-          16
+          3,
+          11,
+          15,
+          17
         ],
         "dynamic_dependencies": []
       },
@@ -343,9 +172,9 @@
         "bytes": 855,
         "sha256": "115d2dcacdf715b02efce52caac3960d5b855939a68dc0a20817491e8b1194b0",
         "dependencies": [
-          10,
-          7,
-          15
+          11,
+          8,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -361,11 +190,11 @@
         "bytes": 3353,
         "sha256": "05cc704bd51c0eaf8b9740bd243bbd92842e77a0c6d0372834c76d42ca6a7620",
         "dependencies": [
-          10,
-          7,
-          17,
-          19,
-          15
+          11,
+          8,
+          18,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -374,9 +203,9 @@
         "bytes": 6388,
         "sha256": "2b22576838b22844e1b6d793a4ee542deb73a396ae594b53ce1d9550ff0fe69a",
         "dependencies": [
-          2,
-          5,
-          18
+          3,
+          6,
+          19
         ],
         "dynamic_dependencies": []
       },
@@ -399,8 +228,8 @@
         "bytes": 5465,
         "sha256": "7fbecd09aaf42b50850007228d62d7adbe2e2b761ecbabdc4de644216035d1ba",
         "dependencies": [
-          2,
-          12
+          3,
+          13
         ],
         "dynamic_dependencies": []
       },
@@ -409,27 +238,27 @@
         "bytes": 2829,
         "sha256": "74cb525c1651cc300f78f4770c648d3593c4e2dc3f4a45351e459b29be14d84a",
         "dependencies": [
-          22,
-          25,
+          23,
           26,
           27,
           28,
-          31,
-          33,
+          29,
+          32,
           34,
           35,
-          42,
+          36,
           43,
           44,
-          46,
+          45,
           47,
           48,
           49,
           50,
           51,
-          53,
           52,
-          20
+          54,
+          53,
+          21
         ],
         "dynamic_dependencies": []
       },
@@ -438,13 +267,13 @@
         "bytes": 6927,
         "sha256": "8785d4809209ff4f57b2f9a4b1e44b13e6dfa95fb8642533febc044370b26fbd",
         "dependencies": [
-          5,
-          23,
-          8,
+          6,
           24,
-          19,
-          15,
-          2
+          9,
+          25,
+          20,
+          16,
+          3
         ],
         "dynamic_dependencies": []
       },
@@ -453,8 +282,8 @@
         "bytes": 574,
         "sha256": "80373b35201103ddfd5b5a942d97e1ab492fee40858c395d9e9113d2255d4477",
         "dependencies": [
-          7,
-          19
+          8,
+          20
         ],
         "dynamic_dependencies": []
       },
@@ -463,7 +292,7 @@
         "bytes": 6185,
         "sha256": "762a3e62e1500ba78d71f8218fcb2e7e357ea3795d21bb5e81b8d4287f513c19",
         "dependencies": [
-          2
+          3
         ],
         "dynamic_dependencies": []
       },
@@ -472,10 +301,10 @@
         "bytes": 4541,
         "sha256": "97e7eb8b4b33f23df8600b7d811b5cfbbb8df23bfc01dfa25fb528a085d55703",
         "dependencies": [
-          7,
-          24,
-          19,
-          15
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -484,11 +313,11 @@
         "bytes": 2637,
         "sha256": "eae45318d2972f4be0fd616cb243d59dd366cb61209b13796d651cfc8297ab49",
         "dependencies": [
-          10,
-          7,
-          24,
-          19,
-          15
+          11,
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -497,8 +326,8 @@
         "bytes": 1021,
         "sha256": "20193c0809adfe18e77d04a7a782ad437d912f3de997a402930af8e46031c6ab",
         "dependencies": [
-          7,
-          15
+          8,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -507,11 +336,11 @@
         "bytes": 3258,
         "sha256": "b355201b60833cf854ca7328b4cd1a9d405ae491b4d1b5a70178313c8c16c71a",
         "dependencies": [
-          29,
-          7,
-          24,
-          19,
-          15
+          30,
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -520,8 +349,8 @@
         "bytes": 262,
         "sha256": "e4150b19e19a214e7ccfb5d6762bdce62fde30b8cc907642d911f9ea87b9e6e8",
         "dependencies": [
-          30,
-          2
+          31,
+          3
         ],
         "dynamic_dependencies": []
       },
@@ -537,12 +366,12 @@
         "bytes": 8592,
         "sha256": "fbf73e900a6ec1c4e65bd5ad337cf9e265cc09ed58a109a6d5af3681ba04dc3f",
         "dependencies": [
-          10,
-          7,
-          24,
-          19,
-          32,
-          15
+          11,
+          8,
+          25,
+          20,
+          33,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -551,7 +380,7 @@
         "bytes": 938,
         "sha256": "5af2c36e199564378933b8c17cdd4216891c1b88b0359e0a2a244419745bd721",
         "dependencies": [
-          15
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -560,10 +389,10 @@
         "bytes": 2691,
         "sha256": "0c425be55062ae56586da36fadf63199832686073abadb34d5dcb3eaba4113c3",
         "dependencies": [
-          10,
-          7,
-          19,
-          15
+          11,
+          8,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -572,9 +401,9 @@
         "bytes": 4856,
         "sha256": "d35e0cdd7e33ae98579152b3114a826ff43fe69b3802b9e9db7c58fae8ee4388",
         "dependencies": [
-          7,
-          24,
-          15
+          8,
+          25,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -583,15 +412,15 @@
         "bytes": 4776,
         "sha256": "38becb049d8509a9239480090acf683d90d24ad4ef4e8b35f14e92c326788011",
         "dependencies": [
-          36,
           37,
-          10,
           38,
+          11,
           39,
-          7,
           40,
-          24,
-          15
+          8,
+          41,
+          25,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -600,10 +429,10 @@
         "bytes": 4413,
         "sha256": "5be6c3c02bacd604c1501b85b6785602ed8b447a85679f85e6ee7351964bb161",
         "dependencies": [
-          7,
-          24,
-          19,
-          15
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -612,10 +441,10 @@
         "bytes": 2994,
         "sha256": "6376115906bbfbce66d13f0a50ff3b921922135b18b6e66d290eb0b54221f21d",
         "dependencies": [
-          7,
-          24,
-          19,
-          15
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -624,11 +453,11 @@
         "bytes": 2913,
         "sha256": "f22c5e3e9919b86b7f2e0cc8b38f6cc1182e88917c9f3fcb61cbdba56404a07c",
         "dependencies": [
-          10,
-          7,
-          24,
-          19,
-          15
+          11,
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -637,9 +466,9 @@
         "bytes": 841,
         "sha256": "e63b322526936f7e746978a4a3e6d56b315dcd01bde6732cf9d94bfb93845d36",
         "dependencies": [
-          10,
-          7,
-          15
+          11,
+          8,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -648,7 +477,7 @@
         "bytes": 348,
         "sha256": "9c605bcd8454ea59378864ba8abfb67315008fbdea73f96e9fb09e76594fe20e",
         "dependencies": [
-          41
+          42
         ],
         "dynamic_dependencies": []
       },
@@ -664,8 +493,8 @@
         "bytes": 763,
         "sha256": "92b8a9e28270f61184e6572a8e0640c33f7fbd163c24dde1255d7211e7ca0b2a",
         "dependencies": [
-          7,
-          15
+          8,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -674,12 +503,12 @@
         "bytes": 4166,
         "sha256": "9d2fd673aab15d904d2b876aa66e7c92ac30c14f8b838ea34b58d4af0f9d269c",
         "dependencies": [
-          10,
-          7,
-          5,
-          24,
-          19,
-          15
+          11,
+          8,
+          6,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -688,14 +517,14 @@
         "bytes": 15826,
         "sha256": "c281af2ed8e0cbf2acdaac9f6f2be7e5ef5da63d07c9acc309f96511516d3587",
         "dependencies": [
-          7,
-          45,
-          24,
-          24,
-          19,
+          8,
+          46,
+          25,
+          25,
+          20,
+          16,
           15,
-          14,
-          32
+          33
         ],
         "dynamic_dependencies": []
       },
@@ -711,11 +540,11 @@
         "bytes": 12529,
         "sha256": "1e386a681a07b86327fc72dd7735683e86367f0a183a817976a302c0b3da26fa",
         "dependencies": [
-          10,
-          7,
-          24,
-          19,
-          15
+          11,
+          8,
+          25,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -724,18 +553,18 @@
         "bytes": 11909,
         "sha256": "458a5430025df6d45ea1d75e645d6d1aeda9b985118f30d34336fc5e5f4fcc1f",
         "dependencies": [
-          36,
           37,
           38,
           39,
-          7,
-          5,
           40,
           8,
-          24,
-          19,
-          15,
-          2
+          6,
+          41,
+          9,
+          25,
+          20,
+          16,
+          3
         ],
         "dynamic_dependencies": []
       },
@@ -744,9 +573,9 @@
         "bytes": 1588,
         "sha256": "93c9f78c05ccb6f61784e976eda38b88151e28f7ecb4e94e6b40cb4855a19f58",
         "dependencies": [
-          24,
-          15,
-          47
+          25,
+          16,
+          48
         ],
         "dynamic_dependencies": []
       },
@@ -755,9 +584,9 @@
         "bytes": 1204,
         "sha256": "c44bd16f9b0c8c5e447b80c86e6957fcbd1ea118e591532ee9890971c48093b0",
         "dependencies": [
-          24,
-          15,
-          47
+          25,
+          16,
+          48
         ],
         "dynamic_dependencies": []
       },
@@ -766,8 +595,8 @@
         "bytes": 577,
         "sha256": "a448ed6a6485a776f3e67941bebef001cdbe486f23bdfd4664842178973d39be",
         "dependencies": [
-          10,
-          15
+          11,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -776,13 +605,13 @@
         "bytes": 8247,
         "sha256": "3a8e976a8a6ccdc8330f26561caa457040ecf0c2d86773551abc505180ef4119",
         "dependencies": [
-          10,
-          7,
-          24,
-          19,
+          11,
+          8,
+          25,
+          20,
+          16,
           15,
-          14,
-          52
+          53
         ],
         "dynamic_dependencies": []
       },
@@ -791,10 +620,10 @@
         "bytes": 1755,
         "sha256": "5776bda5a2850218bd3c4c9fdc796d46c8979b2deac17c7e19376c6816a54313",
         "dependencies": [
-          10,
-          7,
-          19,
-          15
+          11,
+          8,
+          20,
+          16
         ],
         "dynamic_dependencies": []
       },
@@ -803,11 +632,11 @@
         "bytes": 4044,
         "sha256": "d0de9d01945e3ef6e84aa15a45fdb5f93d3be2301fe8865c0c950d49358029a7",
         "dependencies": [
-          10,
-          7,
-          15,
-          2,
-          12
+          11,
+          8,
+          16,
+          3,
+          13
         ],
         "dynamic_dependencies": []
       },
@@ -816,7 +645,7 @@
         "bytes": 156,
         "sha256": "0ea578b00bed09960e8f9c2d06f962b9e626fec4a528beaba4be30f2c5c50b31",
         "dependencies": [
-          17
+          18
         ],
         "dynamic_dependencies": []
       },
@@ -839,8 +668,8 @@
         "bytes": 946,
         "sha256": "df8465926f8b05577467dfc4fb4ed42f28b71574e541002cfc2395275c5fc907",
         "dependencies": [
-          29,
-          56
+          30,
+          57
         ],
         "dynamic_dependencies": []
       },
@@ -862,52 +691,442 @@
     "host_modules": [],
     "host_reserved": []
   },
-  "validation": {
-    "checks": 2082,
-    "runs": [
-      {
-        "objective": "raw",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/raw",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/raw/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
+  "outputs": [
+    {
+      "mode": "single",
+      "format": "esm",
+      "entries": [
+        {
+          "name": "browser",
+          "file": "from-markdown.esm.js",
+          "dynamic": false,
+          "closure": [
+            "from-markdown.esm.js"
+          ],
+          "row": 22366,
+          "raw_row": 66597
+        }
+      ],
+      "files": [
+        {
+          "file": "from-markdown.esm.js",
+          "role": "entry",
+          "source_map_for": null,
+          "label": [
+            "browser"
+          ],
+          "modules": [
+            "browser.lil",
+            "entry.lil",
+            "from-markdown.lil",
+            "micromark/host.lil",
+            "micromark/parse.lil",
+            "micromark/util-combine-extensions.lil",
+            "micromark/util-chunked.lil",
+            "micromark/create-tokenizer.lil",
+            "micromark/util-character.lil",
+            "micromark/util-resolve-all.lil",
+            "micromark/initialize/content.lil",
+            "micromark/factory-space.lil",
+            "micromark/initialize/document.lil",
+            "micromark/util-edit-map.lil",
+            "micromark/initialize/flow.lil",
+            "micromark/core/blank-line.lil",
+            "micromark/symbol/types.lil",
+            "micromark/core/content.lil",
+            "micromark/util-subtokenize.lil",
+            "micromark/splice-buffer.lil",
+            "micromark/symbol/constants.lil",
+            "micromark/initialize/text.lil",
+            "micromark/constructs.lil",
+            "micromark/core/attention.lil",
+            "micromark/util-classify-character.lil",
+            "micromark/symbol/codes.lil",
+            "micromark/core/autolink.lil",
+            "micromark/core/block-quote.lil",
+            "micromark/core/character-escape.lil",
+            "micromark/core/character-reference.lil",
+            "micromark/decode-named.lil",
+            "micromark/character-entities.lil",
+            "micromark/core/code-fenced.lil",
+            "micromark/core/partial-non-lazy-continuation.lil",
+            "micromark/core/code-indented.lil",
+            "micromark/core/code-text.lil",
+            "micromark/core/definition.lil",
+            "micromark/factory-destination.lil",
+            "micromark/factory-label.lil",
+            "micromark/factory-title.lil",
+            "micromark/factory-whitespace.lil",
+            "micromark/util-normalize-identifier.lil",
+            "micromark/symbol/values.lil",
+            "micromark/core/hard-break-escape.lil",
+            "micromark/core/heading-atx.lil",
+            "micromark/core/html-flow.lil",
+            "micromark/util-html-tag-name.lil",
+            "micromark/core/html-text.lil",
+            "micromark/core/label-end.lil",
+            "micromark/core/label-start-image.lil",
+            "micromark/core/label-start-link.lil",
+            "micromark/core/line-ending.lil",
+            "micromark/core/list.lil",
+            "micromark/core/thematic-break.lil",
+            "micromark/core/setext-underline.lil",
+            "micromark/postprocess.lil",
+            "micromark/preprocess.lil",
+            "micromark/util-decode-numeric.lil",
+            "micromark/util-decode-string.lil",
+            "stringify-position.lil",
+            "to-string.lil"
+          ],
+          "anchored": true,
+          "imports": [],
+          "dynamic_imports": [],
+          "bytes": 66597,
+          "codec_bytes": 22366,
+          "sha256": "2e45fba9946a515793242721c96921157f96493a26a647dc2d5213ef12e54d37"
+        }
+      ],
+      "side_effects": [
+        "from-markdown.esm.js"
+      ],
+      "codec_total": 22366,
+      "rows_total": 22366,
+      "setters": 0,
+      "output": "primary",
+      "codec": "brotli",
+      "codec_settings": {
+        "brotli": {
+          "quality": 11,
+          "window": 22,
+          "mode": "generic"
+        },
+        "gzip": {
+          "level": 9,
+          "window": 15
+        }
       },
-      {
-        "objective": "gzip",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/gzip",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/gzip/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
+      "policy_fingerprint": [
+        88,
+        34,
+        219,
+        126,
+        253,
+        151,
+        154,
+        69,
+        66,
+        132,
+        216,
+        138,
+        202,
+        253,
+        249,
+        181,
+        189,
+        121,
+        160,
+        154,
+        196,
+        148,
+        82,
+        23,
+        169,
+        94,
+        229,
+        114,
+        82,
+        210,
+        52,
+        206
+      ]
+    },
+    {
+      "mode": "single",
+      "format": "iife",
+      "entries": [
+        {
+          "name": "browser",
+          "file": "from-markdown.umd.js",
+          "dynamic": false,
+          "closure": [
+            "from-markdown.umd.js"
+          ],
+          "row": 22442,
+          "raw_row": 67149
+        }
+      ],
+      "files": [
+        {
+          "file": "from-markdown.umd.js",
+          "role": "entry",
+          "source_map_for": null,
+          "label": [
+            "browser"
+          ],
+          "modules": [
+            "from-markdown.lil",
+            "micromark/host.lil",
+            "micromark/parse.lil",
+            "micromark/util-combine-extensions.lil",
+            "micromark/util-chunked.lil",
+            "micromark/create-tokenizer.lil",
+            "micromark/util-character.lil",
+            "micromark/util-resolve-all.lil",
+            "micromark/initialize/content.lil",
+            "micromark/factory-space.lil",
+            "micromark/initialize/document.lil",
+            "micromark/util-edit-map.lil",
+            "micromark/initialize/flow.lil",
+            "micromark/core/blank-line.lil",
+            "micromark/symbol/types.lil",
+            "micromark/core/content.lil",
+            "micromark/util-subtokenize.lil",
+            "micromark/splice-buffer.lil",
+            "micromark/symbol/constants.lil",
+            "micromark/initialize/text.lil",
+            "micromark/constructs.lil",
+            "micromark/core/attention.lil",
+            "micromark/util-classify-character.lil",
+            "micromark/core/autolink.lil",
+            "micromark/core/block-quote.lil",
+            "micromark/core/character-escape.lil",
+            "micromark/core/character-reference.lil",
+            "micromark/decode-named.lil",
+            "micromark/character-entities.lil",
+            "micromark/core/code-fenced.lil",
+            "micromark/core/partial-non-lazy-continuation.lil",
+            "micromark/core/code-indented.lil",
+            "micromark/core/code-text.lil",
+            "micromark/core/definition.lil",
+            "micromark/factory-destination.lil",
+            "micromark/factory-label.lil",
+            "micromark/factory-title.lil",
+            "micromark/factory-whitespace.lil",
+            "micromark/util-normalize-identifier.lil",
+            "micromark/symbol/values.lil",
+            "micromark/core/hard-break-escape.lil",
+            "micromark/core/heading-atx.lil",
+            "micromark/core/html-flow.lil",
+            "micromark/util-html-tag-name.lil",
+            "micromark/core/html-text.lil",
+            "micromark/core/label-end.lil",
+            "micromark/core/label-start-image.lil",
+            "micromark/core/label-start-link.lil",
+            "micromark/core/line-ending.lil",
+            "micromark/core/list.lil",
+            "micromark/core/thematic-break.lil",
+            "micromark/core/setext-underline.lil",
+            "micromark/preprocess.lil",
+            "micromark/util-decode-numeric.lil",
+            "micromark/util-decode-string.lil",
+            "stringify-position.lil",
+            "to-string.lil"
+          ],
+          "anchored": true,
+          "imports": [],
+          "dynamic_imports": [],
+          "bytes": 67149,
+          "codec_bytes": 22442,
+          "sha256": "2f484eefc14bad23b70ff1a00162cbaa16fbb58120d6ff1be4624a6705177cce"
+        }
+      ],
+      "side_effects": [
+        "from-markdown.umd.js"
+      ],
+      "codec_total": 22442,
+      "rows_total": 22442,
+      "setters": 0,
+      "output": "browser",
+      "codec": "brotli",
+      "codec_settings": {
+        "brotli": {
+          "quality": 11,
+          "window": 22,
+          "mode": "generic"
+        },
+        "gzip": {
+          "level": 9,
+          "window": 15
+        }
       },
-      {
-        "objective": "brotli",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/brotli",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/brotli/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
-      }
-    ],
-    "ok": true,
-    "scope": "Current independent main-entry builds; package-format tests are recorded separately."
-  },
-  "workLimit": 8000000000,
-  "timingScope": "One sequential fresh-output build per objective/minifier. Upstream timing is ESM bundling and minification, not original-repository source compilation."
+      "policy_fingerprint": [
+        64,
+        18,
+        95,
+        147,
+        174,
+        123,
+        201,
+        231,
+        235,
+        9,
+        146,
+        152,
+        109,
+        228,
+        217,
+        22,
+        183,
+        141,
+        194,
+        74,
+        91,
+        207,
+        130,
+        75,
+        85,
+        13,
+        116,
+        69,
+        183,
+        202,
+        35,
+        103
+      ]
+    },
+    {
+      "mode": "single",
+      "format": "cjs",
+      "entries": [
+        {
+          "name": "index",
+          "file": "from-markdown.cjs",
+          "dynamic": false,
+          "closure": [
+            "from-markdown.cjs"
+          ],
+          "row": 22431,
+          "raw_row": 66897
+        }
+      ],
+      "files": [
+        {
+          "file": "from-markdown.cjs",
+          "role": "entry",
+          "source_map_for": null,
+          "label": [
+            "index"
+          ],
+          "modules": [
+            "from-markdown.lil",
+            "micromark/host.lil",
+            "micromark/parse.lil",
+            "micromark/util-combine-extensions.lil",
+            "micromark/util-chunked.lil",
+            "micromark/create-tokenizer.lil",
+            "micromark/util-character.lil",
+            "micromark/util-resolve-all.lil",
+            "micromark/initialize/content.lil",
+            "micromark/factory-space.lil",
+            "micromark/initialize/document.lil",
+            "micromark/util-edit-map.lil",
+            "micromark/initialize/flow.lil",
+            "micromark/core/blank-line.lil",
+            "micromark/symbol/types.lil",
+            "micromark/core/content.lil",
+            "micromark/util-subtokenize.lil",
+            "micromark/splice-buffer.lil",
+            "micromark/symbol/constants.lil",
+            "micromark/initialize/text.lil",
+            "micromark/constructs.lil",
+            "micromark/core/attention.lil",
+            "micromark/util-classify-character.lil",
+            "micromark/core/autolink.lil",
+            "micromark/core/block-quote.lil",
+            "micromark/core/character-escape.lil",
+            "micromark/core/character-reference.lil",
+            "micromark/decode-named.lil",
+            "micromark/character-entities.lil",
+            "micromark/core/code-fenced.lil",
+            "micromark/core/partial-non-lazy-continuation.lil",
+            "micromark/core/code-indented.lil",
+            "micromark/core/code-text.lil",
+            "micromark/core/definition.lil",
+            "micromark/factory-destination.lil",
+            "micromark/factory-label.lil",
+            "micromark/factory-title.lil",
+            "micromark/factory-whitespace.lil",
+            "micromark/util-normalize-identifier.lil",
+            "micromark/symbol/values.lil",
+            "micromark/core/hard-break-escape.lil",
+            "micromark/core/heading-atx.lil",
+            "micromark/core/html-flow.lil",
+            "micromark/util-html-tag-name.lil",
+            "micromark/core/html-text.lil",
+            "micromark/core/label-end.lil",
+            "micromark/core/label-start-image.lil",
+            "micromark/core/label-start-link.lil",
+            "micromark/core/line-ending.lil",
+            "micromark/core/list.lil",
+            "micromark/core/thematic-break.lil",
+            "micromark/core/setext-underline.lil",
+            "micromark/preprocess.lil",
+            "micromark/util-decode-numeric.lil",
+            "micromark/util-decode-string.lil",
+            "stringify-position.lil",
+            "to-string.lil"
+          ],
+          "anchored": true,
+          "imports": [],
+          "dynamic_imports": [],
+          "bytes": 66897,
+          "codec_bytes": 22431,
+          "sha256": "7b379198186e0514bdf43d6c30ecc2c890e1dd96733956e7412addc556c832a1"
+        }
+      ],
+      "side_effects": [
+        "from-markdown.cjs"
+      ],
+      "codec_total": 22431,
+      "rows_total": 22431,
+      "setters": 0,
+      "output": "cjs",
+      "codec": "brotli",
+      "codec_settings": {
+        "brotli": {
+          "quality": 11,
+          "window": 22,
+          "mode": "generic"
+        },
+        "gzip": {
+          "level": 9,
+          "window": 15
+        }
+      },
+      "policy_fingerprint": [
+        4,
+        43,
+        180,
+        188,
+        192,
+        195,
+        52,
+        31,
+        206,
+        47,
+        254,
+        147,
+        169,
+        253,
+        142,
+        91,
+        129,
+        40,
+        25,
+        9,
+        3,
+        9,
+        147,
+        73,
+        201,
+        54,
+        141,
+        2,
+        174,
+        5,
+        113,
+        33
+      ]
+    }
+  ]
 }

@@ -1,0 +1,2 @@
+import {fromMarkdown as browser} from "./entry.lil";
+export {browser as default};

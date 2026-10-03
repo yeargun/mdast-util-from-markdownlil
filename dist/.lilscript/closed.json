@@ -1,191 +1,157 @@
 {
-  "compiler": {
-    "baseRevision": "f7d29bd9",
-    "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-    "hasLocalSourceChanges": true
-  },
-  "machine": {
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "logicalCpus": 8,
-    "memoryGiB": 15.6,
-    "os": "Linux-7.0.0-1014-azure-x86_64-with-glibc2.39",
-    "node": "v20.19.0"
-  },
-  "lilscript": [
+  "version": 3,
+  "codec": "brotli",
+  "outputs": [
     {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "raw",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-raw.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/raw",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
+      "mode": "single",
+      "format": "esm",
+      "entries": [
+        {
+          "name": "index",
+          "file": "from-markdown.closed.js",
+          "dynamic": false,
+          "closure": [
+            "from-markdown.closed.js"
+          ],
+          "row": 23599,
+          "raw_row": 80664
+        }
       ],
-      "wallSeconds": 72.37892403399746,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "ca8fff75814b94bdb3b786e43baee231f050bb973c472e19e4c60f5004c20878",
-      "measuredAt": "2026-10-03T13:52:58.266371+00:00",
-      "outputSha256": "5879d13e495f90ca43ef1157ddba7ac0b6ee5ac73525d80e21990d179db614d4",
-      "raw": 74532
-    },
-    {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "gzip",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-gzip.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/gzip",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
+      "files": [
+        {
+          "file": "from-markdown.closed.js",
+          "role": "entry",
+          "source_map_for": null,
+          "label": [
+            "index"
+          ],
+          "modules": [
+            "entry.lil",
+            "from-markdown.lil",
+            "micromark/host.lil",
+            "micromark/parse.lil",
+            "micromark/util-combine-extensions.lil",
+            "micromark/util-chunked.lil",
+            "micromark/create-tokenizer.lil",
+            "micromark/util-character.lil",
+            "micromark/util-resolve-all.lil",
+            "micromark/initialize/content.lil",
+            "micromark/factory-space.lil",
+            "micromark/initialize/document.lil",
+            "micromark/util-edit-map.lil",
+            "micromark/initialize/flow.lil",
+            "micromark/core/blank-line.lil",
+            "micromark/symbol/types.lil",
+            "micromark/core/content.lil",
+            "micromark/util-subtokenize.lil",
+            "micromark/splice-buffer.lil",
+            "micromark/symbol/constants.lil",
+            "micromark/initialize/text.lil",
+            "micromark/constructs.lil",
+            "micromark/core/attention.lil",
+            "micromark/util-classify-character.lil",
+            "micromark/symbol/codes.lil",
+            "micromark/core/autolink.lil",
+            "micromark/core/block-quote.lil",
+            "micromark/core/character-escape.lil",
+            "micromark/core/character-reference.lil",
+            "micromark/decode-named.lil",
+            "micromark/character-entities.lil",
+            "micromark/core/code-fenced.lil",
+            "micromark/core/partial-non-lazy-continuation.lil",
+            "micromark/core/code-indented.lil",
+            "micromark/core/code-text.lil",
+            "micromark/core/definition.lil",
+            "micromark/factory-destination.lil",
+            "micromark/factory-label.lil",
+            "micromark/factory-title.lil",
+            "micromark/factory-whitespace.lil",
+            "micromark/util-normalize-identifier.lil",
+            "micromark/symbol/values.lil",
+            "micromark/core/hard-break-escape.lil",
+            "micromark/core/heading-atx.lil",
+            "micromark/core/html-flow.lil",
+            "micromark/util-html-tag-name.lil",
+            "micromark/core/html-text.lil",
+            "micromark/core/label-end.lil",
+            "micromark/core/label-start-image.lil",
+            "micromark/core/label-start-link.lil",
+            "micromark/core/line-ending.lil",
+            "micromark/core/list.lil",
+            "micromark/core/thematic-break.lil",
+            "micromark/core/setext-underline.lil",
+            "micromark/postprocess.lil",
+            "micromark/preprocess.lil",
+            "micromark/util-decode-numeric.lil",
+            "micromark/util-decode-string.lil",
+            "stringify-position.lil",
+            "to-string.lil"
+          ],
+          "anchored": true,
+          "imports": [],
+          "dynamic_imports": [],
+          "bytes": 80664,
+          "codec_bytes": 23599,
+          "sha256": "afe28cf013b87c898cb75c0b065675169bd103e652c28bf75ae4d9785ffff7bf"
+        }
       ],
-      "wallSeconds": 71.46254628199677,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "e8e049be63dba8c61e24802f75296f4342160c7fea8704976c19ec25642e22c5",
-      "measuredAt": "2026-10-03T13:54:09.740806+00:00",
-      "outputSha256": "811166c994af64e8aaa3d6bdd31df4ac22efdaf59c2d18f1ecd8cc08d4612a04",
-      "raw": 74748
-    },
-    {
-      "library": "mdast-util-from-markdownlil",
-      "objective": "brotli",
-      "command": [
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/bin/lilscript",
-        "--config",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/configs/mdast-util-from-markdownlil-brotli.toml",
-        "--target",
-        "js-module",
-        "--mode",
-        "production",
-        "--jobs",
-        "1",
-        "--out-dir",
-        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/artifacts/mdast-util-from-markdownlil/brotli",
-        "--explain",
-        "json",
-        "--cache",
-        "off",
-        "--logical-work",
-        "8000000000"
+      "side_effects": [
+        "from-markdown.closed.js"
       ],
-      "wallSeconds": 166.41679810501228,
-      "returncode": 0,
-      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
-      "configSha256": "e6a7722ed8ae7074de34e04b9e92074b801cd74cfe622aa8d6f0cdd90c8888ae",
-      "measuredAt": "2026-10-03T13:56:56.166242+00:00",
-      "outputSha256": "30416a2170eb1a482fb0b70a414eaca61cd115dbdc5fb0c7de8100695a9a0c8f",
-      "raw": 77082
+      "codec_total": 23599,
+      "rows_total": 23599,
+      "setters": 0,
+      "output": "primary",
+      "codec": "brotli",
+      "codec_settings": {
+        "brotli": {
+          "quality": 11,
+          "window": 22,
+          "mode": "generic"
+        },
+        "gzip": {
+          "level": 9,
+          "window": 15
+        }
+      },
+      "policy_fingerprint": [
+        80,
+        100,
+        73,
+        134,
+        66,
+        19,
+        24,
+        29,
+        115,
+        106,
+        138,
+        70,
+        178,
+        247,
+        9,
+        178,
+        177,
+        18,
+        41,
+        163,
+        246,
+        145,
+        140,
+        66,
+        204,
+        26,
+        232,
+        133,
+        194,
+        170,
+        104,
+        64
+      ]
     }
   ],
-  "upstream": {
-    "name": "mdast-util-from-markdownlil",
-    "package": "mdast-util-from-markdown",
-    "version": "2.0.3",
-    "resolveDir": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/ports/mdast-util-from-markdownlil",
-    "output": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil",
-    "entry": "export {fromMarkdown} from \"mdast-util-from-markdown\";",
-    "external": [],
-    "sharedExports": [
-      "fromMarkdown"
-    ],
-    "excludedExports": [],
-    "additionalExports": [],
-    "resolution": {
-      "platform": "neutral",
-      "conditions": [
-        "production"
-      ],
-      "mainFields": [
-        "module",
-        "main"
-      ],
-      "target": "es2020",
-      "defines": {
-        "process.env.NODE_ENV": "production"
-      },
-      "css": "excluded; measured JavaScript only"
-    },
-    "minifiers": [
-      {
-        "tool": "Terser",
-        "version": "5.51.2",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/terser.mjs",
-        "sha256": "016168ce2350f1e2e20ca2f89c7b27408891bd84b9af6253c5a78a663cb9a238",
-        "raw": 84774,
-        "imports": [],
-        "wallSeconds": 1.2931329040000001,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "Terser"
-        ]
-      },
-      {
-        "tool": "esbuild",
-        "version": "0.28.1",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/esbuild.mjs",
-        "sha256": "ac6812cdf035be5d27ecef8b8db3d18209e7576e33bfbc4006d1c0c0a8f0b81e",
-        "raw": 93149,
-        "imports": [],
-        "wallSeconds": 0.08440108100000089,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "esbuild"
-        ]
-      },
-      {
-        "tool": "Oxc",
-        "version": "via Vite 8.2.1",
-        "esbuild": "0.28.1",
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/oxc.mjs",
-        "sha256": "f2d8784a061b7ba9c27ac7e77b0a165b4a3eb3b65eb58b2cae6eac8233a675f4",
-        "raw": 84838,
-        "imports": [],
-        "wallSeconds": 0.20039710699999977,
-        "command": [
-          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream.mjs",
-          "child",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/upstream/mdast-util-from-markdownlil/job.json",
-          "Oxc"
-        ]
-      }
-    ]
-  },
-  "sourceInputs": {
+  "source_sha256": "1a8f9ff3a4fd6bd7c31f228a600a733d46b31107bc75f5873c0c440025da309f",
+  "inputs": {
     "root": 0,
     "entries": [
       {
@@ -861,53 +827,5 @@
     ],
     "host_modules": [],
     "host_reserved": []
-  },
-  "validation": {
-    "checks": 2082,
-    "runs": [
-      {
-        "objective": "raw",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/raw",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/raw/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
-      },
-      {
-        "objective": "gzip",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/gzip",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/gzip/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
-      },
-      {
-        "objective": "brotli",
-        "suite": "differential",
-        "checks": 694,
-        "command": [
-          "node",
-          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/differential.mjs",
-          "validation/brotli",
-          "mdast-util-from-markdownlil"
-        ],
-        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-site-refresh/validation/brotli/mdast-util-from-markdownlil/dist/index.mjs",
-        "ok": true
-      }
-    ],
-    "ok": true,
-    "scope": "Current independent main-entry builds; package-format tests are recorded separately."
-  },
-  "workLimit": 8000000000,
-  "timingScope": "One sequential fresh-output build per objective/minifier. Upstream timing is ESM bundling and minification, not original-repository source compilation."
+  }
 }
