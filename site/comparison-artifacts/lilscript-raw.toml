@@ -1,0 +1,40 @@
+# Compiler-owned delivery; no JavaScript post-minifier or export rewriting.
+[policy]
+version = 3
+[javascript]
+priority = "size-first"
+# Assumes unpatched platform builtins; disable when consumers replace them.
+assume_pristine_builtins = true
+# Remove debugLog instrumentation; ordinary print and host console effects remain.
+strip_debug = true
+# Plain-data reads must not run getters; disable for effectful accessor integrations.
+assume_pure_property_reads = true
+assume_unconstructed_callbacks = true
+
+# Preserved effort setting. 13 favors size; 14/15 allow more expensive marginal searches.
+[effort]
+level = 15
+
+# Optimize the delivered files for this codec, independently of raw/gzip objectives.
+[objective]
+codecs = "raw"
+[mangle]
+identifiers = true
+properties = true
+pool_strings = false
+
+# Public/extern keys are preserved in every build; effort controls search, not ABI.
+
+[delivery]
+mode = "single"
+host_modules = "embed"
+entry_names = "index.mjs"
+[delivery.entries]
+index = "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil"
+[execution]
+jobs = 1
+
+[policy.tactics]
+startup-reconstruction = "on"
+recurring-reconstruction = "off"
+string-array-packing = "off"

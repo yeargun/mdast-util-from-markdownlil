@@ -1,146 +1,12 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
   "name": "mdast-util-from-markdownlil",
-  "measuredAt": "2026-09-24T04:22:43Z",
-  "status": "published",
-  "buildPassed": true,
-  "summary": "Rebuilt by the one LilScript compiler; every delivered file is compiler-written (a license banner and module wrappers are the only bytes the build adds).",
-  "sourceCommit": "5c5cc8f plus the release working tree (committed together with these records)",
-  "previousPublicCommit": "84a24d54696b44ef61859596adc553ad84877661",
+  "measuredAt": "2026-10-01T16:43:09.363Z",
   "compiler": {
-    "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9",
-    "profile": "release",
-    "dirty": false
+    "commit": "aa2052f0",
+    "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
   },
-  "machine": {
-    "provider": "Azure",
-    "instanceClass": "Standard_B8als_v2",
-    "cpu": "AMD EPYC 7763 64-Core Processor",
-    "logicalCpus": 8,
-    "memoryBytes": 16706420736,
-    "os": "Ubuntu 24.04.3 LTS",
-    "kernel": "7.0.0-1014-azure",
-    "node": "v24.11.1",
-    "rayonThreads": 8,
-    "loadAtStart": [
-      1.02490234375,
-      1.255859375,
-      2.55859375
-    ],
-    "loadAtEnd": [
-      1.896484375,
-      1.43408203125,
-      2.54248046875
-    ]
-  },
-  "upstream": {
-    "name": "mdast-util-from-markdownlil",
-    "package": "mdast-util-from-markdown",
-    "pinned": "2.0.3",
-    "latest": "2.0.3",
-    "source": "https://www.npmjs.com/package/mdast-util-from-markdown"
-  },
-  "comparisonScope": "mdast-util-from-markdown@2.0.3 public ESM runtime graph; dependency installation excluded; this is a comparison bundle build, not the upstream vendor release pipeline Sizes use canonical zlib 1.3.1 gzip-9 and Google Brotli 1.1.0 quality 11.",
-  "sizes": {
-    "current": {
-      "path": "dist/from-markdown.esm.js",
-      "raw": 71802,
-      "gzip9": 26411,
-      "brotli11": 22308,
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
-    },
-    "upstream": {
-      "path": "original.esm.js",
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
-    }
-  },
-  "officialArtifacts": [
-    {
-      "path": "original.esm.js",
-      "raw": 55520,
-      "gzip9": 14986,
-      "brotli11": 13336,
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
-    },
-    {
-      "path": "original.unminified.js",
-      "raw": 138048,
-      "gzip9": 24504,
-      "brotli11": 20876,
-      "sha256": "b51c1c4deae12a04e06b9423f4e006bd2858b8671090d8b2d064f5880bebe7ce"
-    },
-    {
-      "path": "original.terser-nomangle.js",
-      "raw": 90054,
-      "gzip9": 18398,
-      "brotli11": 16398,
-      "sha256": "46f2534f99fb7bb4b9c8ca1093311c8abbdb7f9a10a5a092d530166920513289"
-    },
-    {
-      "path": "original.esbuild.js",
-      "raw": 56894,
-      "gzip9": 16075,
-      "brotli11": 14331,
-      "sha256": "cc4d764749ba7f888b8645ceb01d70b4a0adbd125fd9dac707a21e59d5bef7da"
-    }
-  ],
-  "candidateArtifacts": [
-    {
-      "path": "dist/from-markdown.umd.js",
-      "raw": 71847,
-      "gzip9": 26434,
-      "brotli11": 22353,
-      "sha256": "2189c5bbd37489a625f40d1ef5250a7254c4c56be31dfbeba0ed06b330b9011c"
-    },
-    {
-      "path": "dist/from-markdown.raw.js",
-      "raw": 71692,
-      "gzip9": 26339,
-      "brotli11": 22287,
-      "sha256": "4bc6f96d46b009b649e48238510b942568966edfaa3ae3bf661612bcfb5a15ee"
-    },
-    {
-      "path": "dist/from-markdown.closed.js",
-      "raw": 74024,
-      "gzip9": 26504,
-      "brotli11": 22380,
-      "sha256": "69bac39df165710dd34471a21c2dcc21a62ac50cc1c381082f58f329e4636e32"
-    },
-    {
-      "path": "dist/from-markdown.cjs",
-      "raw": 71824,
-      "gzip9": 26428,
-      "brotli11": 22374,
-      "sha256": "c5a52501c434e209bc900708ef1947dbb0d5bf6c408df3d48599b23ca17c98e5"
-    },
-    {
-      "path": "dist/from-markdown.esm.js",
-      "raw": 71802,
-      "gzip9": 26411,
-      "brotli11": 22308,
-      "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
-    }
-  ],
-  "timing": {
-    "primaryCompilerSeconds": 0.6208934783935547,
-    "primaryScope": "One compiler process for the shipped ESM (src/entry.lil, lilscript.toml)",
-    "packageSeconds": 1.366876267005864,
-    "packageScope": "node scripts/build.mjs --compile --force; 2 compiler invocations plus package wrapping",
-    "originalSeconds": 8.540216777997557,
-    "originalScope": "npm run build"
-  },
-  "behavior": {
-    "command": "npm run check:types && node --test test/from-markdown.test.mjs test/package.test.mjs test/official/index.js",
-    "summary": "Runtime checks: 743/743 pass.",
-    "exitCode": 0,
-    "logSha256": "0987ca57ecef08f13b550dd34095a8dc93a39c879ccff1290d22edf85ba6747b"
-  },
-  "primaryArtifact": "dist/from-markdown.esm.js",
-  "codecSha256": "125776830df72bbaf9704fee3c38bb0bf29bfc6bcceb5bc8707a0507a128d7b9",
+  "publicationSourceFingerprint": "53e6e5e50e6420c73aed67258252f6d07b3bc199622f4d9586a570cd6ee4dcdc",
   "publicationArtifacts": [
     {
       "path": "dist/from-markdown.cjs",
@@ -159,43 +25,15 @@
       "sha256": "2189c5bbd37489a625f40d1ef5250a7254c4c56be31dfbeba0ed06b330b9011c"
     }
   ],
-  "publicationPolicy": "Publish the compiler-written distribution",
-  "publicationBase": "84a24d54696b44ef61859596adc553ad84877661",
-  "publicationSourceFingerprint": "53e6e5e50e6420c73aed67258252f6d07b3bc199622f4d9586a570cd6ee4dcdc",
   "comparisonArtifacts": [
-    {
-      "path": "site/esm-comparison/original.js",
-      "sha256": "0fa8bb1cb376ab718f63dfbc3fb9319784d9b17f6a5e6bdcad71edd120fab20d"
-    },
     {
       "path": "site/esm-comparison/lilscript.js",
       "sha256": "50d546fc51dc1e4b5f214bda701b34049a9ed6b95e0edf93c7dbdb88398a8a58"
     },
     {
-      "path": "site/source-build.json",
-      "sha256": "e0bfd46732a39255f9763dfb23d95f4b989925a19aef6d595836a1308a2d0a02"
-    },
-    {
-      "path": "site/comparison.json",
-      "sha256": "0e7bd1af5c0a32ce940208a43e092132d50c941de071f2e300c82512a946de8f"
+      "path": "site/esm-comparison/original.js",
+      "sha256": "70da8e7f0bbc597c9da648dabf556488f8af25e4a769b767b8bd5b642899dcc0"
     }
   ],
-  "sourceBuildReceipt": "comparison/source-build/result.json",
-  "currentMeasurement": {
-    "compiler": {
-      "commit": "aa2052f081ca8184666ca280ee9b91d476e46cfc",
-      "sha256": "13cb49a93fb3e376a5978484835322c84adea692b69ae4720775291377cf18f9"
-    },
-    "source": {
-      "commit": "5c5cc8f plus the release working tree (committed together with these records)"
-    },
-    "upstream": {
-      "repository": "https://github.com/syntax-tree/mdast-util-from-markdown.git",
-      "commit": "f9ef1b396227466c4d54ffbd581dfc702dac0cf6",
-      "package": "mdast-util-from-markdown",
-      "version": "2.0.3",
-      "directory": "."
-    },
-    "compatibility": "Runtime checks: 743/743 pass."
-  }
+  "comparisonScope": "mdast-util-from-markdown@2.0.3 public runtime graph, Node-compatible conditions; original and LilScript keep the same external dependencies (none). Original graph assembled with esbuild 0.28.1; minified separately with Terser 5.51.2 (three passes), Oxc (mangle on/off), and esbuild. Browser DOM-decoder diagnostics, when present, are excluded from the Node comparison baseline. Raw, gzip-9 and Brotli-11 are measured with the same canonical codec. The LilScript lane is the delivered package artifact."
 }

@@ -1,0 +1,867 @@
+{
+  "compiler": {
+    "baseRevision": "f7d29bd9",
+    "binarySha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+    "hasLocalSourceChanges": true
+  },
+  "machine": {
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "logicalCpus": 8,
+    "memoryGiB": 15.6,
+    "os": "Linux-7.0.0-1014-azure-x86_64-with-glibc2.39",
+    "node": "v20.19.0"
+  },
+  "lilscript": [
+    {
+      "library": "mdast-util-from-markdownlil",
+      "objective": "raw",
+      "command": [
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
+        "--config",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/mdast-util-from-markdownlil-raw.toml",
+        "--target",
+        "js-module",
+        "--mode",
+        "production",
+        "--jobs",
+        "1",
+        "--out-dir",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/mdast-util-from-markdownlil/raw",
+        "--explain",
+        "json",
+        "--cache",
+        "off",
+        "--logical-work",
+        "2000000000"
+      ],
+      "wallSeconds": 13.790887051000027,
+      "returncode": 0,
+      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+      "configSha256": "7b0044b9b52992265b41b4d4706237505db90402a655414563e51f8b28cf4254",
+      "measuredAt": "2026-10-02T22:38:06.307620+00:00",
+      "outputSha256": "632e3a7b9d73db848347d0582da7aeb6f880f2f262455a90e3eb1b56095d83a7",
+      "raw": 68067
+    },
+    {
+      "library": "mdast-util-from-markdownlil",
+      "objective": "gzip",
+      "command": [
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
+        "--config",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/mdast-util-from-markdownlil-gzip.toml",
+        "--target",
+        "js-module",
+        "--mode",
+        "production",
+        "--jobs",
+        "1",
+        "--out-dir",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/mdast-util-from-markdownlil/gzip",
+        "--explain",
+        "json",
+        "--cache",
+        "off",
+        "--logical-work",
+        "2000000000"
+      ],
+      "wallSeconds": 12.287886428999627,
+      "returncode": 0,
+      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+      "configSha256": "6c98be347871ac92f197128f2c469779338a870c8db02b7a2b932dc869e0d082",
+      "measuredAt": "2026-10-02T22:38:18.601397+00:00",
+      "outputSha256": "f27d9ec0419898d2d2beb7d302cdbafa0863438a7adeb413bfb44ea864bdb295",
+      "raw": 66155
+    },
+    {
+      "library": "mdast-util-from-markdownlil",
+      "objective": "brotli",
+      "command": [
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/bin/lilscript",
+        "--config",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/configs/mdast-util-from-markdownlil-brotli.toml",
+        "--target",
+        "js-module",
+        "--mode",
+        "production",
+        "--jobs",
+        "1",
+        "--out-dir",
+        "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/artifacts/mdast-util-from-markdownlil/brotli",
+        "--explain",
+        "json",
+        "--cache",
+        "off",
+        "--logical-work",
+        "2000000000"
+      ],
+      "wallSeconds": 31.328844108997146,
+      "returncode": 0,
+      "compilerSha256": "8ff44fabb92c949e68240ce6541038fd52e2f3c04d1a9ac470031e4238541c3a",
+      "configSha256": "d4ab68c914e36655559893eb00a07e55170ee4344bab45fccf58775d11fa3481",
+      "measuredAt": "2026-10-02T22:38:49.936086+00:00",
+      "outputSha256": "aa6756e45456a47372b92e2af65c43d78f031accb9ae8cb16de7720e6feac38e",
+      "raw": 66217
+    }
+  ],
+  "upstream": {
+    "name": "mdast-util-from-markdownlil",
+    "package": "mdast-util-from-markdown",
+    "version": "2.0.3",
+    "resolveDir": "/home/azureuser/mdast-util-from-markdownlil",
+    "output": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil",
+    "entry": "export {fromMarkdown} from \"mdast-util-from-markdown\";",
+    "external": [],
+    "sharedExports": [
+      "fromMarkdown"
+    ],
+    "excludedExports": [],
+    "additionalExports": [],
+    "resolution": {
+      "platform": "neutral",
+      "conditions": [
+        "production"
+      ],
+      "mainFields": [
+        "module",
+        "main"
+      ],
+      "target": "es2020",
+      "defines": {
+        "process.env.NODE_ENV": "production"
+      }
+    },
+    "minifiers": [
+      {
+        "tool": "Terser",
+        "version": "5.51.2",
+        "esbuild": "0.28.1",
+        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/terser.mjs",
+        "sha256": "b4cdc7227bacf627a7379e07e04b8521228928e02fa38ad428a9f9f63d4e57ba",
+        "raw": 84154,
+        "imports": [],
+        "wallSeconds": 1.0162451749999997,
+        "command": [
+          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream.mjs",
+          "child",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/job.json",
+          "Terser"
+        ]
+      },
+      {
+        "tool": "esbuild",
+        "version": "0.28.1",
+        "esbuild": "0.28.1",
+        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/esbuild.mjs",
+        "sha256": "95b9cee66ac7df36bad96265ca0478f32ae092a87db02c4341cf1840c889c3c5",
+        "raw": 92538,
+        "imports": [],
+        "wallSeconds": 0.08405117900000005,
+        "command": [
+          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream.mjs",
+          "child",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/job.json",
+          "esbuild"
+        ]
+      },
+      {
+        "tool": "Oxc",
+        "version": "via Vite 8.2.1",
+        "esbuild": "0.28.1",
+        "artifact": "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/oxc.mjs",
+        "sha256": "1e936ff5f2f347f808974fbe71e1c85dbe89ee3d664c802a9c553d49788261c1",
+        "raw": 84249,
+        "imports": [],
+        "wallSeconds": 0.19732843999999933,
+        "command": [
+          "/home/azureuser/.nvm/versions/node/v20.19.0/bin/node",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream.mjs",
+          "child",
+          "/home/azureuser/lilscript-rebuild-reports/2026-10-03-pages/upstream/mdast-util-from-markdownlil/job.json",
+          "Oxc"
+        ]
+      }
+    ]
+  },
+  "sourceInputs": {
+    "root": 0,
+    "entries": [
+      {
+        "name": "index",
+        "module": 0
+      }
+    ],
+    "modules": [
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/entry.lil",
+        "bytes": 78,
+        "sha256": "f0f45324b5f212e1941e1fcb4e70e485f46f5949ceecbca0a5088342d214a37a",
+        "dependencies": [
+          1
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/from-markdown.lil",
+        "bytes": 23031,
+        "sha256": "78894f1bafbd7b1717b28b6f4ffa140cca0fcec02c92e7b6951a5c33ca551bae",
+        "dependencies": [
+          2,
+          3,
+          52,
+          53,
+          54,
+          55,
+          38,
+          28,
+          14,
+          56,
+          57
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/host.lil",
+        "bytes": 9584,
+        "sha256": "6badb1a179beafd2e5fc92d05c784290b3407412ab9a58769a85dbfe33e2f357",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/parse.lil",
+        "bytes": 1180,
+        "sha256": "b036c2932912ef350c629c126601292bda49caab2a0152d77988dcb979481d83",
+        "dependencies": [
+          4,
+          6,
+          9,
+          11,
+          12,
+          19,
+          20
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-combine-extensions.lil",
+        "bytes": 1615,
+        "sha256": "45dda94d1f191795642dac1e553985170a046717ad685685a9c61453a1768cfd",
+        "dependencies": [
+          2,
+          5
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-chunked.lil",
+        "bytes": 1226,
+        "sha256": "da747a8e78fa84b0a467616f68d83384737e53ad1b016e83f9fb803d2edf8e54",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/create-tokenizer.lil",
+        "bytes": 11638,
+        "sha256": "d587bd8a701c469fb05407a1b988231862430bc2d1cbaa0198218a705d41e690",
+        "dependencies": [
+          2,
+          7,
+          5,
+          8
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-character.lil",
+        "bytes": 1611,
+        "sha256": "634af98913dfb47ab2fcdf6fd17e2b4733bc26608f78609e110ce0d33bdf4a15",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-resolve-all.lil",
+        "bytes": 432,
+        "sha256": "d7df6ed1af3b6b922a3f3150f0fc8f94cf4f38852f32819513c56a5a0c546a74",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/initialize/content.lil",
+        "bytes": 1869,
+        "sha256": "3f4959b21c63be2570bbc74960af330e4b6a9646fbb348cef55300baabff2d45",
+        "dependencies": [
+          2,
+          10,
+          7
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/factory-space.lil",
+        "bytes": 903,
+        "sha256": "a5932f5e1b06d6517cdc43a5b0a12cfc9a6b875e94d9c937213f5192fb3b50ba",
+        "dependencies": [
+          7
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/initialize/document.lil",
+        "bytes": 8336,
+        "sha256": "d74de0315b97b124e43f302f64eb4cfd2cc1466dafd00639d20b818a84958856",
+        "dependencies": [
+          2,
+          10,
+          7,
+          5
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/initialize/flow.lil",
+        "bytes": 1333,
+        "sha256": "4ed3a38963b8557e3d1cf818ad7ba0f9bcd3f90c2268f91962891ec3fb14f1e7",
+        "dependencies": [
+          2,
+          10,
+          13,
+          15
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/blank-line.lil",
+        "bytes": 855,
+        "sha256": "115d2dcacdf715b02efce52caac3960d5b855939a68dc0a20817491e8b1194b0",
+        "dependencies": [
+          10,
+          7,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/symbol/types.lil",
+        "bytes": 10985,
+        "sha256": "6ae172165319ad71396ca532ec544326d82d9625f8ee46090d02a587e40c1aa8",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/content.lil",
+        "bytes": 3353,
+        "sha256": "05cc704bd51c0eaf8b9740bd243bbd92842e77a0c6d0372834c76d42ca6a7620",
+        "dependencies": [
+          10,
+          7,
+          16,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-subtokenize.lil",
+        "bytes": 6388,
+        "sha256": "2b22576838b22844e1b6d793a4ee542deb73a396ae594b53ce1d9550ff0fe69a",
+        "dependencies": [
+          2,
+          5,
+          17
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/splice-buffer.lil",
+        "bytes": 4341,
+        "sha256": "9fcce40f739a2119a7bb0b44ad7ec6c69344173854feedef3e528d168102f512",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/symbol/constants.lil",
+        "bytes": 2986,
+        "sha256": "c89476d798ffe1eb1f9843219c41cd1d19849707ceb9fc18d5583b5ae2470188",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/initialize/text.lil",
+        "bytes": 5354,
+        "sha256": "85651ec8148ff18619ca4e46f5e5e4ea5c810c537b6e69d807fc824e4a1f1905",
+        "dependencies": [
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/constructs.lil",
+        "bytes": 2829,
+        "sha256": "74cb525c1651cc300f78f4770c648d3593c4e2dc3f4a45351e459b29be14d84a",
+        "dependencies": [
+          21,
+          24,
+          25,
+          26,
+          27,
+          30,
+          31,
+          32,
+          33,
+          40,
+          41,
+          42,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          51,
+          50,
+          19
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/attention.lil",
+        "bytes": 6546,
+        "sha256": "35d47c10695c713c471cc468088ac8cf975ce0d48e7dff237d951112a09f5632",
+        "dependencies": [
+          5,
+          22,
+          8,
+          23,
+          18,
+          14,
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-classify-character.lil",
+        "bytes": 574,
+        "sha256": "80373b35201103ddfd5b5a942d97e1ab492fee40858c395d9e9113d2255d4477",
+        "dependencies": [
+          7,
+          18
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/symbol/codes.lil",
+        "bytes": 6185,
+        "sha256": "762a3e62e1500ba78d71f8218fcb2e7e357ea3795d21bb5e81b8d4287f513c19",
+        "dependencies": [
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/autolink.lil",
+        "bytes": 4541,
+        "sha256": "97e7eb8b4b33f23df8600b7d811b5cfbbb8df23bfc01dfa25fb528a085d55703",
+        "dependencies": [
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/block-quote.lil",
+        "bytes": 2637,
+        "sha256": "eae45318d2972f4be0fd616cb243d59dd366cb61209b13796d651cfc8297ab49",
+        "dependencies": [
+          10,
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/character-escape.lil",
+        "bytes": 1021,
+        "sha256": "20193c0809adfe18e77d04a7a782ad437d912f3de997a402930af8e46031c6ab",
+        "dependencies": [
+          7,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/character-reference.lil",
+        "bytes": 3258,
+        "sha256": "b355201b60833cf854ca7328b4cd1a9d405ae491b4d1b5a70178313c8c16c71a",
+        "dependencies": [
+          28,
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/decode-named.lil",
+        "bytes": 262,
+        "sha256": "e4150b19e19a214e7ccfb5d6762bdce62fde30b8cc907642d911f9ea87b9e6e8",
+        "dependencies": [
+          29,
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/character-entities.lil",
+        "bytes": 37271,
+        "sha256": "c8b6618cbfd0fdf86d5c36b8a4ed1e4ee141a25088251142a20fe599fca210b3",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/code-fenced.lil",
+        "bytes": 9309,
+        "sha256": "3f4bb3f8b531e3729291c8dcdeab6d6a8e6fc2449eafac161d818f2ddbb27a1e",
+        "dependencies": [
+          10,
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/code-indented.lil",
+        "bytes": 3348,
+        "sha256": "fb8705076d7529695e7da77e235cd90de1af56c92b7ec746de3af9499a2f8be8",
+        "dependencies": [
+          10,
+          7,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/code-text.lil",
+        "bytes": 4856,
+        "sha256": "d35e0cdd7e33ae98579152b3114a826ff43fe69b3802b9e9db7c58fae8ee4388",
+        "dependencies": [
+          7,
+          23,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/definition.lil",
+        "bytes": 4776,
+        "sha256": "38becb049d8509a9239480090acf683d90d24ad4ef4e8b35f14e92c326788011",
+        "dependencies": [
+          34,
+          35,
+          10,
+          36,
+          37,
+          7,
+          38,
+          23,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/factory-destination.lil",
+        "bytes": 4413,
+        "sha256": "5be6c3c02bacd604c1501b85b6785602ed8b447a85679f85e6ee7351964bb161",
+        "dependencies": [
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/factory-label.lil",
+        "bytes": 2994,
+        "sha256": "6376115906bbfbce66d13f0a50ff3b921922135b18b6e66d290eb0b54221f21d",
+        "dependencies": [
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/factory-title.lil",
+        "bytes": 2913,
+        "sha256": "f22c5e3e9919b86b7f2e0cc8b38f6cc1182e88917c9f3fcb61cbdba56404a07c",
+        "dependencies": [
+          10,
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/factory-whitespace.lil",
+        "bytes": 841,
+        "sha256": "e63b322526936f7e746978a4a3e6d56b315dcd01bde6732cf9d94bfb93845d36",
+        "dependencies": [
+          10,
+          7,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-normalize-identifier.lil",
+        "bytes": 348,
+        "sha256": "9c605bcd8454ea59378864ba8abfb67315008fbdea73f96e9fb09e76594fe20e",
+        "dependencies": [
+          39
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/symbol/values.lil",
+        "bytes": 3599,
+        "sha256": "1aabedd9c760c573fd1ea24d07ae9d35d207bbe61a0ecc62985f0953fc73c3e9",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/hard-break-escape.lil",
+        "bytes": 763,
+        "sha256": "92b8a9e28270f61184e6572a8e0640c33f7fbd163c24dde1255d7211e7ca0b2a",
+        "dependencies": [
+          7,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/heading-atx.lil",
+        "bytes": 4166,
+        "sha256": "9d2fd673aab15d904d2b876aa66e7c92ac30c14f8b838ea34b58d4af0f9d269c",
+        "dependencies": [
+          10,
+          7,
+          5,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/html-flow.lil",
+        "bytes": 16559,
+        "sha256": "ba2daf14d7cd5c29ab123ce10374c26fb784770eebf8348ce73bb5a58c3a67ef",
+        "dependencies": [
+          7,
+          43,
+          23,
+          23,
+          18,
+          14,
+          13
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-html-tag-name.lil",
+        "bytes": 475,
+        "sha256": "db2a6d54b5cbdbc8273a776f7b609fb2ed9b90f87242c1d26801ef11771b0380",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/html-text.lil",
+        "bytes": 12529,
+        "sha256": "1e386a681a07b86327fc72dd7735683e86367f0a183a817976a302c0b3da26fa",
+        "dependencies": [
+          10,
+          7,
+          23,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/label-end.lil",
+        "bytes": 11956,
+        "sha256": "4192d0a356f2953a56f695f038c3920ab20305956b310d7061b4cd8bc5274f1d",
+        "dependencies": [
+          34,
+          35,
+          36,
+          37,
+          7,
+          5,
+          38,
+          8,
+          23,
+          18,
+          14,
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/label-start-image.lil",
+        "bytes": 1387,
+        "sha256": "e4a9ba23857880369a5b7912a5316c41173094574b6b5b6721447a399a7e7673",
+        "dependencies": [
+          23,
+          14,
+          45
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/label-start-link.lil",
+        "bytes": 1006,
+        "sha256": "e350229f5af2055c3a065af25bacaa22765e13f1fb9c137df624cfac1b89d002",
+        "dependencies": [
+          23,
+          14,
+          45
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/line-ending.lil",
+        "bytes": 577,
+        "sha256": "a448ed6a6485a776f3e67941bebef001cdbe486f23bdfd4664842178973d39be",
+        "dependencies": [
+          10,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/list.lil",
+        "bytes": 8247,
+        "sha256": "3a8e976a8a6ccdc8330f26561caa457040ecf0c2d86773551abc505180ef4119",
+        "dependencies": [
+          10,
+          7,
+          23,
+          18,
+          14,
+          13,
+          50
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/thematic-break.lil",
+        "bytes": 1755,
+        "sha256": "5776bda5a2850218bd3c4c9fdc796d46c8979b2deac17c7e19376c6816a54313",
+        "dependencies": [
+          10,
+          7,
+          18,
+          14
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/core/setext-underline.lil",
+        "bytes": 3858,
+        "sha256": "4e4ca3c5448dd4955789148a6f77ee089c20d55702db91657a92f0641bc6752b",
+        "dependencies": [
+          10,
+          7,
+          14,
+          2
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/postprocess.lil",
+        "bytes": 156,
+        "sha256": "0ea578b00bed09960e8f9c2d06f962b9e626fec4a528beaba4be30f2c5c50b31",
+        "dependencies": [
+          16
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/preprocess.lil",
+        "bytes": 2259,
+        "sha256": "ce28b92f70b3bd54428324b0f6695ca162aa5df1d2e0f431fde1f8ef4638e9b8",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-decode-numeric.lil",
+        "bytes": 563,
+        "sha256": "03d27ae0446af7f4aa870de13c4c41b65bf53f7a12731c8ee96694f34f95f4fc",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/micromark/util-decode-string.lil",
+        "bytes": 946,
+        "sha256": "df8465926f8b05577467dfc4fb4ed42f28b71574e541002cfc2395275c5fc907",
+        "dependencies": [
+          28,
+          54
+        ],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/stringify-position.lil",
+        "bytes": 556,
+        "sha256": "4a625ab59ab7059b489f26d9089f6f69530cb5a56044eaf1ad71f4de8d1b0663",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      },
+      {
+        "path": "/home/azureuser/mdast-util-from-markdownlil/src/to-string.lil",
+        "bytes": 719,
+        "sha256": "d1d84463da85bc5a419f8755e502fcfa8a26c60e2dddd6c737e7b2c9d9884a93",
+        "dependencies": [],
+        "dynamic_dependencies": []
+      }
+    ],
+    "host_modules": [],
+    "host_reserved": []
+  },
+  "validation": {
+    "checks": 2082,
+    "objectives": [
+      {
+        "objective": "raw",
+        "checks": 694,
+        "suite": "differential"
+      },
+      {
+        "objective": "gzip",
+        "checks": 694,
+        "suite": "differential"
+      },
+      {
+        "objective": "brotli",
+        "checks": 694,
+        "suite": "differential"
+      }
+    ],
+    "scope": "Main ESM entry; selected corpora and API checks, not all package formats or complete upstream equivalence."
+  },
+  "workLimit": 2000000000,
+  "timingScope": "One sequential fresh-output build per objective/minifier. Upstream timing is ESM bundling and minification, not original-repository source compilation."
+}
